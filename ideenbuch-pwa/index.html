@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideenbuch</title>
+<meta name="description" content="Dein persönliches Ideenbuch — Notizen, Mind-Maps, Checklisten und Bilder an einem Ort.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5F7038">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ideenbuch">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+
+/* ============ RESET & BASE ============ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: background .35s ease, color .35s ease;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font-family: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+::selection { background: var(--accent); color: var(--surface); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ============ THEME TOKENS ============ */
+/* 1. Papierblock — warm notebook, typewriter */
+.theme-papier {
+  --bg: #EAE2CE; --surface: #FBF7EC; --surface2: #F1E9D6;
+  --text: #2B2621; --text-muted: #6B6153;
+  --accent: #5F7038; --accent2: #2F4858;
+  --border: #C9BC9C; --shadow: 0 2px 10px rgba(43,38,33,.12);
+  --font-display: 'Special Elite', cursive; --font-body: 'Courier Prime', monospace;
+  --radius: 2px; --pattern: none;
+}
+/* 2. Mitternacht — deep navy, gold */
+.theme-mitternacht {
+  --bg: #10142A; --surface: #1A2043; --surface2: #212A54;
+  --text: #EDEBFA; --text-muted: #9FA3C7;
+  --accent: #C9A24B; --accent2: #3F9C99;
+  --border: #313A66; --shadow: 0 8px 24px rgba(0,0,0,.4);
+  --font-display: 'Fraunces', serif; --font-body: 'Inter', sans-serif;
+  --radius: 10px; --pattern: none;
+}
+/* 3. Skizzenblock — graph paper */
+.theme-skizze {
+  --bg: #E7ECF2; --surface: #FFFFFF; --surface2: #DCE4EE;
+  --text: #29344A; --text-muted: #6C7793;
+  --accent: #3A5A9B; --accent2: #C0453B;
+  --border: #B9C6DB; --shadow: 0 2px 8px rgba(41,52,74,.1);
+  --font-display: 'Kalam', cursive; --font-body: 'Inter', sans-serif;
+  --radius: 4px;
+  --pattern: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+}
+/* 4. Bauhaus — primary geometry */
+.theme-bauhaus {
+  --bg: #F2EFE6; --surface: #FFFFFF; --surface2: #EAE5D6;
+  --text: #1A1A1A; --text-muted: #555049;
+  --accent: #D0263B; --accent2: #1D4E9B;
+  --border: #1A1A1A; --shadow: 4px 4px 0 #1A1A1A;
+  --font-display: 'Archivo Black', sans-serif; --font-body: 'Work Sans', sans-serif;
+  --radius: 0px; --pattern: none;
+}
+/* 5. Wald — deep forest */
+.theme-wald {
+  --bg: #172A20; --surface: #203627; --surface2: #294432;
+  --text: #EDE7D3; --text-muted: #A9B7A4;
+  --accent: #86B35A; --accent2: #D9A441;
+  --border: #35503E; --shadow: 0 6px 20px rgba(0,0,0,.35);
+  --font-display: 'Fraunces', serif; --font-body: 'Source Sans 3', sans-serif;
+  --radius: 8px; --pattern: none;
+}
+/* 6. Ozean — teal calm */
+.theme-ozean {
+  --bg: #0E3B43; --surface: #124A54; --surface2: #165B67;
+  --text: #E7F5F3; --text-muted: #A9CFCB;
+  --accent: #FF9270; --accent2: #F2D6A2;
+  --border: #1E6773; --shadow: 0 8px 22px rgba(0,0,0,.3);
+  --font-display: 'Poppins', sans-serif; --font-body: 'Nunito Sans', sans-serif;
+  --radius: 14px; --pattern: none;
+}
+/* 7. Terminal — retro phosphor */
+.theme-terminal {
+  --bg: #0B0F0C; --surface: #101610; --surface2: #161D16;
+  --text: #4CFF6B; --text-muted: #3A9950;
+  --accent: #FFB000; --accent2: #4CFF6B;
+  --border: #234027; --shadow: 0 0 0 1px #234027;
+  --font-display: 'VT323', monospace; --font-body: 'IBM Plex Mono', monospace;
+  --radius: 0px; --pattern: none;
+}
+/* 8. Rosé — soft editorial */
+.theme-rose {
+  --bg: #F6E9EE; --surface: #FFF8FA; --surface2: #F0DCE3;
+  --text: #4A2338; --text-muted: #8A5E71;
+  --accent: #C6577B; --accent2: #B8925A;
+  --border: #E3C3CF; --shadow: 0 4px 16px rgba(74,35,56,.12);
+  --font-display: 'Playfair Display', serif; --font-body: 'Lora', serif;
+  --radius: 6px; --pattern: none;
+}
+/* 9. Industrial — concrete & safety orange */
+.theme-industrial {
+  --bg: #DEDBD2; --surface: #F1EFE8; --surface2: #D2CEC2;
+  --text: #232323; --text-muted: #5B5850;
+  --accent: #E8590C; --accent2: #4A6572;
+  --border: #232323; --shadow: none;
+  --font-display: 'Oswald', sans-serif; --font-body: 'IBM Plex Sans', sans-serif;
+  --radius: 0px; --pattern: none;
+}
+/* 10. Aurora — gradient dream */
+.theme-aurora {
+  --bg: #150B26; --surface: #1F1338; --surface2: #291A47;
+  --text: #F1EBFF; --text-muted: #B4A4D9;
+  --accent: #B15CDE; --accent2: #35D0BA;
+  --border: #3A2A5C; --shadow: 0 10px 30px rgba(177,92,222,.25);
+  --font-display: 'Space Grotesk', sans-serif; --font-body: 'Manrope', sans-serif;
+  --radius: 14px; --pattern: none;
+}
+
+/* ============ LAYOUT ============ */
+#app { display: flex; min-height: 100vh; }
+.theme-skizze body, .theme-skizze #app { background-image: var(--pattern); background-size: 24px 24px; }
+.theme-skizze { }
+body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 26px 26px; background-color: var(--bg); }
+
+.sidebar {
+  width: 232px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 20px 14px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  transition: transform .25s ease;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 6px 10px 22px; }
+.brand-mark { font-size: 22px; color: var(--accent); }
+.brand-text { font-family: var(--font-display); font-size: 21px; letter-spacing: .3px; }
+.nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.sidebar-bottom { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  background: transparent; border: 1px solid transparent; border-radius: var(--radius);
+  padding: 10px 12px; font-size: 14.5px; font-weight: 500; text-align: left;
+  color: var(--text-muted); transition: background .15s, color .15s, border-color .15s;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.theme-bauhaus .nav-item.active { color: #fff; }
+.nav-icon { font-size: 16px; width: 18px; text-align: center; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 4px; }
+
+/* ============ PROFILE BAR ============ */
+.profile-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 6px 16px; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; position: relative;
+  transition: transform .12s ease, border-color .15s; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+.avatar:hover { transform: translateY(-1px); }
+.avatar.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
+.avatar-add {
+  width: 34px; height: 34px; border-radius: 50%; border: 2px dashed var(--border); background: transparent;
+  color: var(--text-muted); font-size: 16px; display: flex; align-items: center; justify-content: center;
+}
+.avatar-add:hover { border-color: var(--accent); color: var(--accent); }
+.profile-empty-hint { font-size: 12px; color: var(--text-muted); padding: 0 6px 14px; line-height: 1.5; }
+.profile-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--border); }
+.mini-avatar { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.3); flex-shrink: 0; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; align-items: center; gap: 14px; padding: 16px 26px;
+  border-bottom: 1px solid var(--border); background: var(--bg);
+  position: sticky; top: 0; z-index: 5;
+}
+.hamburger { display: none; background: none; border: none; font-size: 20px; color: var(--text); }
+.search-wrap { flex: 1; max-width: 480px; }
+#searchInput {
+  width: 100%; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); font-size: 14px;
+}
+.btn {
+  padding: 10px 16px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); font-size: 14px; font-weight: 600; white-space: nowrap;
+  transition: transform .12s ease, background .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-accent { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.theme-bauhaus .btn-accent { color: #fff; box-shadow: var(--shadow); }
+.btn-ghost { background: transparent; }
+.btn-sm { padding: 6px 10px; font-size: 12.5px; }
+.btn-danger { color: #C0453B; border-color: #C0453B; background: transparent; }
+
+.view-container { flex: 1; padding: 26px; max-width: 1100px; width: 100%; margin: 0 auto; }
+.view-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;}
+.view-title { font-family: var(--font-display); font-size: 28px; margin: 0; }
+.view-sub { color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 34px; display: block; margin-bottom: 10px; }
+
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 18px; border-radius: var(--radius); box-shadow: var(--shadow);
+  font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  z-index: 50;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 860px) {
+  .sidebar { position: fixed; z-index: 40; left: 0; top: 0; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,.3);}
+  .sidebar.open { transform: translateX(0); }
+  .hamburger { display: block; }
+  .view-container { padding: 16px; }
+  .topbar { padding: 12px 16px; }
+}
+
+/* ============ GRID / CARDS ============ */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer; transition: transform .12s ease, border-color .15s;
+}
+.card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.card-title { font-family: var(--font-display); font-size: 17px; margin: 0; word-break: break-word; }
+.card-pin { background: none; border: none; font-size: 15px; color: var(--text-muted); }
+.card-pin.pinned { color: var(--accent); }
+.card-body { color: var(--text-muted); font-size: 13.5px; line-height: 1.5; max-height: 4.5em; overflow: hidden; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.tag-chip {
+  font-size: 11px; padding: 3px 9px; border-radius: 999px; background: var(--surface2);
+  color: var(--text-muted); border: 1px solid var(--border);
+}
+.tag-chip.clickable:hover { border-color: var(--accent); color: var(--accent); cursor: pointer; }
+.card-meta { font-size: 11px; color: var(--text-muted); margin-top: auto; padding-top: 6px; }
+.card-progress { height: 5px; background: var(--surface2); border-radius: 999px; overflow: hidden; margin-top: 4px;}
+.card-progress-bar { height: 100%; background: var(--accent); }
+.card-thumb { width: 100%; height: 130px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); }
+
+/* ============ MODAL / EDITOR ============ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex;
+  align-items: center; justify-content: center; z-index: 60; padding: 20px;
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; padding: 24px;
+  box-shadow: var(--shadow);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-header h2 { font-family: var(--font-display); margin: 0; font-size: 22px; }
+.close-btn { background: none; border: none; font-size: 20px; color: var(--text-muted); }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.field input[type=text], .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-size: 14px;
+}
+.field textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
+.modal-footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.modal-footer-right { display: flex; gap: 8px; }
+
+/* checklist items in editor */
+.checklist-items { display: flex; flex-direction: column; gap: 6px; }
+.checklist-row { display: flex; align-items: center; gap: 8px; }
+.checklist-row input[type=text] { flex: 1; padding: 8px 10px; }
+.checklist-row .del { background: none; border: none; color: var(--text-muted); font-size: 16px; }
+.checklist-view-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.checklist-view-row:last-child { border-bottom: none; }
+.checklist-view-row input { width: 17px; height: 17px; accent-color: var(--accent); }
+.checklist-view-row.done label { text-decoration: line-through; color: var(--text-muted); }
+.add-row-btn { align-self: flex-start; margin-top: 4px; }
+
+/* image dropzone */
+.dropzone {
+  border: 2px dashed var(--border); border-radius: var(--radius); padding: 26px; text-align: center;
+  color: var(--text-muted); font-size: 13.5px; cursor: pointer; transition: border-color .15s;
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--accent); color: var(--accent); }
+.dropzone input { display: none; }
+.image-preview { width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius); margin-top: 10px; border: 1px solid var(--border); }
+
+/* image tabs + drawing pad */
+.img-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.img-tab { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; }
+.img-tab.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.theme-bauhaus .img-tab.active { color: #fff; }
+.draw-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.draw-colors { display: flex; gap: 5px; }
+.draw-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); padding: 0; }
+.draw-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
+#drawEraser.active-tool { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.draw-canvas { width: 100%; max-width: 100%; height: auto; aspect-ratio: 600 / 380; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; touch-action: none; cursor: crosshair; }
+
+/* tags view */
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+.tag-pill {
+  padding: 8px 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
+  font-size: 13.5px; display: flex; align-items: center; gap: 8px;
+}
+.tag-pill .count { background: var(--surface2); border-radius: 999px; padding: 1px 8px; font-size: 11px; color: var(--text-muted); }
+.tag-pill.active { border-color: var(--accent); color: var(--accent); }
+
+/* ============ MIND-MAP ============ */
+.mindmap-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.mindmap-hint { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+.mindmap-wrap {
+  position: relative; width: 100%; height: 68vh; min-height: 420px; overflow: auto;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+}
+.mindmap-canvas { position: relative; width: 2200px; height: 1400px; }
+.mindmap-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mindmap-svg line { stroke: var(--accent2); stroke-width: 2; opacity: .7; }
+.mm-node {
+  position: absolute; min-width: 120px; max-width: 220px; padding: 10px 14px;
+  background: var(--surface2); border: 2px solid var(--accent); border-radius: var(--radius);
+  font-size: 13.5px; cursor: grab; box-shadow: var(--shadow);
+}
+.mm-node.selected { outline: 3px solid var(--accent2); }
+.mm-node.root { background: var(--accent); color: var(--surface); font-family: var(--font-display); font-size: 16px; }
+.theme-bauhaus .mm-node.root { color: #fff; }
+.mm-node .mm-text { display: block; outline: none; cursor: text; user-select: text; }
+.mm-node .mm-text:focus { cursor: text; }
+.mm-node .mm-del { position: absolute; top: -8px; right: -8px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; width: 20px; height: 20px; font-size: 11px; line-height: 1; display: none; cursor: pointer; }
+.mm-node:hover .mm-del { display: block; }
+
+/* ============ EXPORT PANEL ============ */
+.export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin-bottom: 22px; }
+.export-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.export-card h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 18px; }
+.export-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 12px; }
+.scope-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.scope-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; }
+.scope-chip.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.theme-bauhaus .scope-chip.active { color:#fff; }
+
+/* ============ SETTINGS / THEME PICKER ============ */
+.settings-section { margin-bottom: 32px; }
+.settings-section h3 { font-family: var(--font-display); font-size: 19px; margin-bottom: 4px; }
+.settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
+
+.theme-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
+.theme-cover {
+  border-radius: 6px 6px 3px 3px; border: 1px solid rgba(0,0,0,.15); cursor: pointer;
+  padding: 14px 12px; height: 108px; display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; transition: transform .15s ease; box-shadow: 2px 3px 8px rgba(0,0,0,.18);
+}
+.theme-cover:hover { transform: translateY(-4px) rotate(-.5deg); }
+.theme-cover.active::after {
+  content: "✓"; position: absolute; top: 8px; right: 10px; font-size: 13px;
+  background: rgba(255,255,255,.85); color: #222; border-radius: 50%; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+.theme-cover .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: rgba(0,0,0,.18); border-radius: 6px 0 0 3px; }
+.theme-cover .t-name { font-size: 13.5px; font-weight: 700; padding-left: 6px; }
+.theme-cover .t-sub { font-size: 10.5px; opacity: .75; padding-left: 6px; }
+.theme-cover .t-dots { display: flex; gap: 5px; padding-left: 6px; }
+.theme-cover .t-dots span { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.connector-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.connector-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.connector-head h4 { margin: 0; font-size: 15.5px; }
+.badge-soon { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; background: var(--surface2); color: var(--text-muted); padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); }
+.connector-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin-bottom: 10px; }
+.connector-fields input, .connector-fields select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); font-size: 13px; }
+.connector-fields input:disabled { opacity: .55; cursor: not-allowed; }
+
+.backup-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ============ PRINT (used for PDF-safe layouts) ============ */
+@media print {
+  .sidebar, .topbar, .modal-overlay, .toast { display: none !important; }
+  .view-container { max-width: 100%; }
+}
+
+</style>
+</head>
+<body class="theme-papier">
+
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">✎</span>
+      <span class="brand-text">Ideenbuch</span>
+    </div>
+
+    <div class="profile-bar" id="profileBar"></div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="notes">
+        <span class="nav-icon">📝</span><span class="nav-label">Notizen</span>
+      </button>
+      <button class="nav-item" data-view="mindmap">
+        <span class="nav-icon">🕸️</span><span class="nav-label">Mind-Map</span>
+      </button>
+      <button class="nav-item" data-view="checklists">
+        <span class="nav-icon">☑️</span><span class="nav-label">Checklisten</span>
+      </button>
+      <button class="nav-item" data-view="images">
+        <span class="nav-icon">🖼️</span><span class="nav-label">Bilder &amp; Malen</span>
+      </button>
+      <button class="nav-item" data-view="tags">
+        <span class="nav-icon">🏷️</span><span class="nav-label">Tags</span>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="nav-item" data-view="tasks">
+        <span class="nav-icon">⭐</span><span class="nav-label">Aufgaben &amp; Belohnungen</span>
+      </button>
+      <button class="nav-item" data-view="calendar">
+        <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
+      </button>
+      <button class="nav-item" data-view="shopping">
+        <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="installBtn" style="display:none;">
+        <span class="nav-icon">⬇️</span><span class="nav-label">App installieren</span>
+      </button>
+      <button class="nav-item" data-view="export">
+        <span class="nav-icon">⇩</span><span class="nav-label">Export</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Einstellungen</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Menü">☰</button>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Ideen, Tags oder Inhalte durchsuchen…" autocomplete="off">
+      </div>
+      <button class="btn btn-accent" id="newItemBtn">+ Neue Idee</button>
+    </header>
+
+    <main class="view-container" id="viewContainer">
+      <!-- Views are rendered here by JS -->
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   IDEENBUCH — App-Logik (vanilla JS, keine Frameworks)
+   ============================================================ */
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "ideabook_state_v1";
+
+  const THEMES = [
+    { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
+    { id: "mitternacht",name: "Mitternacht",     sub: "Tief & golden",     dots: ["#C9A24B", "#3F9C99", "#10142A"] },
+    { id: "skizze",     name: "Skizzenblock",    sub: "Karopapier",        dots: ["#3A5A9B", "#C0453B", "#E7ECF2"] },
+    { id: "bauhaus",    name: "Bauhaus",         sub: "Geometrisch",       dots: ["#D0263B", "#1D4E9B", "#F2EFE6"] },
+    { id: "wald",       name: "Wald",            sub: "Tiefgrün & Moos",   dots: ["#86B35A", "#D9A441", "#172A20"] },
+    { id: "ozean",      name: "Ozean",           sub: "Ruhig & weit",      dots: ["#FF9270", "#F2D6A2", "#0E3B43"] },
+    { id: "terminal",   name: "Terminal",        sub: "Retro-Phosphor",    dots: ["#4CFF6B", "#FFB000", "#0B0F0C"] },
+    { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
+    { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
+    { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
+  ];
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+  function defaultState() {
+    return {
+      theme: "papier",
+      items: [],
+      mindmap: { nodes: [], edges: [] },
+      meta: { lastModified: Date.now() },
+      profiles: [],
+      activeProfileId: null,
+      tasks: [],
+      rewards: [],
+      pointsLedger: [],
+      events: [],
+      shoppingList: [],
+      connectors: {
+        sharepoint: { siteUrl: "", library: "" },
+        ftp: { host: "", port: "", user: "", path: "" },
+        network: { url: "", authHeader: "", method: "PUT", autoSync: false, intervalMinutes: 5, lastSyncAt: 0 }
+      }
+    };
+  }
+
+  const PROFILE_COLORS = ["#5F7038", "#C9A24B", "#3A5A9B", "#C0453B", "#86B35A", "#FF9270", "#C6577B", "#4A6572", "#B15CDE", "#35D0BA"];
+  const PROFILE_EMOJI = ["🦊", "🐨", "🐸", "🐝", "🦉", "🐙", "🦄", "🐳", "🐧", "🦁", "🐼", "🐬"];
+
+  function loadState() {
+    const base = defaultState();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          ...base, ...parsed,
+          mindmap: { ...base.mindmap, ...(parsed.mindmap || {}) },
+          meta: { ...base.meta, ...(parsed.meta || {}) },
+          connectors: {
+            sharepoint: { ...base.connectors.sharepoint, ...((parsed.connectors || {}).sharepoint || {}) },
+            ftp: { ...base.connectors.ftp, ...((parsed.connectors || {}).ftp || {}) },
+            network: { ...base.connectors.network, ...((parsed.connectors || {}).network || {}) }
+          }
+        };
+      }
+    } catch (e) { console.warn("Konnte gespeicherten Zustand nicht laden:", e); }
+    return base;
+  }
+
+  function saveState(opts) {
+    if (!opts || !opts.skipTouch) {
+      state.meta = state.meta || {};
+      state.meta.lastModified = Date.now();
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      showToast("Speichern fehlgeschlagen — evtl. ist der Speicher voll (große Bilder?)");
+    }
+  }
+
+  let state = loadState();
+  let currentView = "notes";
+  let searchQuery = "";
+  let activeTagFilter = null;
+  let mmSelectedNode = null;
+  let exportScope = "all";
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return "";
+    const d = new Date(ts);
+    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) +
+           " " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function allTags() {
+    const map = new Map();
+    state.items.forEach(it => (it.tags || []).forEach(t => map.set(t, (map.get(t) || 0) + 1)));
+    return map;
+  }
+
+  function itemMatchesSearch(it) {
+    if (activeTagFilter && !(it.tags || []).includes(activeTagFilter)) return false;
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const hay = [it.title, it.body, it.caption, ...(it.tags || []),
+      ...((it.items || []).map(c => c.text))].filter(Boolean).join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  /* ============ PROFILE (FAMILIE) ============ */
+  function getProfile(id) { return state.profiles.find(p => p.id === id) || null; }
+  function getActiveProfile() { return getProfile(state.activeProfileId); }
+
+  function pointsBalance(profileId) {
+    return state.pointsLedger.filter(l => l.profileId === profileId).reduce((sum, l) => sum + l.delta, 0);
+  }
+
+  function renderProfileBar() {
+    const bar = document.getElementById("profileBar");
+    bar.innerHTML = "";
+    state.profiles.forEach(p => {
+      const av = document.createElement("div");
+      av.className = "avatar" + (state.activeProfileId === p.id ? " active" : "");
+      av.style.background = p.color;
+      av.textContent = p.emoji || p.name.charAt(0).toUpperCase();
+      av.title = p.name + (p.role === "child" ? ` — ${pointsBalance(p.id)} Punkte` : "");
+      av.onclick = () => { state.activeProfileId = p.id; saveState(); renderProfileBar(); render(); };
+      av.ondblclick = () => openProfileEditor(p.id);
+      bar.appendChild(av);
+    });
+    const addBtn = document.createElement("button");
+    addBtn.className = "avatar-add";
+    addBtn.title = "Profil hinzufügen";
+    addBtn.textContent = "+";
+    addBtn.onclick = () => openProfileEditor();
+    bar.appendChild(addBtn);
+
+    let hint = document.getElementById("profileBarHint");
+    if (!hint) {
+      hint = document.createElement("div");
+      hint.id = "profileBarHint";
+      hint.className = "profile-empty-hint";
+      bar.parentElement.insertBefore(hint, bar.nextSibling);
+    }
+    hint.textContent = state.profiles.length
+      ? "Klicken zum Wechseln, doppelklicken zum Bearbeiten."
+      : "Noch keine Profile — legt eins für jedes Familienmitglied an.";
+  }
+
+  function openProfileEditor(id) {
+    const existing = id ? getProfile(id) : null;
+    const draft = existing ? { ...existing } : {
+      id: uid(), name: "", color: PROFILE_COLORS[state.profiles.length % PROFILE_COLORS.length],
+      emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child"
+    };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header"><h2>${existing ? "Profil bearbeiten" : "Neues Profil"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Name</label><input type="text" id="p-name" value="${escapeHtml(draft.name)}" placeholder="z. B. Mia"></div>
+        <div class="field"><label>Rolle</label>
+          <select id="p-role">
+            <option value="child" ${draft.role === "child" ? "selected" : ""}>Kind</option>
+            <option value="parent" ${draft.role === "parent" ? "selected" : ""}>Elternteil</option>
+          </select>
+        </div>
+        <div class="field"><label>Symbol</label>
+          <div id="p-emoji-picker" style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${PROFILE_EMOJI.map(e => `<button type="button" class="btn btn-sm emoji-opt" data-emoji="${e}" style="${e === draft.emoji ? "outline:2px solid var(--accent);" : ""}">${e}</button>`).join("")}
+          </div>
+        </div>
+        <div class="field"><label>Farbe</label>
+          <div id="p-color-picker" style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${PROFILE_COLORS.map(c => `<button type="button" class="color-opt" data-color="${c}" style="width:28px;height:28px;border-radius:50%;background:${c};border:2px solid ${c === draft.color ? "var(--text)" : "transparent"};"></button>`).join("")}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div>${existing ? `<button class="btn btn-danger" id="deleteProfileBtn">Profil löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveProfileBtn">Speichern</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll(".emoji-opt").forEach(b => b.onclick = () => {
+      draft.emoji = b.dataset.emoji;
+      overlay.querySelectorAll(".emoji-opt").forEach(x => x.style.outline = "");
+      b.style.outline = "2px solid var(--accent)";
+    });
+    overlay.querySelectorAll(".color-opt").forEach(b => b.onclick = () => {
+      draft.color = b.dataset.color;
+      overlay.querySelectorAll(".color-opt").forEach(x => x.style.borderColor = "transparent");
+      b.style.borderColor = "var(--text)";
+    });
+
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    if (existing) {
+      overlay.querySelector("#deleteProfileBtn").onclick = () => {
+        if (confirm(`Profil „${existing.name}" wirklich löschen? Zugewiesene Aufgaben/Termine bleiben erhalten, aber ohne Zuordnung.`)) {
+          state.profiles = state.profiles.filter(p => p.id !== existing.id);
+          if (state.activeProfileId === existing.id) state.activeProfileId = (state.profiles[0] || {}).id || null;
+          saveState(); close(); renderProfileBar(); render();
+        }
+      };
+    }
+    overlay.querySelector("#saveProfileBtn").onclick = () => {
+      draft.name = overlay.querySelector("#p-name").value.trim() || "Familie";
+      draft.role = overlay.querySelector("#p-role").value;
+      const idx = state.profiles.findIndex(p => p.id === draft.id);
+      if (idx >= 0) state.profiles[idx] = draft; else state.profiles.push(draft);
+      if (!state.activeProfileId) state.activeProfileId = draft.id;
+      saveState(); close(); renderProfileBar(); render();
+      showToast(existing ? "Profil aktualisiert." : `Willkommen, ${draft.name}!`);
+    };
+    setTimeout(() => overlay.querySelector("#p-name").focus(), 30);
+  }
+
+  /* ============ VIEW ROUTING ============ */
+  function setView(view) {
+    currentView = view;
+    document.querySelectorAll(".nav-item[data-view]").forEach(b => {
+      b.classList.toggle("active", b.dataset.view === view);
+    });
+    document.getElementById("sidebar").classList.remove("open");
+    render();
+  }
+
+  function render() {
+    const c = document.getElementById("viewContainer");
+    c.innerHTML = "";
+    if (currentView === "notes") return renderListView(c, "note", "Notizen", "Fang eine Idee ein, bevor sie verfliegt.", "📝");
+    if (currentView === "checklists") return renderListView(c, "checklist", "Checklisten", "Schritte, Aufgaben, To-dos für deine Ideen.", "☑️");
+    if (currentView === "images") return renderListView(c, "image", "Bilder", "Skizzen, Referenzen, Screenshots.", "🖼️");
+    if (currentView === "tags") return renderTagsView(c);
+    if (currentView === "mindmap") return renderMindmapView(c);
+    if (currentView === "tasks") return renderTasksView(c);
+    if (currentView === "calendar") return renderCalendarView(c);
+    if (currentView === "shopping") return renderShoppingView(c);
+    if (currentView === "export") return renderExportView(c);
+    if (currentView === "settings") return renderSettingsView(c);
+  }
+
+  function renderListView(container, type, title, subtitle, icon) {
+    const items = state.items
+      .filter(it => it.type === type && itemMatchesSearch(it))
+      .sort((a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt));
+
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `
+      <div><h1 class="view-title">${title}</h1><p class="view-sub">${subtitle}</p></div>
+      <button class="btn btn-accent" id="addBtn">+ Neu</button>
+    `;
+    container.appendChild(header);
+
+    if (activeTagFilter) {
+      const bar = document.createElement("div");
+      bar.style.marginBottom = "14px";
+      bar.innerHTML = `<span class="tag-chip clickable" id="clearTagFilter">Filter: #${escapeHtml(activeTagFilter)} ✕</span>`;
+      container.appendChild(bar);
+      bar.querySelector("#clearTagFilter").onclick = () => { activeTagFilter = null; render(); };
+    }
+
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = `<span class="empty-icon">${icon}</span>${
+        searchQuery || activeTagFilter ? "Keine Treffer." : "Noch nichts hier — leg direkt los."
+      }`;
+      container.appendChild(empty);
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      items.forEach(it => grid.appendChild(renderCard(it)));
+      container.appendChild(grid);
+    }
+
+    document.getElementById("addBtn").onclick = () => openEditor(type);
+  }
+
+  function renderCard(it) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.onclick = (e) => { if (!e.target.closest(".card-pin")) openEditor(it.type, it.id); };
+
+    let bodyHtml = "";
+    if (it.type === "note") {
+      bodyHtml = `<div class="card-body">${escapeHtml(it.body || "").slice(0, 220)}</div>`;
+    } else if (it.type === "checklist") {
+      const total = (it.items || []).length;
+      const done = (it.items || []).filter(c => c.done).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      bodyHtml = `
+        <div class="card-body">${done}/${total} erledigt</div>
+        <div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div>`;
+    } else if (it.type === "image") {
+      bodyHtml = `${it.dataUrl ? `<img class="card-thumb" src="${it.dataUrl}" alt="">` : ""}
+        <div class="card-body">${escapeHtml(it.caption || "")}</div>`;
+    }
+
+    const creator = it.createdBy ? getProfile(it.createdBy) : null;
+    card.innerHTML = `
+      <div class="card-top">
+        <h3 class="card-title">${escapeHtml(it.title || "Ohne Titel")}</h3>
+        <button class="card-pin ${it.pinned ? "pinned" : ""}" title="Anheften">${it.pinned ? "★" : "☆"}</button>
+      </div>
+      ${bodyHtml}
+      <div class="card-tags">${(it.tags || []).map(t => `<span class="tag-chip clickable" data-tag="${escapeHtml(t)}">#${escapeHtml(t)}</span>`).join("")}</div>
+      <div class="card-meta" style="display:flex;align-items:center;gap:6px;">
+        ${creator ? `<span class="mini-avatar" style="background:${creator.color};">${creator.emoji || creator.name.charAt(0)}</span>` : ""}
+        Aktualisiert ${fmtDate(it.updatedAt)}
+      </div>
+    `;
+    card.querySelector(".card-pin").onclick = () => { it.pinned = !it.pinned; saveState(); render(); };
+    card.querySelectorAll(".tag-chip[data-tag]").forEach(chip => {
+      chip.onclick = (e) => { e.stopPropagation(); activeTagFilter = chip.dataset.tag; render(); };
+    });
+    return card;
+  }
+
+  function renderTagsView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Tags</h1><p class="view-sub">Alle Themen auf einen Blick — klicke, um zu filtern.</p></div>`;
+    container.appendChild(header);
+
+    const tags = allTags();
+    if (!tags.size) {
+      container.innerHTML += `<div class="empty-state"><span class="empty-icon">🏷️</span>Noch keine Tags vergeben.</div>`;
+      return;
+    }
+    const cloud = document.createElement("div");
+    cloud.className = "tag-cloud";
+    [...tags.entries()].sort((a, b) => b[1] - a[1]).forEach(([tag, count]) => {
+      const pill = document.createElement("button");
+      pill.className = "tag-pill" + (activeTagFilter === tag ? " active" : "");
+      pill.innerHTML = `#${escapeHtml(tag)} <span class="count">${count}</span>`;
+      pill.onclick = () => { activeTagFilter = activeTagFilter === tag ? null : tag; setView("notes"); };
+      cloud.appendChild(pill);
+    });
+    container.appendChild(cloud);
+  }
+
+  /* ============ EDITOR MODAL ============ */
+  function openEditor(type, id) {
+    const existing = id ? state.items.find(i => i.id === id) : null;
+    const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
+      id: uid(), type, title: "", tags: [], pinned: false,
+      createdAt: Date.now(), updatedAt: Date.now(),
+      body: "", items: [], dataUrl: "", caption: ""
+    };
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    const typeLabel = { note: "Notiz", checklist: "Checkliste", image: "Bild" }[type];
+
+    let bodyFieldHtml = "";
+    if (type === "note") {
+      bodyFieldHtml = `
+        <div class="field"><label>Inhalt</label>
+          <textarea id="f-body" placeholder="Worum geht's bei der Idee?">${escapeHtml(draft.body)}</textarea>
+        </div>`;
+    } else if (type === "checklist") {
+      bodyFieldHtml = `
+        <div class="field"><label>Punkte</label>
+          <div class="checklist-items" id="checklistItems"></div>
+          <button type="button" class="btn btn-sm add-row-btn" id="addChecklistRow">+ Punkt hinzufügen</button>
+        </div>`;
+    } else if (type === "image") {
+      bodyFieldHtml = `
+        <div class="field"><label>Bild</label>
+          <div class="img-tabs">
+            <button type="button" class="img-tab active" data-tab="upload">📎 Hochladen</button>
+            <button type="button" class="img-tab" data-tab="draw">🖌️ Malen</button>
+          </div>
+          <div id="uploadPane">
+            <div class="dropzone" id="dropzone">
+              📎 Klicken oder Bild hierher ziehen (JPG/PNG)
+              <input type="file" id="fileInput" accept="image/*">
+            </div>
+          </div>
+          <div id="drawPane" style="display:none;">
+            <div class="draw-toolbar">
+              <div class="draw-colors" id="drawColors"></div>
+              <input type="color" id="drawCustomColor" value="#2B2621" title="Eigene Farbe">
+              <select id="drawSize">
+                <option value="3">Dünn</option>
+                <option value="7" selected>Mittel</option>
+                <option value="16">Dick</option>
+              </select>
+              <button type="button" class="btn btn-sm" id="drawEraser">🧹 Radierer</button>
+              <button type="button" class="btn btn-sm" id="drawUndo">↩︎ Rückgängig</button>
+              <button type="button" class="btn btn-sm" id="drawClear">Leeren</button>
+            </div>
+            <canvas id="drawCanvas" class="draw-canvas" width="600" height="380"></canvas>
+            <button type="button" class="btn btn-accent btn-sm" id="drawUse" style="margin-top:10px;">In Bild übernehmen</button>
+          </div>
+          ${draft.dataUrl ? `<img class="image-preview" id="imgPreview" src="${draft.dataUrl}">` : `<img class="image-preview" id="imgPreview" style="display:none">`}
+        </div>
+        <div class="field"><label>Bildunterschrift</label>
+          <input type="text" id="f-caption" value="${escapeHtml(draft.caption)}" placeholder="Kurze Beschreibung">
+        </div>`;
+    }
+
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h2>${existing ? "Bearbeiten" : "Neu"}: ${typeLabel}</h2>
+          <button class="close-btn" id="closeModal">✕</button>
+        </div>
+        <div class="field"><label>Titel</label>
+          <input type="text" id="f-title" value="${escapeHtml(draft.title)}" placeholder="Titel der Idee">
+        </div>
+        ${bodyFieldHtml}
+        <div class="field"><label>Tags (mit Komma trennen)</label>
+          <input type="text" id="f-tags" value="${escapeHtml((draft.tags || []).join(", "))}" placeholder="z. B. produkt, ux, sprint3">
+        </div>
+        <div class="modal-footer">
+          <div>${existing ? `<button class="btn btn-danger" id="deleteBtn">Löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveBtn">Speichern</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // checklist rows
+    function renderChecklistRows() {
+      const wrap = overlay.querySelector("#checklistItems");
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      (draft.items || []).forEach((row) => {
+        const r = document.createElement("div");
+        r.className = "checklist-row";
+        r.innerHTML = `
+          <input type="checkbox" ${row.done ? "checked" : ""}>
+          <input type="text" value="${escapeHtml(row.text)}" placeholder="Aufgabe...">
+          <button type="button" class="del" title="Entfernen">✕</button>`;
+        const [cb, txt, del] = r.children;
+        cb.onchange = () => { row.done = cb.checked; };
+        txt.oninput = () => { row.text = txt.value; };
+        del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
+        wrap.appendChild(r);
+      });
+    }
+    if (type === "checklist") {
+      renderChecklistRows();
+      overlay.querySelector("#addChecklistRow").onclick = () => {
+        draft.items.push({ id: uid(), text: "", done: false });
+        renderChecklistRows();
+        const rows = overlay.querySelectorAll(".checklist-row input[type=text]");
+        if (rows.length) rows[rows.length - 1].focus();
+      };
+    }
+
+    // image upload
+    if (type === "image") {
+      const dz = overlay.querySelector("#dropzone");
+      const fileInput = overlay.querySelector("#fileInput");
+      const preview = overlay.querySelector("#imgPreview");
+      const handleFile = (file) => {
+        if (!file || !file.type.startsWith("image/")) return;
+        if (file.size > 4 * 1024 * 1024) { showToast("Bild ist größer als 4 MB — bitte kleineres Bild wählen."); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => { draft.dataUrl = e.target.result; preview.src = draft.dataUrl; preview.style.display = "block"; };
+        reader.readAsDataURL(file);
+      };
+      dz.onclick = () => fileInput.click();
+      fileInput.onchange = () => handleFile(fileInput.files[0]);
+      dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("drag"); };
+      dz.ondragleave = () => dz.classList.remove("drag");
+      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("drag"); handleFile(e.dataTransfer.files[0]); };
+
+      // tabs
+      const uploadPane = overlay.querySelector("#uploadPane");
+      const drawPane = overlay.querySelector("#drawPane");
+      overlay.querySelectorAll(".img-tab").forEach(tab => {
+        tab.onclick = () => {
+          overlay.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          const isDraw = tab.dataset.tab === "draw";
+          uploadPane.style.display = isDraw ? "none" : "block";
+          drawPane.style.display = isDraw ? "block" : "none";
+        };
+      });
+
+      // drawing pad
+      const canvas = overlay.querySelector("#drawCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      const DRAW_COLORS = ["#2B2621", "#C0453B", "#3A5A9B", "#86B35A", "#C9A24B", "#B15CDE", "#FF9270", "#FFFFFF"];
+      const colorsWrap = overlay.querySelector("#drawColors");
+      let currentColor = DRAW_COLORS[0];
+      let erasing = false;
+      DRAW_COLORS.forEach((c, i) => {
+        const sw = document.createElement("button");
+        sw.type = "button";
+        sw.className = "draw-swatch" + (i === 0 ? " active" : "");
+        sw.style.background = c;
+        sw.onclick = () => {
+          currentColor = c; erasing = false;
+          colorsWrap.querySelectorAll(".draw-swatch").forEach(s => s.classList.remove("active"));
+          sw.classList.add("active");
+          overlay.querySelector("#drawEraser").classList.remove("active-tool");
+        };
+        colorsWrap.appendChild(sw);
+      });
+      overlay.querySelector("#drawCustomColor").addEventListener("input", (e) => {
+        currentColor = e.target.value; erasing = false;
+        colorsWrap.querySelectorAll(".draw-swatch").forEach(s => s.classList.remove("active"));
+        overlay.querySelector("#drawEraser").classList.remove("active-tool");
+      });
+      overlay.querySelector("#drawEraser").onclick = (e) => {
+        erasing = !erasing;
+        e.currentTarget.classList.toggle("active-tool", erasing);
+      };
+
+      let undoStack = [];
+      function pushUndo() {
+        undoStack.push(canvas.toDataURL());
+        if (undoStack.length > 20) undoStack.shift();
+      }
+      overlay.querySelector("#drawUndo").onclick = () => {
+        if (!undoStack.length) return;
+        const imgData = undoStack.pop();
+        const img = new Image();
+        img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
+        img.src = imgData;
+      };
+      overlay.querySelector("#drawClear").onclick = () => {
+        pushUndo();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      };
+
+      let drawing = false;
+      function pos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
+      }
+      canvas.addEventListener("pointerdown", (e) => {
+        pushUndo();
+        drawing = true;
+        canvas.setPointerCapture(e.pointerId);
+        const p = pos(e);
+        ctx.beginPath(); ctx.moveTo(p.x, p.y);
+        ctx.lineWidth = parseInt(overlay.querySelector("#drawSize").value, 10);
+        ctx.strokeStyle = erasing ? "#FFFFFF" : currentColor;
+        ctx.lineTo(p.x + 0.1, p.y + 0.1); ctx.stroke();
+      });
+      canvas.addEventListener("pointermove", (e) => {
+        if (!drawing) return;
+        const p = pos(e);
+        ctx.lineTo(p.x, p.y); ctx.stroke();
+      });
+      canvas.addEventListener("pointerup", () => { drawing = false; });
+      canvas.addEventListener("pointerleave", () => { drawing = false; });
+
+      overlay.querySelector("#drawUse").onclick = () => {
+        draft.dataUrl = canvas.toDataURL("image/png");
+        preview.src = draft.dataUrl; preview.style.display = "block";
+        overlay.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
+        overlay.querySelector('.img-tab[data-tab="upload"]').classList.add("active");
+        uploadPane.style.display = "block"; drawPane.style.display = "none";
+        showToast("Zeichnung übernommen.");
+      };
+    }
+
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    if (existing) {
+      overlay.querySelector("#deleteBtn").onclick = () => {
+        if (confirm("Diesen Eintrag wirklich löschen?")) {
+          state.items = state.items.filter(i => i.id !== draft.id);
+          saveState(); close(); render();
+          showToast("Eintrag gelöscht.");
+        }
+      };
+    }
+
+    overlay.querySelector("#saveBtn").onclick = () => {
+      draft.title = overlay.querySelector("#f-title").value.trim() || "Ohne Titel";
+      draft.tags = overlay.querySelector("#f-tags").value.split(",").map(t => t.trim()).filter(Boolean);
+      if (type === "note") draft.body = overlay.querySelector("#f-body").value;
+      if (type === "image") draft.caption = overlay.querySelector("#f-caption").value;
+      draft.updatedAt = Date.now();
+      if (!existing) draft.createdBy = state.activeProfileId || null;
+
+      const idx = state.items.findIndex(i => i.id === draft.id);
+      if (idx >= 0) state.items[idx] = draft; else state.items.push(draft);
+      saveState(); close(); render();
+      showToast(existing ? "Änderungen gespeichert." : "Idee gespeichert.");
+    };
+
+    setTimeout(() => overlay.querySelector("#f-title").focus(), 30);
+  }
+
+  /* ============ MIND-MAP ============ */
+  function renderMindmapView(container) {
+    if (!state.mindmap.nodes.length) {
+      state.mindmap.nodes.push({ id: uid(), x: 980, y: 120, text: "Zentrale Idee", root: true });
+    }
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Mind-Map</h1><p class="view-sub">Doppelklick auf die Fläche = neuer Knoten. Ziehen zum Verschieben.</p></div>`;
+    container.appendChild(header);
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "mindmap-toolbar";
+    toolbar.innerHTML = `
+      <button class="btn btn-sm btn-accent" id="mmAddNode">+ Knoten</button>
+      <button class="btn btn-sm" id="mmConnect">🔗 Auswahl verbinden</button>
+      <button class="btn btn-sm btn-danger" id="mmDeleteNode">Knoten löschen</button>
+      <span class="mindmap-hint">Knoten anklicken zum Auswählen, zwei auswählen &amp; „Verbinden" für eine Linie.</span>
+    `;
+    container.appendChild(toolbar);
+
+    const wrap = document.createElement("div");
+    wrap.className = "mindmap-wrap";
+    wrap.innerHTML = `
+      <div class="mindmap-canvas" id="mmCanvas">
+        <svg class="mindmap-svg" id="mmSvg"></svg>
+      </div>`;
+    container.appendChild(wrap);
+
+    let selected = new Set();
+
+    function drawEdges() {
+      const svg = document.getElementById("mmSvg");
+      svg.innerHTML = "";
+      state.mindmap.edges.forEach(edge => {
+        const a = state.mindmap.nodes.find(n => n.id === edge.from);
+        const b = state.mindmap.nodes.find(n => n.id === edge.to);
+        if (!a || !b) return;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", a.x + 60); line.setAttribute("y1", a.y + 20);
+        line.setAttribute("x2", b.x + 60); line.setAttribute("y2", b.y + 20);
+        svg.appendChild(line);
+      });
+    }
+
+    function renderNodes() {
+      const canvas = document.getElementById("mmCanvas");
+      canvas.querySelectorAll(".mm-node").forEach(n => n.remove());
+      state.mindmap.nodes.forEach(node => {
+        const el = document.createElement("div");
+        el.className = "mm-node" + (node.root ? " root" : "") + (selected.has(node.id) ? " selected" : "");
+        el.style.left = node.x + "px";
+        el.style.top = node.y + "px";
+        el.dataset.id = node.id;
+
+        const textEl = document.createElement("span");
+        textEl.className = "mm-text";
+        textEl.contentEditable = "true";
+        textEl.spellcheck = false;
+        textEl.textContent = node.text;
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "mm-del";
+        delBtn.title = "Knoten löschen";
+        delBtn.textContent = "✕";
+
+        el.appendChild(textEl);
+        el.appendChild(delBtn);
+
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          state.mindmap.nodes = state.mindmap.nodes.filter(n => n.id !== node.id);
+          state.mindmap.edges = state.mindmap.edges.filter(ed => ed.from !== node.id && ed.to !== node.id);
+          selected.delete(node.id);
+          saveState(); drawEdges(); renderNodes();
+        };
+
+        el.addEventListener("click", (e) => {
+          if (e.target === delBtn) return;
+          if (selected.has(node.id)) selected.delete(node.id); else selected.add(node.id);
+          renderNodes();
+        });
+        textEl.addEventListener("blur", () => {
+          node.text = textEl.textContent.trim() || "Ohne Titel";
+          saveState();
+        });
+        textEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); textEl.blur(); } });
+        textEl.addEventListener("pointerdown", (e) => e.stopPropagation());
+
+        // dragging (from anywhere on the node except the editable text / delete button)
+        let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+        el.addEventListener("pointerdown", (e) => {
+          if (e.target === delBtn || e.target === textEl) return;
+          dragging = true; sx = e.clientX; sy = e.clientY; ox = node.x; oy = node.y;
+          el.setPointerCapture(e.pointerId);
+          el.style.cursor = "grabbing";
+        });
+        el.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          node.x = ox + (e.clientX - sx);
+          node.y = oy + (e.clientY - sy);
+          el.style.left = node.x + "px"; el.style.top = node.y + "px";
+          drawEdges();
+        });
+        el.addEventListener("pointerup", () => { if (dragging) { dragging = false; el.style.cursor = "grab"; saveState(); } });
+
+        canvas.appendChild(el);
+      });
+    }
+
+    document.getElementById("mmCanvas").addEventListener("dblclick", (e) => {
+      if (e.target.closest(".mm-node")) return;
+      const rect = document.getElementById("mmCanvas").getBoundingClientRect();
+      const x = e.clientX - rect.left, y = e.clientY - rect.top;
+      state.mindmap.nodes.push({ id: uid(), x, y, text: "Neuer Gedanke" });
+      saveState(); renderNodes(); drawEdges();
+    });
+
+    toolbar.querySelector("#mmAddNode").onclick = () => {
+      state.mindmap.nodes.push({ id: uid(), x: 60 + Math.random() * 200, y: 60 + Math.random() * 200, text: "Neuer Gedanke" });
+      saveState(); renderNodes(); drawEdges();
+    };
+    toolbar.querySelector("#mmConnect").onclick = () => {
+      const ids = [...selected];
+      if (ids.length !== 2) { showToast("Bitte genau zwei Knoten auswählen."); return; }
+      state.mindmap.edges.push({ from: ids[0], to: ids[1] });
+      selected.clear(); saveState(); renderNodes(); drawEdges();
+    };
+    toolbar.querySelector("#mmDeleteNode").onclick = () => {
+      if (!selected.size) { showToast("Keine Knoten ausgewählt."); return; }
+      state.mindmap.nodes = state.mindmap.nodes.filter(n => !selected.has(n.id) || n.root);
+      state.mindmap.edges = state.mindmap.edges.filter(e => !selected.has(e.from) && !selected.has(e.to));
+      selected.clear(); saveState(); renderNodes(); drawEdges();
+    };
+
+    renderNodes();
+    drawEdges();
+  }
+
+  /* ============ AUFGABEN & BELOHNUNGEN ============ */
+  function ledgerAdd(profileId, delta, reason) {
+    const entry = { id: uid(), profileId, delta, reason, at: Date.now() };
+    state.pointsLedger.push(entry);
+    return entry.id;
+  }
+  function ledgerRemove(entryId) {
+    state.pointsLedger = state.pointsLedger.filter(l => l.id !== entryId);
+  }
+
+  function renderTasksView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Aufgaben &amp; Belohnungen</h1><p class="view-sub">Punkte sammeln, Sticker verdienen, Belohnungen einlösen.</p></div>
+      <div style="display:flex;gap:8px;"><button class="btn" id="addRewardBtn">+ Belohnung</button><button class="btn btn-accent" id="addTaskBtn">+ Aufgabe</button></div>`;
+    container.appendChild(header);
+
+    if (!state.profiles.length) {
+      container.innerHTML += `<div class="empty-state"><span class="empty-icon">⭐</span>Legt zuerst ein Profil an (links, das „+"), dann könnt ihr Aufgaben verteilen.</div>`;
+      return;
+    }
+
+    // Points overview
+    const overview = document.createElement("div");
+    overview.className = "grid";
+    overview.style.marginBottom = "22px";
+    state.profiles.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.cursor = "default";
+      card.innerHTML = `
+        <div class="card-top">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar" style="background:${p.color};cursor:default;">${p.emoji || p.name.charAt(0)}</div>
+            <h3 class="card-title" style="margin:0;">${escapeHtml(p.name)}</h3>
+          </div>
+        </div>
+        <div style="font-family:var(--font-display);font-size:26px;">${pointsBalance(p.id)} <span style="font-size:13px;color:var(--text-muted);font-family:var(--font-body);">Punkte</span></div>`;
+      overview.appendChild(card);
+    });
+    container.appendChild(overview);
+
+    // Task list
+    const taskSection = document.createElement("div");
+    taskSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">Aufgaben</h3>`;
+    container.appendChild(taskSection);
+
+    if (!state.tasks.length) {
+      taskSection.innerHTML += `<div class="empty-state" style="padding:30px;"><span class="empty-icon">📋</span>Noch keine Aufgaben — leg direkt eine an.</div>`;
+    } else {
+      const list = document.createElement("div");
+      list.className = "grid";
+      state.tasks.slice().sort((a, b) => a.done - b.done).forEach(t => {
+        const owner = getProfile(t.assignedTo);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        card.innerHTML = `
+          <div class="card-top">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" ${t.done ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--accent);" class="task-check">
+              <h3 class="card-title" style="${t.done ? "text-decoration:line-through;color:var(--text-muted);" : ""}">${escapeHtml(t.title)}</h3>
+            </div>
+            <button class="card-pin del-task" title="Löschen">🗑️</button>
+          </div>
+          <div class="card-tags">
+            ${owner ? `<span class="tag-chip"><span class="mini-avatar" style="background:${owner.color};display:inline-flex;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-size:10px;">${owner.emoji || owner.name.charAt(0)}</span> ${escapeHtml(owner.name)}</span>` : `<span class="tag-chip">Alle</span>`}
+            <span class="tag-chip">⭐ ${t.points} Punkte</span>
+            ${t.recurring ? `<span class="tag-chip">🔁 ${t.recurring === "daily" ? "täglich" : "wöchentlich"}</span>` : ""}
+          </div>`;
+        card.querySelector(".task-check").onchange = (e) => {
+          if (e.target.checked) {
+            t.done = true;
+            t.lastEntryId = ledgerAdd(t.assignedTo || null, t.points, "Aufgabe: " + t.title);
+          } else {
+            t.done = false;
+            if (t.lastEntryId) { ledgerRemove(t.lastEntryId); t.lastEntryId = null; }
+          }
+          saveState(); renderProfileBar(); render();
+        };
+        card.querySelector(".del-task").onclick = () => {
+          if (confirm("Aufgabe wirklich löschen?")) {
+            if (t.lastEntryId) ledgerRemove(t.lastEntryId);
+            state.tasks = state.tasks.filter(x => x.id !== t.id);
+            saveState(); renderProfileBar(); render();
+          }
+        };
+        list.appendChild(card);
+      });
+      taskSection.appendChild(list);
+    }
+
+    // Rewards catalog
+    const rewardSection = document.createElement("div");
+    rewardSection.style.marginTop = "28px";
+    rewardSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">Belohnungen</h3>`;
+    container.appendChild(rewardSection);
+
+    if (!state.rewards.length) {
+      rewardSection.innerHTML += `<div class="empty-state" style="padding:30px;"><span class="empty-icon">🎁</span>Noch keine Belohnungen angelegt.</div>`;
+    } else {
+      const rlist = document.createElement("div");
+      rlist.className = "grid";
+      state.rewards.forEach(r => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        const profileOptions = state.profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${pointsBalance(p.id)} P.)</option>`).join("");
+        card.innerHTML = `
+          <div class="card-top">
+            <h3 class="card-title">🎁 ${escapeHtml(r.title)}</h3>
+            <button class="card-pin del-reward" title="Löschen">🗑️</button>
+          </div>
+          <div class="card-tags"><span class="tag-chip">⭐ ${r.cost} Punkte</span></div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <select class="redeem-profile" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);">${profileOptions}</select>
+            <button class="btn btn-sm btn-accent redeem-btn">Einlösen</button>
+          </div>`;
+        card.querySelector(".del-reward").onclick = () => {
+          if (confirm("Belohnung wirklich löschen?")) { state.rewards = state.rewards.filter(x => x.id !== r.id); saveState(); render(); }
+        };
+        card.querySelector(".redeem-btn").onclick = () => {
+          const pid = card.querySelector(".redeem-profile").value;
+          const p = getProfile(pid);
+          const bal = pointsBalance(pid);
+          if (bal < r.cost && !confirm(`${p.name} hat nur ${bal} Punkte, die Belohnung kostet ${r.cost}. Trotzdem einlösen?`)) return;
+          ledgerAdd(pid, -r.cost, "Belohnung: " + r.title);
+          saveState(); renderProfileBar(); render();
+          showToast(`${p.name} hat „${r.title}" eingelöst!`);
+        };
+        rlist.appendChild(card);
+      });
+      rewardSection.appendChild(rlist);
+    }
+
+    header.querySelector("#addTaskBtn").onclick = () => openTaskEditor();
+    header.querySelector("#addRewardBtn").onclick = () => openRewardEditor();
+  }
+
+  function openTaskEditor() {
+    const draft = { id: uid(), title: "", assignedTo: state.profiles[0] ? state.profiles[0].id : "", points: 5, recurring: "", done: false, lastEntryId: null };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header"><h2>Neue Aufgabe</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Titel</label><input type="text" id="t-title" placeholder="z. B. Zimmer aufräumen"></div>
+        <div class="field"><label>Zugewiesen an</label>
+          <select id="t-assignee">${state.profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>Punkte</label><input type="text" id="t-points" value="5" inputmode="numeric"></div>
+        <div class="field"><label>Wiederholung</label>
+          <select id="t-recurring">
+            <option value="">Einmalig</option>
+            <option value="daily">Täglich</option>
+            <option value="weekly">Wöchentlich</option>
+          </select>
+        </div>
+        <div class="modal-footer"><div></div><div class="modal-footer-right">
+          <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+          <button class="btn btn-accent" id="saveBtn">Speichern</button>
+        </div></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#saveBtn").onclick = () => {
+      draft.title = overlay.querySelector("#t-title").value.trim() || "Ohne Titel";
+      draft.assignedTo = overlay.querySelector("#t-assignee").value || null;
+      draft.points = Math.max(0, parseInt(overlay.querySelector("#t-points").value, 10) || 0);
+      draft.recurring = overlay.querySelector("#t-recurring").value;
+      state.tasks.push(draft);
+      saveState(); close(); render();
+      showToast("Aufgabe angelegt.");
+    };
+    setTimeout(() => overlay.querySelector("#t-title").focus(), 30);
+  }
+
+  function openRewardEditor() {
+    const draft = { id: uid(), title: "", cost: 10 };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header"><h2>Neue Belohnung</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Titel</label><input type="text" id="r-title" placeholder="z. B. Filmabend aussuchen"></div>
+        <div class="field"><label>Kosten in Punkten</label><input type="text" id="r-cost" value="10" inputmode="numeric"></div>
+        <div class="modal-footer"><div></div><div class="modal-footer-right">
+          <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+          <button class="btn btn-accent" id="saveBtn">Speichern</button>
+        </div></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#saveBtn").onclick = () => {
+      draft.title = overlay.querySelector("#r-title").value.trim() || "Belohnung";
+      draft.cost = Math.max(0, parseInt(overlay.querySelector("#r-cost").value, 10) || 0);
+      state.rewards.push(draft);
+      saveState(); close(); render();
+      showToast("Belohnung angelegt.");
+    };
+    setTimeout(() => overlay.querySelector("#r-title").focus(), 30);
+  }
+
+  /* ============ FAMILIENKALENDER ============ */
+  let calendarCursor = new Date();
+
+  function renderCalendarView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie.</p></div>`;
+    container.appendChild(header);
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "mindmap-toolbar";
+    const monthLabel = calendarCursor.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+    toolbar.innerHTML = `
+      <button class="btn btn-sm" id="calPrev">‹</button>
+      <span style="font-family:var(--font-display);font-size:17px;min-width:170px;text-align:center;">${monthLabel}</span>
+      <button class="btn btn-sm" id="calNext">›</button>
+      <button class="btn btn-sm" id="calToday">Heute</button>
+      <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
+    `;
+    container.appendChild(toolbar);
+
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(7, 1fr)";
+    grid.style.gap = "6px";
+
+    ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach(d => {
+      const h = document.createElement("div");
+      h.style.cssText = "text-align:center;font-size:11.5px;color:var(--text-muted);font-weight:600;padding:4px;";
+      h.textContent = d;
+      grid.appendChild(h);
+    });
+
+    const year = calendarCursor.getFullYear(), month = calendarCursor.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement("div"));
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const cell = document.createElement("div");
+      cell.style.cssText = `min-height:78px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:var(--surface);cursor:pointer;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
+      const dayEvents = state.events.filter(ev => ev.date === dateStr);
+      cell.innerHTML = `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${day}</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          ${dayEvents.slice(0, 3).map(ev => {
+            const p = getProfile((ev.profileIds || [])[0]);
+            const color = p ? p.color : "var(--accent)";
+            return `<div class="cal-event" data-id="${ev.id}" style="font-size:10.5px;background:${color};color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ev.title)}</div>`;
+          }).join("")}
+          ${dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - 3} mehr</div>` : ""}
+        </div>`;
+      cell.onclick = (e) => {
+        const evChip = e.target.closest(".cal-event");
+        if (evChip) { openEventEditor(state.events.find(ev => ev.id === evChip.dataset.id)); return; }
+        openEventEditor(null, dateStr);
+      };
+      grid.appendChild(cell);
+    }
+    container.appendChild(grid);
+
+    toolbar.querySelector("#calPrev").onclick = () => { calendarCursor = new Date(year, month - 1, 1); render(); };
+    toolbar.querySelector("#calNext").onclick = () => { calendarCursor = new Date(year, month + 1, 1); render(); };
+    toolbar.querySelector("#calToday").onclick = () => { calendarCursor = new Date(); render(); };
+    toolbar.querySelector("#calAdd").onclick = () => openEventEditor(null, todayStr);
+  }
+
+  function openEventEditor(existing, defaultDate) {
+    const draft = existing ? { ...existing, profileIds: [...(existing.profileIds || [])] } : {
+      id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: []
+    };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:440px;">
+        <div class="modal-header"><h2>${existing ? "Termin bearbeiten" : "Neuer Termin"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Titel</label><input type="text" id="e-title" value="${escapeHtml(draft.title)}" placeholder="z. B. Zahnarzt Mia"></div>
+        <div class="field"><label>Datum</label><input type="text" id="e-date" value="${draft.date}" placeholder="JJJJ-MM-TT"></div>
+        <div class="field"><label>Uhrzeit (optional)</label><input type="text" id="e-time" value="${escapeHtml(draft.time || "")}" placeholder="z. B. 15:30"></div>
+        <div class="field"><label>Wer ist dabei?</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${state.profiles.map(p => `
+              <label class="profile-chip" style="cursor:pointer;">
+                <input type="checkbox" class="e-profile" value="${p.id}" ${draft.profileIds.includes(p.id) ? "checked" : ""} style="accent-color:${p.color};">
+                <span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span> ${escapeHtml(p.name)}
+              </label>`).join("")}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div>${existing ? `<button class="btn btn-danger" id="deleteEventBtn">Löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveBtn">Speichern</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    if (existing) {
+      overlay.querySelector("#deleteEventBtn").onclick = () => {
+        if (confirm("Termin wirklich löschen?")) { state.events = state.events.filter(ev => ev.id !== existing.id); saveState(); close(); render(); }
+      };
+    }
+    overlay.querySelector("#saveBtn").onclick = () => {
+      draft.title = overlay.querySelector("#e-title").value.trim() || "Termin";
+      draft.date = overlay.querySelector("#e-date").value.trim() || draft.date;
+      draft.time = overlay.querySelector("#e-time").value.trim();
+      draft.profileIds = [...overlay.querySelectorAll(".e-profile:checked")].map(cb => cb.value);
+      const idx = state.events.findIndex(ev => ev.id === draft.id);
+      if (idx >= 0) state.events[idx] = draft; else state.events.push(draft);
+      saveState(); close(); render();
+      showToast(existing ? "Termin aktualisiert." : "Termin angelegt.");
+    };
+    setTimeout(() => overlay.querySelector("#e-title").focus(), 30);
+  }
+
+  /* ============ EINKAUFSLISTE ============ */
+  function renderShoppingView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie.</p></div>`;
+    container.appendChild(header);
+
+    const addRow = document.createElement("div");
+    addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;";
+    addRow.innerHTML = `<input type="text" id="shopInput" placeholder="Was fehlt? (Enter zum Hinzufügen)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);">
+      <button class="btn btn-accent" id="shopAddBtn">+ Hinzufügen</button>`;
+    container.appendChild(addRow);
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.cursor = "default";
+
+    if (!state.shoppingList.length) {
+      card.innerHTML = `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🛒</span>Die Liste ist leer.</div>`;
+    } else {
+      state.shoppingList.slice().sort((a, b) => a.done - b.done).forEach(item => {
+        const row = document.createElement("div");
+        row.className = "checklist-view-row" + (item.done ? " done" : "");
+        row.innerHTML = `<input type="checkbox" ${item.done ? "checked" : ""}><label style="flex:1;">${escapeHtml(item.text)}</label><button class="card-pin" title="Entfernen">✕</button>`;
+        row.querySelector("input").onchange = (e) => { item.done = e.target.checked; saveState(); render(); };
+        row.querySelector("button").onclick = () => { state.shoppingList = state.shoppingList.filter(x => x.id !== item.id); saveState(); render(); };
+        card.appendChild(row);
+      });
+    }
+    container.appendChild(card);
+
+    if (state.shoppingList.some(i => i.done)) {
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "btn btn-sm";
+      clearBtn.style.marginTop = "12px";
+      clearBtn.textContent = "Erledigte entfernen";
+      clearBtn.onclick = () => { state.shoppingList = state.shoppingList.filter(i => !i.done); saveState(); render(); };
+      container.appendChild(clearBtn);
+    }
+
+    function addItem() {
+      const input = document.getElementById("shopInput");
+      const text = input.value.trim();
+      if (!text) return;
+      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId });
+      saveState(); render();
+      setTimeout(() => document.getElementById("shopInput").focus(), 30);
+    }
+    document.getElementById("shopAddBtn").onclick = addItem;
+    document.getElementById("shopInput").addEventListener("keydown", (e) => { if (e.key === "Enter") addItem(); });
+    setTimeout(() => { const el = document.getElementById("shopInput"); if (el) el.focus(); }, 20);
+  }
+
+  /* ============ EXPORT ============ */
+  function scopedItems(scope) {
+    if (scope === "all") return state.items;
+    return state.items.filter(i => i.type === scope);
+  }
+
+  function sanitizedStateSnapshot(base) {
+    const snap = JSON.parse(JSON.stringify(base || state));
+    if (snap.connectors && snap.connectors.network) snap.connectors.network.authHeader = "";
+    return snap;
+  }
+
+  function renderExportView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Export</h1><p class="view-sub">Nimm dein Ideenbuch mit — als PDF, Markdown oder JSON-Backup.</p></div>`;
+    container.appendChild(header);
+
+    const scopeOptions = [
+      { id: "all", label: "Alles" },
+      { id: "note", label: "Nur Notizen" },
+      { id: "checklist", label: "Nur Checklisten" },
+      { id: "image", label: "Nur Bilder" },
+    ];
+    const scopeRow = document.createElement("div");
+    scopeRow.className = "scope-row";
+    scopeRow.innerHTML = scopeOptions.map(o =>
+      `<button class="scope-chip ${exportScope === o.id ? "active" : ""}" data-scope="${o.id}">${o.label}</button>`
+    ).join("");
+    container.appendChild(scopeRow);
+    scopeRow.querySelectorAll(".scope-chip").forEach(chip => {
+      chip.onclick = () => { exportScope = chip.dataset.scope; render(); };
+    });
+
+    const grid = document.createElement("div");
+    grid.className = "export-grid";
+    grid.innerHTML = `
+      <div class="export-card">
+        <h3>📄 PDF</h3>
+        <p>Sauber formatiertes Dokument zum Ausdrucken oder Teilen.</p>
+        <button class="btn btn-accent" id="exportPdfBtn">Als PDF exportieren</button>
+      </div>
+      <div class="export-card">
+        <h3>✎ Markdown</h3>
+        <p>Reiner Text mit Formatierung — für Notion, Obsidian &amp; Co.</p>
+        <button class="btn btn-accent" id="exportMdBtn">Als Markdown exportieren</button>
+      </div>
+      <div class="export-card">
+        <h3>{ } JSON</h3>
+        <p>Vollständiges Backup inkl. Mind-Map — zum Re-Import.</p>
+        <button class="btn btn-accent" id="exportJsonBtn">Als JSON exportieren</button>
+      </div>
+    `;
+    container.appendChild(grid);
+
+    document.getElementById("exportPdfBtn").onclick = exportPdf;
+    document.getElementById("exportMdBtn").onclick = exportMarkdown;
+    document.getElementById("exportJsonBtn").onclick = exportJson;
+  }
+
+  function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`${filename} wird heruntergeladen.`);
+  }
+
+  function exportJson() {
+    const data = exportScope === "all" ? sanitizedStateSnapshot() : { ...sanitizedStateSnapshot(), items: scopedItems(exportScope) };
+    downloadBlob(JSON.stringify(data, null, 2), `ideenbuch-${exportScope}-${Date.now()}.json`, "application/json");
+  }
+
+  function exportMarkdown() {
+    const items = scopedItems(exportScope).sort((a, b) => b.updatedAt - a.updatedAt);
+    let md = `# Ideenbuch — Export\n\n_Erstellt am ${fmtDate(Date.now())}_\n\n`;
+    const groups = { note: "## 📝 Notizen\n", checklist: "## ☑️ Checklisten\n", image: "## 🖼️ Bilder\n" };
+    ["note", "checklist", "image"].forEach(type => {
+      const group = items.filter(i => i.type === type);
+      if (!group.length) return;
+      md += "\n" + groups[type] + "\n";
+      group.forEach(it => {
+        md += `### ${it.title}\n`;
+        if (it.tags && it.tags.length) md += it.tags.map(t => `\`#${t}\``).join(" ") + "\n\n";
+        if (type === "note") md += `${it.body || "_(leer)_"}\n\n`;
+        if (type === "checklist") {
+          (it.items || []).forEach(row => { md += `- [${row.done ? "x" : " "}] ${row.text}\n`; });
+          md += "\n";
+        }
+        if (type === "image") md += `${it.caption ? it.caption + "\n\n" : ""}_(Bild eingebettet im JSON- oder PDF-Export)_\n\n`;
+      });
+    });
+    if (exportScope === "all" && state.mindmap.nodes.length) {
+      md += "\n## 🕸️ Mind-Map\n\n";
+      state.mindmap.nodes.forEach(n => { md += `- ${n.root ? "**" + n.text + "**" : n.text}\n`; });
+    }
+    downloadBlob(md, `ideenbuch-${exportScope}-${Date.now()}.md`, "text/markdown");
+  }
+
+  function exportPdf() {
+    if (!window.jspdf) { showToast("PDF-Bibliothek konnte nicht geladen werden (keine Internetverbindung?)."); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    let y = margin;
+
+    function ensureSpace(lines) {
+      if (y + lines * 14 > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
+    }
+    function heading(text, size = 16) {
+      ensureSpace(3);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(size);
+      doc.text(text, margin, y); y += size * 1.1;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11);
+    }
+    function paragraph(text) {
+      const lines = doc.splitTextToSize(text || "", pageW - margin * 2);
+      lines.forEach(line => { ensureSpace(1); doc.text(line, margin, y); y += 14; });
+      y += 6;
+    }
+
+    heading("Ideenbuch — Export", 20);
+    doc.setFontSize(10); doc.setTextColor(120);
+    doc.text(`Erstellt am ${fmtDate(Date.now())}`, margin, y); y += 22;
+    doc.setTextColor(20); doc.setFontSize(11);
+
+    const items = scopedItems(exportScope).sort((a, b) => b.updatedAt - a.updatedAt);
+    ["note", "checklist", "image"].forEach(type => {
+      const group = items.filter(i => i.type === type);
+      if (!group.length) return;
+      heading({ note: "Notizen", checklist: "Checklisten", image: "Bilder" }[type], 15);
+      group.forEach(it => {
+        heading(it.title, 12);
+        if (it.tags && it.tags.length) { doc.setTextColor(130); paragraph("Tags: " + it.tags.join(", ")); doc.setTextColor(20); }
+        if (type === "note") paragraph(it.body || "(leer)");
+        if (type === "checklist") (it.items || []).forEach(row => paragraph(`${row.done ? "[x]" : "[ ]"} ${row.text}`));
+        if (type === "image") {
+          if (it.caption) paragraph(it.caption);
+          if (it.dataUrl) {
+            try {
+              ensureSpace(10);
+              const fmtMatch = /^data:image\/(png|jpe?g|webp)/i.exec(it.dataUrl);
+              const fmt = fmtMatch ? fmtMatch[1].toUpperCase().replace("JPG", "JPEG") : "PNG";
+              doc.addImage(it.dataUrl, fmt === "WEBP" ? "PNG" : fmt, margin, y, 200, 140);
+              y += 150;
+            } catch (e) { paragraph("(Bild konnte nicht eingebettet werden)"); }
+          }
+        }
+        y += 4;
+      });
+    });
+
+    if (exportScope === "all" && state.mindmap.nodes.length) {
+      heading("Mind-Map", 15);
+      state.mindmap.nodes.forEach(n => paragraph((n.root ? "★ " : "– ") + n.text));
+    }
+
+    doc.save(`ideenbuch-${exportScope}-${Date.now()}.pdf`);
+    showToast("PDF wird heruntergeladen.");
+  }
+
+  /* ============ SETTINGS ============ */
+  function applyTheme(themeId) {
+    document.body.className = "theme-" + themeId;
+    state.theme = themeId;
+  }
+
+  function renderSettingsView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Einstellungen</h1><p class="view-sub">Design, Datenquellen &amp; Sicherung.</p></div>`;
+    container.appendChild(header);
+
+    // --- Theme shelf ---
+    const themeSection = document.createElement("div");
+    themeSection.className = "settings-section";
+    themeSection.innerHTML = `<h3>Design — wähle dein Cover</h3><p class="hint">10 Themes, jederzeit wechselbar. Deine Daten bleiben unverändert.</p>
+      <div class="theme-shelf" id="themeShelf"></div>`;
+    container.appendChild(themeSection);
+
+    const shelf = themeSection.querySelector("#themeShelf");
+    THEMES.forEach(t => {
+      const cover = document.createElement("div");
+      cover.className = "theme-cover" + (state.theme === t.id ? " active" : "");
+      cover.style.background = t.dots[2];
+      cover.style.color = getReadableTextColor(t.dots[2]);
+      cover.innerHTML = `
+        <div class="spine"></div>
+        <div>
+          <div class="t-name">${t.name}</div>
+          <div class="t-sub">${t.sub}</div>
+        </div>
+        <div class="t-dots">
+          <span style="background:${t.dots[0]}"></span>
+          <span style="background:${t.dots[1]}"></span>
+        </div>`;
+      cover.onclick = () => {
+        applyTheme(t.id); saveState();
+        shelf.querySelectorAll(".theme-cover").forEach(c => c.classList.remove("active"));
+        cover.classList.add("active");
+        showToast(`Theme „${t.name}" aktiviert.`);
+      };
+      shelf.appendChild(cover);
+    });
+
+    // --- Connectors ---
+    const connSection = document.createElement("div");
+    connSection.className = "settings-section";
+    connSection.innerHTML = `<h3>Datenquellen &amp; Synchronisierung</h3><p class="hint">Zugangsdaten bleiben ausschließlich lokal auf diesem Gerät gespeichert und werden nur an die von dir eingetragene Adresse gesendet — an keinen anderen Ort.</p>`;
+    container.appendChild(connSection);
+
+    const net = state.connectors.network;
+    connSection.innerHTML += `
+      <div class="connector-card">
+        <div class="connector-head"><h4>🌐 Netzwerk-Synchronisierung</h4><span class="badge-soon" id="netStatusBadge">${net.autoSync ? "Auto-Sync aktiv" : "manuell"}</span></div>
+        <p style="font-size:12.5px;color:var(--text-muted);margin:-4px 0 12px;">
+          Funktioniert mit jeder HTTP(S)-Adresse, die GET (herunterladen) und PUT/POST (hochladen) beherrscht —
+          z. B. WebDAV (Nextcloud, ownCloud, viele NAS wie Synology/QNAP), ein eigenes kleines Skript oder ein Objektspeicher mit signierter URL.
+          Der Server muss CORS-Anfragen von dieser Seite erlauben. Klassisches FTP kann der Browser aus Sicherheitsgründen nicht direkt ansprechen —
+          dafür bräuchte es eine kleine Server-Komponente dazwischen (siehe SharePoint/FTP unten).
+        </p>
+        <div class="connector-fields">
+          <input type="text" placeholder="Server-Adresse, z. B. https://mein-nas.local/webdav/ideenbuch.json" value="${escapeHtml(net.url)}" id="netUrl" style="grid-column: 1 / -1;">
+          <input type="text" placeholder="Autorisierung (optional), z. B. Bearer eyJ… oder Basic dXNlcjpwYXNz" value="${escapeHtml(net.authHeader)}" id="netAuth" style="grid-column: 1 / -1;">
+          <select id="netMethod">
+            <option value="PUT" ${net.method === "PUT" ? "selected" : ""}>Hochladen per PUT</option>
+            <option value="POST" ${net.method === "POST" ? "selected" : ""}>Hochladen per POST</option>
+          </select>
+          <select id="netInterval">
+            ${[1, 5, 15, 30, 60].map(m => `<option value="${m}" ${net.intervalMinutes === m ? "selected" : ""}>alle ${m} Min. synchronisieren</option>`).join("")}
+          </select>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;">
+          <input type="checkbox" id="netAutoSync" ${net.autoSync ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+          Automatisch synchronisieren (lädt bei Änderungen hoch, holt beim Start das Neueste ab)
+        </label>
+        <div class="backup-row">
+          <button class="btn btn-sm" id="netTestBtn">Verbindung testen</button>
+          <button class="btn btn-sm btn-accent" id="netPushBtn">⇧ Jetzt hochladen</button>
+          <button class="btn btn-sm" id="netPullBtn">⇩ Jetzt herunterladen</button>
+        </div>
+        <p style="font-size:11.5px;color:var(--text-muted);margin:10px 0 0;" id="netLastSync"></p>
+      </div>
+      <div class="connector-card">
+        <div class="connector-head"><h4>📁 SharePoint</h4><span class="badge-soon">geplant</span></div>
+        <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 10px;">Braucht eine Microsoft-Anmeldung (OAuth) — kommt als eigener Baustein.</p>
+        <div class="connector-fields">
+          <input type="text" placeholder="Site-URL (z. B. https://firma.sharepoint.com/sites/team)" value="${escapeHtml(state.connectors.sharepoint.siteUrl)}" id="spSite" disabled>
+          <input type="text" placeholder="Dokumentbibliothek" value="${escapeHtml(state.connectors.sharepoint.library)}" id="spLib" disabled>
+        </div>
+        <button class="btn btn-sm" disabled>Verbinden (geplant)</button>
+      </div>
+      <div class="connector-card">
+        <div class="connector-head"><h4>🗂️ FTP / SFTP</h4><span class="badge-soon">geplant</span></div>
+        <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 10px;">Braucht einen kleinen Server-Proxy, da Browser kein FTP sprechen — kommt als eigener Baustein.</p>
+        <div class="connector-fields">
+          <input type="text" placeholder="Host" value="${escapeHtml(state.connectors.ftp.host)}" id="ftpHost" disabled>
+          <input type="text" placeholder="Port" value="${escapeHtml(state.connectors.ftp.port)}" id="ftpPort" disabled>
+          <input type="text" placeholder="Benutzer" value="${escapeHtml(state.connectors.ftp.user)}" id="ftpUser" disabled>
+          <input type="text" placeholder="Zielpfad" value="${escapeHtml(state.connectors.ftp.path)}" id="ftpPath" disabled>
+        </div>
+        <button class="btn btn-sm" disabled>Verbinden (geplant)</button>
+      </div>`;
+
+    wireNetworkSyncControls(connSection);
+
+    // --- Backup / local import-export ---
+    const backupSection = document.createElement("div");
+    backupSection.className = "settings-section";
+    backupSection.innerHTML = `
+      <h3>Sicherung</h3>
+      <p class="hint">Funktioniert schon jetzt lokal — unabhängig von SharePoint/FTP.</p>
+      <div class="backup-row">
+        <button class="btn" id="backupExportBtn">⇩ Komplettes Backup (JSON) herunterladen</button>
+        <button class="btn" id="backupImportBtn">⇧ Backup importieren</button>
+        <input type="file" id="backupFileInput" accept=".json" style="display:none">
+        <button class="btn btn-danger" id="resetBtn">Alle Daten löschen</button>
+      </div>
+    `;
+    container.appendChild(backupSection);
+
+    backupSection.querySelector("#backupExportBtn").onclick = () => {
+      exportScope = "all"; exportJson();
+    };
+    const fileInput = backupSection.querySelector("#backupFileInput");
+    backupSection.querySelector("#backupImportBtn").onclick = () => fileInput.click();
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported || !Array.isArray(imported.items)) throw new Error("Ungültiges Format");
+          if (confirm("Import überschreibt den aktuellen Stand. Fortfahren?")) {
+            state = Object.assign(loadState(), imported);
+            saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
+            startAutoSync();
+            showToast("Backup importiert.");
+          }
+        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige Ideenbuch-JSON-Datei?"); }
+      };
+      reader.readAsText(file);
+    };
+    backupSection.querySelector("#resetBtn").onclick = () => {
+      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
+        state = {
+          theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
+          profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [],
+          connectors: state.connectors
+        };
+        stopAutoSync();
+        saveState(); renderProfileBar(); render(); showToast("Alle Daten wurden gelöscht.");
+      }
+    };
+  }
+
+  function getReadableTextColor(hex) {
+    const c = hex.replace("#", "");
+    const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? "#1a1a1a" : "#f5f5f5";
+  }
+
+  /* ============ NETZWERK-SYNCHRONISIERUNG ============ */
+  let autoSyncTimer = null;
+
+  function buildSyncHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    const auth = (state.connectors.network.authHeader || "").trim();
+    if (auth) headers["Authorization"] = auth;
+    return headers;
+  }
+
+  function setLastSyncNote(text) {
+    const el = document.getElementById("netLastSync");
+    if (el) el.textContent = text;
+  }
+
+  async function pushToNetwork(silent) {
+    const net = state.connectors.network;
+    if (!net.url) { if (!silent) showToast("Bitte zuerst eine Server-Adresse eintragen."); return false; }
+    try {
+      const res = await fetch(net.url, {
+        method: net.method || "PUT",
+        headers: buildSyncHeaders(),
+        body: JSON.stringify(sanitizedStateSnapshot())
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      net.lastSyncAt = Date.now();
+      saveState({ skipTouch: true });
+      setLastSyncNote("Zuletzt hochgeladen: " + fmtDate(net.lastSyncAt));
+      if (!silent) showToast("Ideenbuch wurde hochgeladen.");
+      return true;
+    } catch (err) {
+      if (!silent) showToast("Hochladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
+      console.warn("Netzwerk-Sync (Upload) fehlgeschlagen:", err);
+      return false;
+    }
+  }
+
+  async function pullFromNetwork(silent, opts) {
+    const net = state.connectors.network;
+    if (!net.url) { if (!silent) showToast("Bitte zuerst eine Server-Adresse eintragen."); return false; }
+    try {
+      const res = await fetch(net.url, { method: "GET", headers: buildSyncHeaders() });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const remote = await res.json();
+      if (!remote || !Array.isArray(remote.items)) throw new Error("Ungültiges Format");
+
+      const remoteModified = (remote.meta && remote.meta.lastModified) || 0;
+      const localModified = (state.meta && state.meta.lastModified) || 0;
+      if (opts && opts.onlyIfNewer && remoteModified <= localModified) {
+        setLastSyncNote("Lokaler Stand ist bereits aktuell (Stand Server: " + fmtDate(remoteModified) + ").");
+        return false;
+      }
+      if (!silent && !(opts && opts.skipConfirm)) {
+        if (!confirm("Der Server-Stand ersetzt deine lokalen Daten auf diesem Gerät. Fortfahren?")) return false;
+      }
+      const keepNetworkConfig = state.connectors.network;
+      state = { ...defaultState(), ...remote,
+        connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig } };
+      state.connectors.network.lastSyncAt = Date.now();
+      saveState({ skipTouch: true });
+      applyTheme(state.theme || "papier");
+      renderProfileBar();
+      render();
+      setLastSyncNote("Zuletzt heruntergeladen: " + fmtDate(state.connectors.network.lastSyncAt));
+      if (!silent) showToast("Ideenbuch wurde vom Server übernommen.");
+      return true;
+    } catch (err) {
+      if (!silent) showToast("Herunterladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
+      console.warn("Netzwerk-Sync (Download) fehlgeschlagen:", err);
+      return false;
+    }
+  }
+
+  async function testNetworkConnection() {
+    const net = state.connectors.network;
+    if (!net.url) { showToast("Bitte zuerst eine Server-Adresse eintragen."); return; }
+    showToast("Teste Verbindung…");
+    try {
+      const res = await fetch(net.url, { method: "GET", headers: buildSyncHeaders() });
+      showToast(res.ok ? `Verbindung erfolgreich (HTTP ${res.status}).` : `Server antwortet mit HTTP ${res.status}.`);
+    } catch (err) {
+      showToast("Verbindung fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
+    }
+  }
+
+  function stopAutoSync() {
+    if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer = null; }
+  }
+
+  function startAutoSync() {
+    stopAutoSync();
+    const net = state.connectors.network;
+    if (!net.autoSync || !net.url) return;
+    const ms = Math.max(1, net.intervalMinutes || 5) * 60 * 1000;
+    autoSyncTimer = setInterval(async () => {
+      const pulled = await pullFromNetwork(true, { onlyIfNewer: true, skipConfirm: true });
+      if (!pulled) await pushToNetwork(true);
+    }, ms);
+  }
+
+  function wireNetworkSyncControls(scope) {
+    const net = state.connectors.network;
+    const urlEl = scope.querySelector("#netUrl");
+    const authEl = scope.querySelector("#netAuth");
+    const methodEl = scope.querySelector("#netMethod");
+    const intervalEl = scope.querySelector("#netInterval");
+    const autoEl = scope.querySelector("#netAutoSync");
+    const badge = scope.querySelector("#netStatusBadge");
+
+    if (net.lastSyncAt) setLastSyncNote("Zuletzt synchronisiert: " + fmtDate(net.lastSyncAt));
+
+    function persistConfig() {
+      net.url = urlEl.value.trim();
+      net.authHeader = authEl.value.trim();
+      net.method = methodEl.value;
+      net.intervalMinutes = parseInt(intervalEl.value, 10) || 5;
+      saveState({ skipTouch: true });
+    }
+
+    [urlEl, authEl].forEach(el => el.addEventListener("change", persistConfig));
+    methodEl.addEventListener("change", persistConfig);
+    intervalEl.addEventListener("change", () => { persistConfig(); startAutoSync(); });
+    autoEl.addEventListener("change", () => {
+      net.autoSync = autoEl.checked;
+      persistConfig();
+      badge.textContent = net.autoSync ? "Auto-Sync aktiv" : "manuell";
+      if (net.autoSync) {
+        if (!net.url) { showToast("Bitte zuerst eine Server-Adresse eintragen."); autoEl.checked = false; net.autoSync = false; persistConfig(); return; }
+        startAutoSync();
+        showToast("Automatische Synchronisierung aktiviert.");
+      } else {
+        stopAutoSync();
+      }
+    });
+
+    scope.querySelector("#netTestBtn").onclick = () => { persistConfig(); testNetworkConnection(); };
+    scope.querySelector("#netPushBtn").onclick = () => { persistConfig(); pushToNetwork(false); };
+    scope.querySelector("#netPullBtn").onclick = () => { persistConfig(); pullFromNetwork(false); };
+  }
+
+  /* ============ QUICK-ADD MENU ============ */
+  function openQuickAddMenu(anchorBtn) {
+    document.querySelectorAll(".quick-add-menu").forEach(m => m.remove());
+    const menu = document.createElement("div");
+    menu.className = "quick-add-menu";
+    Object.assign(menu.style, {
+      position: "absolute", background: "var(--surface)", border: "1px solid var(--border)",
+      borderRadius: "var(--radius)", boxShadow: "var(--shadow)", padding: "6px", zIndex: 70,
+      display: "flex", flexDirection: "column", minWidth: "170px"
+    });
+    const options = [
+      { type: "note", label: "📝 Notiz" },
+      { type: "checklist", label: "☑️ Checkliste" },
+      { type: "image", label: "🖼️ Bild" },
+    ];
+    options.forEach(o => {
+      const b = document.createElement("button");
+      b.className = "nav-item";
+      b.style.padding = "8px 10px";
+      b.textContent = o.label;
+      b.onclick = () => { menu.remove(); openEditor(o.type); };
+      menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+    const rect = anchorBtn.getBoundingClientRect();
+    menu.style.top = (rect.bottom + window.scrollY + 6) + "px";
+    menu.style.right = (window.innerWidth - rect.right) + "px";
+    setTimeout(() => {
+      document.addEventListener("click", function handler(e) {
+        if (!menu.contains(e.target) && e.target !== anchorBtn) { menu.remove(); document.removeEventListener("click", handler); }
+      });
+    }, 10);
+  }
+
+  /* ============ INIT ============ */
+  function init() {
+    applyTheme(state.theme || "papier");
+    if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
+    renderProfileBar();
+
+    document.getElementById("hamburger").onclick = () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    };
+    document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
+      btn.onclick = () => setView(btn.dataset.view);
+    });
+    document.getElementById("newItemBtn").onclick = (e) => openQuickAddMenu(e.currentTarget);
+
+    let searchTimer;
+    document.getElementById("searchInput").oninput = (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { searchQuery = e.target.value.trim(); render(); }, 150);
+    };
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+        e.preventDefault(); document.getElementById("searchInput").focus();
+      }
+    });
+
+    render();
+    registerServiceWorker();
+    setupInstallPrompt();
+    if (state.connectors.network.autoSync && state.connectors.network.url) {
+      pullFromNetwork(true, { onlyIfNewer: true, skipConfirm: true }).then(() => startAutoSync());
+    }
+  }
+
+  /* ============ PWA: Service Worker & Installierbarkeit ============ */
+  function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) return;
+    // Nur registrieren, wenn die Datei tatsächlich über http(s) ausgeliefert wird
+    // (bei lokalem Öffnen per file:// unterstützen Browser keine Service Worker).
+    if (location.protocol === "file:") return;
+    navigator.serviceWorker.register("./sw.js").catch((err) => {
+      console.warn("Service Worker konnte nicht registriert werden:", err);
+    });
+  }
+
+  function setupInstallPrompt() {
+    let deferredPrompt = null;
+    const btn = document.getElementById("installBtn");
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      btn.style.display = "flex";
+    });
+    btn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") showToast("Ideenbuch wird installiert…");
+      deferredPrompt = null;
+      btn.style.display = "none";
+    });
+    window.addEventListener("appinstalled", () => {
+      btn.style.display = "none";
+      showToast("Ideenbuch wurde installiert.");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+
+</script>
+</body>
+</html>
