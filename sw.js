@@ -1,10 +1,10 @@
-/* Ideenbuch — Service Worker
+/* DApp — Service Worker
    Network-first für die App-Hülle (Updates kommen sofort an, wenn online;
    Offline-Fallback aus dem Cache). Network-first mit Cache-Fallback auch
    für externe Ressourcen (Google Fonts, jsPDF).
 */
 
-const CACHE_VERSION = "ideenbuch-v2";
+const CACHE_VERSION = "dapp-v3";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -30,7 +30,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key.startsWith("ideenbuch-") && key !== SHELL_CACHE && key !== RUNTIME_CACHE)
+          .filter((key) => key !== SHELL_CACHE && key !== RUNTIME_CACHE)
           .map((key) => caches.delete(key))
       )
     ).then(() => self.clients.claim())

@@ -1,7 +1,7 @@
 {
-  "name": "Ideenbuch",
-  "short_name": "Ideenbuch",
-  "description": "Dein persönliches Ideenbuch — Notizen, Mind-Maps, Checklisten und Bilder an einem Ort.",
+  "name": "DApp V1",
+  "short_name": "DApp",
+  "description": "DApp — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

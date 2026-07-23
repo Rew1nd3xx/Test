@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ideenbuch</title>
-<meta name="description" content="Dein persönliches Ideenbuch — Notizen, Mind-Maps, Checklisten und Bilder an einem Ort.">
+<title>DApp V1</title>
+<meta name="description" content="DApp — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#5F7038">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Ideenbuch">
+<meta name="apple-mobile-web-app-title" content="DApp">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,6 +148,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .brand { display: flex; align-items: center; gap: 10px; padding: 6px 10px 22px; }
 .brand-mark { font-size: 22px; color: var(--accent); }
 .brand-text { font-family: var(--font-display); font-size: 21px; letter-spacing: .3px; }
+.brand-version { font-size: 10px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; margin-left: 2px; font-weight: 600; }
 .nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .sidebar-bottom { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
 .nav-item {
@@ -445,7 +446,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <span class="brand-mark">✎</span>
-      <span class="brand-text">Ideenbuch</span>
+      <span class="brand-text">DApp</span>
+      <span class="brand-version">V1</span>
     </div>
 
     <div class="profile-bar" id="profileBar"></div>
@@ -521,7 +523,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 7;
+  const APP_BUILD_NUMBER = 9;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -2179,7 +2181,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function renderExportView(container) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Export</h1><p class="view-sub">Nimm dein Ideenbuch mit — als PDF, Markdown oder JSON-Backup.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Export</h1><p class="view-sub">Nimm dein DApp mit — als PDF, Markdown oder JSON-Backup.</p></div>`;
     container.appendChild(header);
 
     const scopeOptions = [
@@ -2236,12 +2238,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function exportJson() {
     const data = exportScope === "all" ? sanitizedStateSnapshot() : { ...sanitizedStateSnapshot(), items: scopedItems(exportScope) };
-    downloadBlob(JSON.stringify(data, null, 2), `ideenbuch-${exportScope}-${Date.now()}.json`, "application/json");
+    downloadBlob(JSON.stringify(data, null, 2), `dapp-${exportScope}-${Date.now()}.json`, "application/json");
   }
 
   function exportMarkdown() {
     const items = scopedItems(exportScope).sort((a, b) => b.updatedAt - a.updatedAt);
-    let md = `# Ideenbuch — Export\n\n_Erstellt am ${fmtDate(Date.now())}_\n\n`;
+    let md = `# DApp — Export\n\n_Erstellt am ${fmtDate(Date.now())}_\n\n`;
     const groups = { note: "## 📝 Notizen\n", checklist: "## ☑️ Checklisten\n", image: "## 🖼️ Bilder\n" };
     ["note", "checklist", "image"].forEach(type => {
       const group = items.filter(i => i.type === type);
@@ -2262,7 +2264,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       md += "\n## 🕸️ Mind-Map\n\n";
       mmOutlineLines().forEach(l => { md += `${"  ".repeat(l.depth)}- ${l.depth === 0 ? "**" + l.text + "**" : l.text}\n`; });
     }
-    downloadBlob(md, `ideenbuch-${exportScope}-${Date.now()}.md`, "text/markdown");
+    downloadBlob(md, `dapp-${exportScope}-${Date.now()}.md`, "text/markdown");
   }
 
   function exportPdf() {
@@ -2288,7 +2290,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       y += 6;
     }
 
-    heading("Ideenbuch — Export", 20);
+    heading("DApp — Export", 20);
     doc.setFontSize(10); doc.setTextColor(120);
     doc.text(`Erstellt am ${fmtDate(Date.now())}`, margin, y); y += 22;
     doc.setTextColor(20); doc.setFontSize(11);
@@ -2324,7 +2326,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       mmOutlineLines().forEach(l => paragraph("  ".repeat(l.depth) + (l.depth === 0 ? "★ " : "– ") + l.text));
     }
 
-    doc.save(`ideenbuch-${exportScope}-${Date.now()}.pdf`);
+    doc.save(`dapp-${exportScope}-${Date.now()}.pdf`);
     showToast("PDF wird heruntergeladen.");
   }
 
@@ -2469,7 +2471,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             startAutoSync();
             showToast("Backup importiert.");
           }
-        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige Ideenbuch-JSON-Datei?"); }
+        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige DApp-JSON-Datei?"); }
       };
       reader.readAsText(file);
     };
@@ -2593,7 +2595,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     info.innerHTML = `
       <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
       <div style="font-size:12px;color:var(--text-muted);text-align:right;">
-        ${state.profiles.length} Profile · ${state.items.length} Einträge im Ideenbuch<br>
+        ${state.profiles.length} Profile · ${state.items.length} Einträge in DApp<br>
         ${state.custodySchedules.length} Wechselmodell(e) · ${state.tasks.length} Aufgaben
       </div>
     `;
@@ -2663,7 +2665,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       net.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
       setLastSyncNote("Zuletzt hochgeladen: " + fmtDate(net.lastSyncAt));
-      if (!silent) showToast("Ideenbuch wurde hochgeladen.");
+      if (!silent) showToast("DApp wurde hochgeladen.");
       return true;
     } catch (err) {
       if (!silent) showToast("Hochladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
@@ -2701,7 +2703,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       renderProfileBar();
       render();
       setLastSyncNote("Zuletzt heruntergeladen: " + fmtDate(state.connectors.network.lastSyncAt));
-      if (!silent) showToast("Ideenbuch wurde vom Server übernommen.");
+      if (!silent) showToast("DApp wurde vom Server übernommen.");
       return true;
     } catch (err) {
       if (!silent) showToast("Herunterladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
@@ -2870,13 +2872,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === "accepted") showToast("Ideenbuch wird installiert…");
+      if (choice.outcome === "accepted") showToast("DApp wird installiert…");
       deferredPrompt = null;
       btn.style.display = "none";
     });
     window.addEventListener("appinstalled", () => {
       btn.style.display = "none";
-      showToast("Ideenbuch wurde installiert.");
+      showToast("DApp wurde installiert.");
     });
   }
 
