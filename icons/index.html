@@ -179,15 +179,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .profile-empty-hint { font-size: 12px; color: var(--text-muted); padding: 0 6px 14px; line-height: 1.5; }
 .profile-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--border); }
 .mini-avatar { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.3); flex-shrink: 0; }
-.build-tag { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 10px 6px 2px; opacity: .7; }
-
-/* Papa-Bereich (admin) */
-.admin-gate { max-width: 380px; margin: 40px auto; text-align: center; }
-.admin-gate .admin-icon { font-size: 40px; display: block; margin-bottom: 14px; }
-.admin-gate input[type=password] { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 15px; text-align: center; letter-spacing: .1em; margin-bottom: 12px; }
-.admin-gate .admin-error { color: #C0453B; font-size: 12.5px; margin-bottom: 10px; min-height: 16px; }
-.build-info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-.build-info-card .build-num { font-family: var(--font-display); font-size: 20px; }
 
 /* custody / Wechselmodell indicator on calendar days */
 .cal-custody-row { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; gap: 3px; flex-wrap: wrap; }
@@ -488,10 +479,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <button class="nav-item" data-view="settings">
         <span class="nav-icon">⚙️</span><span class="nav-label">Einstellungen</span>
       </button>
-      <button class="nav-item" data-view="admin">
-        <span class="nav-icon">🔐</span><span class="nav-label">Papa-Bereich</span>
-      </button>
-      <div class="build-tag" id="buildTag"></div>
     </div>
   </aside>
 
@@ -521,8 +508,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 7;
-  const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -553,7 +538,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       events: [],
       shoppingList: [],
       custodySchedules: [],
-      adminPasswordHash: "",
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -601,7 +585,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let state = loadState();
   let currentView = "notes";
   let searchQuery = "";
-  let adminUnlocked = false;
   let activeTagFilter = null;
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -780,7 +763,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (currentView === "shopping") return renderShoppingView(c);
     if (currentView === "export") return renderExportView(c);
     if (currentView === "settings") return renderSettingsView(c);
-    if (currentView === "admin") return renderAdminView(c);
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -2172,7 +2154,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function sanitizedStateSnapshot(base) {
     const snap = JSON.parse(JSON.stringify(base || state));
     if (snap.connectors && snap.connectors.network) snap.connectors.network.authHeader = "";
-    snap.adminPasswordHash = "";
     return snap;
   }
 
@@ -2462,9 +2443,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           const imported = JSON.parse(e.target.result);
           if (!imported || !Array.isArray(imported.items)) throw new Error("Ungültiges Format");
           if (confirm("Import überschreibt den aktuellen Stand. Fortfahren?")) {
-            const keepAdminHash = state.adminPasswordHash;
             state = Object.assign(loadState(), imported);
-            if (!imported.adminPasswordHash) state.adminPasswordHash = keepAdminHash;
             saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
             startAutoSync();
             showToast("Backup importiert.");
@@ -2478,7 +2457,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         state = {
           theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
-          adminPasswordHash: state.adminPasswordHash,
           connectors: state.connectors
         };
         stopAutoSync();
@@ -2492,147 +2470,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.6 ? "#1a1a1a" : "#f5f5f5";
-  }
-
-  /* ============ PAPA-BEREICH (kennwortgeschützter Admin-/Erweiterungsbereich) ============ */
-  async function sha256Hex(text) {
-    if (!window.crypto || !window.crypto.subtle) {
-      throw new Error("Web Crypto nicht verfügbar");
-    }
-    const enc = new TextEncoder().encode(text);
-    const buf = await crypto.subtle.digest("SHA-256", enc);
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  function renderAdminView(container) {
-    if (!window.crypto || !window.crypto.subtle) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span>Der Papa-Bereich braucht eine sichere Verbindung (https) oder das lokale Öffnen als Datei — über den Datei-Doppelklick (file://) steht die nötige Verschlüsselungsfunktion in manchen Browsern nicht zur Verfügung. Ruft die App über eure gehostete Adresse auf.</div>`;
-      return;
-    }
-    if (!state.adminPasswordHash) return renderAdminSetup(container);
-    if (!adminUnlocked) return renderAdminGate(container);
-    return renderAdminPanel(container);
-  }
-
-  function renderAdminSetup(container) {
-    const header = document.createElement("div");
-    header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Ein eigener, kennwortgeschützter Bereich für Einstellungen und künftige Funktionen.</p></div>`;
-    container.appendChild(header);
-
-    const box = document.createElement("div");
-    box.className = "admin-gate";
-    box.innerHTML = `
-      <span class="admin-icon">🔐</span>
-      <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:16px;">Noch kein Kennwort vergeben. Lege eins fest, damit nur du (bzw. ihr Eltern) hier reinkommt.</p>
-      <input type="password" id="ap-new" placeholder="Neues Kennwort" autocomplete="new-password">
-      <input type="password" id="ap-confirm" placeholder="Kennwort wiederholen" autocomplete="new-password">
-      <div class="admin-error" id="ap-error"></div>
-      <button class="btn btn-accent" id="ap-save" style="width:100%;">Kennwort festlegen</button>
-    `;
-    container.appendChild(box);
-
-    async function submit() {
-      const pw = box.querySelector("#ap-new").value;
-      const pw2 = box.querySelector("#ap-confirm").value;
-      const err = box.querySelector("#ap-error");
-      if (pw.length < 4) { err.textContent = "Mindestens 4 Zeichen."; return; }
-      if (pw !== pw2) { err.textContent = "Kennwörter stimmen nicht überein."; return; }
-      state.adminPasswordHash = await sha256Hex(pw);
-      adminUnlocked = true;
-      saveState();
-      render();
-      showToast("Papa-Bereich eingerichtet.");
-    }
-    box.querySelector("#ap-save").onclick = submit;
-    box.querySelectorAll("input").forEach(inp => inp.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); }));
-    setTimeout(() => box.querySelector("#ap-new").focus(), 30);
-  }
-
-  function renderAdminGate(container) {
-    const header = document.createElement("div");
-    header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Geschützter Bereich — bitte Kennwort eingeben.</p></div>`;
-    container.appendChild(header);
-
-    const box = document.createElement("div");
-    box.className = "admin-gate";
-    box.innerHTML = `
-      <span class="admin-icon">🔒</span>
-      <input type="password" id="ap-pw" placeholder="Kennwort" autocomplete="current-password">
-      <div class="admin-error" id="ap-error"></div>
-      <button class="btn btn-accent" id="ap-unlock" style="width:100%;">Entsperren</button>
-    `;
-    container.appendChild(box);
-
-    async function submit() {
-      const pw = box.querySelector("#ap-pw").value;
-      const hash = await sha256Hex(pw);
-      if (hash === state.adminPasswordHash) {
-        adminUnlocked = true; render();
-      } else {
-        box.querySelector("#ap-error").textContent = "Falsches Kennwort.";
-        box.querySelector("#ap-pw").value = "";
-        box.querySelector("#ap-pw").focus();
-      }
-    }
-    box.querySelector("#ap-unlock").onclick = submit;
-    box.querySelector("#ap-pw").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
-    setTimeout(() => box.querySelector("#ap-pw").focus(), 30);
-  }
-
-  function renderAdminPanel(container) {
-    const header = document.createElement("div");
-    header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
-      <button class="btn btn-sm" id="ap-lock">🔒 Sperren</button>`;
-    container.appendChild(header);
-
-    const info = document.createElement("div");
-    info.className = "build-info-card";
-    info.innerHTML = `
-      <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
-      <div style="font-size:12px;color:var(--text-muted);text-align:right;">
-        ${state.profiles.length} Profile · ${state.items.length} Einträge im Ideenbuch<br>
-        ${state.custodySchedules.length} Wechselmodell(e) · ${state.tasks.length} Aufgaben
-      </div>
-    `;
-    container.appendChild(info);
-
-    const future = document.createElement("div");
-    future.className = "empty-state";
-    future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
-    future.innerHTML = `<span class="empty-icon">🛠️</span>Hier ist Platz für weitere Funktionen, die nur für Eltern gedacht sind — dieser Bereich wächst mit.`;
-    container.appendChild(future);
-
-    const pwSection = document.createElement("div");
-    pwSection.className = "settings-section";
-    pwSection.innerHTML = `
-      <h3>Kennwort ändern</h3>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-cur" placeholder="Aktuelles Kennwort"></div>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2" placeholder="Neues Kennwort"></div>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2-confirm" placeholder="Neues Kennwort wiederholen"></div>
-      <div class="admin-error" id="ap-change-error" style="text-align:left;"></div>
-      <button class="btn" id="ap-change-btn">Kennwort ändern</button>
-    `;
-    container.appendChild(pwSection);
-
-    header.querySelector("#ap-lock").onclick = () => { adminUnlocked = false; render(); showToast("Papa-Bereich gesperrt."); };
-
-    pwSection.querySelector("#ap-change-btn").onclick = async () => {
-      const cur = pwSection.querySelector("#ap-cur").value;
-      const next = pwSection.querySelector("#ap-new2").value;
-      const next2 = pwSection.querySelector("#ap-new2-confirm").value;
-      const err = pwSection.querySelector("#ap-change-error");
-      const curHash = await sha256Hex(cur);
-      if (curHash !== state.adminPasswordHash) { err.textContent = "Aktuelles Kennwort ist falsch."; return; }
-      if (next.length < 4) { err.textContent = "Neues Kennwort: mindestens 4 Zeichen."; return; }
-      if (next !== next2) { err.textContent = "Neue Kennwörter stimmen nicht überein."; return; }
-      state.adminPasswordHash = await sha256Hex(next);
-      saveState();
-      err.style.color = "var(--accent)"; err.textContent = "Kennwort geändert.";
-      pwSection.querySelectorAll("input").forEach(i => i.value = "");
-    };
   }
 
   /* ============ NETZWERK-SYNCHRONISIERUNG ============ */
@@ -2691,10 +2528,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         if (!confirm("Der Server-Stand ersetzt deine lokalen Daten auf diesem Gerät. Fortfahren?")) return false;
       }
       const keepNetworkConfig = state.connectors.network;
-      const keepAdminHash = state.adminPasswordHash;
       state = { ...defaultState(), ...remote,
-        connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig },
-        adminPasswordHash: keepAdminHash };
+        connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig } };
       state.connectors.network.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
       applyTheme(state.theme || "papier");
@@ -2816,8 +2651,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     applyTheme(state.theme || "papier");
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
     renderProfileBar();
-    const buildTagEl = document.getElementById("buildTag");
-    if (buildTagEl) buildTagEl.textContent = `Build ${APP_BUILD_NUMBER} · ${APP_BUILD_DATE}`;
 
     document.getElementById("hamburger").onclick = () => {
       document.getElementById("sidebar").classList.toggle("open");
