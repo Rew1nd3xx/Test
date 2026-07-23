@@ -182,6 +182,52 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .mini-avatar { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.3); flex-shrink: 0; }
 .build-tag { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 10px 6px 2px; opacity: .7; }
 
+/* ============ HOME DASHBOARD ============ */
+.home-greeting { margin-bottom: 22px; }
+.home-greeting h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 4px; }
+.home-greeting .home-date { color: var(--text-muted); font-size: 13.5px; text-transform: capitalize; }
+.widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+.widget-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 18px 20px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.05);
+  display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;
+}
+.widget-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--widget-accent, var(--accent)); }
+.widget-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.widget-head h3 { font-family: var(--font-display); font-size: 15.5px; margin: 0; display: flex; align-items: center; gap: 8px; }
+.widget-head .widget-link { font-size: 11.5px; color: var(--text-muted); }
+.widget-card .widget-body { font-size: 13px; color: var(--text); }
+.widget-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.widget-row:last-child { border-bottom: none; }
+.widget-row .wr-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.widget-row .wr-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.widget-empty { font-size: 12.5px; color: var(--text-muted); font-style: italic; padding: 4px 0; }
+.widget-big-stat { font-family: var(--font-display); font-size: 26px; }
+.custody-today-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.custody-today-row .arrow { color: var(--text-muted); font-size: 13px; }
+
+/* ============ CALENDAR EXTRAS ============ */
+.custody-summary-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.custody-summary-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 12.5px; }
+.custody-summary-chip .arrow { color: var(--text-muted); }
+.child-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.child-filter-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; cursor: pointer; opacity: .45; transition: opacity .15s; }
+.child-filter-chip.active { opacity: 1; border-color: var(--accent); }
+.view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.view-toggle button { padding: 7px 14px; background: var(--surface); border: none; font-size: 12.5px; border-right: 1px solid var(--border); }
+.view-toggle button:last-child { border-right: none; }
+.view-toggle button.active { background: var(--accent); color: var(--surface); }
+.theme-bauhaus .view-toggle button.active { color: #fff; }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.week-day-cell { min-height: 220px; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; background: var(--surface); cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.week-day-cell .wd-label { font-size: 12px; color: var(--text-muted); }
+.week-day-cell .wd-num { font-family: var(--font-display); font-size: 20px; }
+.week-meal-tag { font-size: 11px; background: var(--surface2); border-radius: 6px; padding: 4px 7px; color: var(--text-muted); }
+.meal-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+.meal-row:last-child { border-bottom: none; }
+.meal-row .meal-day { width: 90px; flex-shrink: 0; font-size: 12.5px; color: var(--text-muted); }
+.meal-row input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); font-size: 13px; }
+
 /* Papa-Bereich (admin) */
 .admin-gate { max-width: 380px; margin: 40px auto; text-align: center; }
 .admin-gate .admin-icon { font-size: 40px; display: block; margin-bottom: 14px; }
@@ -453,7 +499,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     <div class="profile-bar" id="profileBar"></div>
 
     <nav class="nav">
-      <button class="nav-item active" data-view="notes">
+      <button class="nav-item active" data-view="home">
+        <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-view="notes">
         <span class="nav-icon">📝</span><span class="nav-label">Notizen</span>
       </button>
       <button class="nav-item" data-view="mindmap">
@@ -523,7 +572,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 9;
+  const APP_BUILD_NUMBER = 11;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -556,10 +605,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       shoppingList: [],
       custodySchedules: [],
       adminPasswordHash: "",
+      mealPlan: {},
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
-        network: { url: "", authHeader: "", method: "PUT", autoSync: false, intervalMinutes: 5, lastSyncAt: 0 }
+        network: { url: "", authHeaderName: "Authorization", authHeader: "", method: "PUT", autoSync: false, intervalMinutes: 5, lastSyncAt: 0 }
       }
     };
   }
@@ -601,7 +651,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   let state = loadState();
-  let currentView = "notes";
+  let currentView = "home";
   let searchQuery = "";
   let adminUnlocked = false;
   let activeTagFilter = null;
@@ -772,6 +822,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function render() {
     const c = document.getElementById("viewContainer");
     c.innerHTML = "";
+    if (currentView === "home") return renderHomeView(c);
     if (currentView === "notes") return renderListView(c, "note", "Notizen", "Fang eine Idee ein, bevor sie verfliegt.", "📝");
     if (currentView === "checklists") return renderListView(c, "checklist", "Checklisten", "Schritte, Aufgaben, To-dos für deine Ideen.", "☑️");
     if (currentView === "images") return renderListView(c, "image", "Bilder", "Skizzen, Referenzen, Screenshots.", "🖼️");
@@ -783,6 +834,106 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (currentView === "export") return renderExportView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
+  }
+
+  /* ============ HOME (DASHBOARD) ============ */
+  function renderHomeView(container) {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const activeProfile = getActiveProfile();
+
+    const greeting = document.createElement("div");
+    greeting.className = "home-greeting";
+    const hour = new Date().getHours();
+    const salutation = hour < 11 ? "Guten Morgen" : hour < 18 ? "Hallo" : "Guten Abend";
+    greeting.innerHTML = `
+      <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
+      <div class="home-date">${new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</div>
+    `;
+    container.appendChild(greeting);
+
+    const grid = document.createElement("div");
+    grid.className = "widget-grid";
+    container.appendChild(grid);
+
+    function widget(icon, title, accentVar, bodyHtml, linkView, linkLabel) {
+      const card = document.createElement("div");
+      card.className = "widget-card";
+      card.style.setProperty("--widget-accent", accentVar);
+      card.innerHTML = `
+        <div class="widget-head"><h3>${icon} ${title}</h3>${linkView ? `<span class="widget-link" data-goto="${linkView}" style="cursor:pointer;">${linkLabel || "Öffnen ›"}</span>` : ""}</div>
+        <div class="widget-body">${bodyHtml}</div>
+      `;
+      const link = card.querySelector("[data-goto]");
+      if (link) link.onclick = () => setView(link.dataset.goto);
+      grid.appendChild(card);
+      return card;
+    }
+
+    // --- Wechselmodell heute ---
+    if (state.custodySchedules.length) {
+      const rows = state.custodySchedules.map(s => {
+        const res = custodyResultForDate(s, todayStr);
+        if (!res) return "";
+        const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+        const kids = s.childIds.map(id => getProfile(id)).filter(Boolean);
+        return `<div class="custody-today-row">
+          <span style="font-size:12.5px;">${kids.map(k => k.emoji || k.name.charAt(0)).join(" ")} ${escapeHtml(kids.map(k => k.name).join(", "))}</span>
+          <span class="arrow">→</span>
+          ${parents.map(p => `<span class="mini-avatar" style="background:${p.color};width:22px;height:22px;font-size:12px;">${p.emoji || p.name.charAt(0)}</span>`).join("")}
+          <span style="font-size:12px;color:var(--text-muted);">${escapeHtml(parents.map(p => p.name).join(" & "))}</span>
+          ${res.isSwitchDay ? `<span class="tag-chip" style="margin-left:auto;">⇄ Wechseltag</span>` : ""}
+        </div>`;
+      }).join("");
+      widget("🔁", "Wechselmodell heute", "#B15CDE", rows || `<div class="widget-empty">Nichts hinterlegt.</div>`, "calendar", "Kalender ›");
+    }
+
+    // --- Nächste Termine ---
+    const upcoming = state.events.filter(ev => ev.date >= todayStr).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""))).slice(0, 5);
+    widget("📅", "Nächste Termine", "#3A5A9B",
+      upcoming.length ? upcoming.map(ev => {
+        const ps = (ev.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+        return `<div class="widget-row">
+          <span class="wr-title">${escapeHtml(ev.title)}</span>
+          ${ps.map(p => `<span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>`).join("")}
+          <span class="wr-meta">${ev.date === todayStr ? "Heute" : formatDateStrShort(ev.date)}${ev.time ? " · " + ev.time : ""}</span>
+        </div>`;
+      }).join("") : `<div class="widget-empty">Keine anstehenden Termine.</div>`,
+      "calendar", "Kalender ›");
+
+    // --- Aufgaben & Punktestand ---
+    const openTasks = state.tasks.filter(t => !t.done);
+    const pointsHtml = state.profiles.filter(p => p.role === "child").map(p =>
+      `<div class="widget-row"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span><span class="wr-title">${escapeHtml(p.name)}</span><span class="wr-meta">${pointsBalance(p.id)} ⭐</span></div>`
+    ).join("");
+    widget("⭐", "Aufgaben &amp; Punkte", "#C9A24B",
+      `${pointsHtml}<div style="margin-top:6px;font-size:12.5px;color:var(--text-muted);">${openTasks.length ? openTasks.length + " offene Aufgabe(n)" : "Keine offenen Aufgaben 🎉"}</div>`,
+      "tasks", "Aufgaben ›");
+
+    // --- Einkaufsliste ---
+    const openShopping = state.shoppingList.filter(i => !i.done);
+    widget("🛒", "Einkaufsliste", "#86B35A",
+      openShopping.length ? openShopping.slice(0, 5).map(i => `<div class="widget-row"><span class="wr-title">${escapeHtml(i.text)}</span></div>`).join("") +
+        (openShopping.length > 5 ? `<div class="widget-empty">+${openShopping.length - 5} weitere</div>` : "")
+        : `<div class="widget-empty">Liste ist leer.</div>`,
+      "shopping", "Liste ›");
+
+    // --- Essensplan heute ---
+    const mealToday = getMealForDate(todayStr);
+    widget("🍽️", "Essensplan heute", "#FF9270",
+      mealToday ? `<div class="widget-big-stat" style="font-size:16px;">${escapeHtml(mealToday)}</div>` : `<div class="widget-empty">Noch nichts geplant.</div>`,
+      "calendar", "Planen ›");
+
+    // --- Zuletzt bearbeitet ---
+    const recent = state.items.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
+    widget("🕘", "Zuletzt bearbeitet", "#4A6572",
+      recent.length ? recent.map(it => {
+        const icon = { note: "📝", checklist: "☑️", image: "🖼️" }[it.type] || "•";
+        return `<div class="widget-row" data-item="${it.id}" data-type="${it.type}" style="cursor:pointer;"><span class="wr-title">${icon} ${escapeHtml(it.title || "Ohne Titel")}</span><span class="wr-meta">${fmtDate(it.updatedAt).split(" ")[0]}</span></div>`;
+      }).join("") : `<div class="widget-empty">Noch nichts angelegt.</div>`,
+      null);
+    grid.querySelectorAll("[data-item]").forEach(row => {
+      row.onclick = () => openEditor(row.dataset.type, row.dataset.item);
+    });
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -1770,7 +1921,16 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ FAMILIENKALENDER ============ */
-  let calendarCursor = new Date();
+  let calendarCursorStr = new Date().toISOString().slice(0, 10);
+  let calendarViewMode = "month";
+  let calendarChildFilterIds = null;
+
+  function addMonths(dateStr, n) {
+    const [y, m] = dateStr.split("-").map(Number);
+    const total = (y * 12 + (m - 1)) + n;
+    const newY = Math.floor(total / 12), newM = ((total % 12) + 12) % 12;
+    return `${newY}-${String(newM + 1).padStart(2, "0")}-01`;
+  }
 
   function dateStrToDayNumber(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
@@ -1799,81 +1959,235 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       .filter(x => x.result);
   }
 
+  function getMealForDate(dateStr) { return state.mealPlan[dateStr] || ""; }
+  function setMealForDate(dateStr, text) {
+    if (text && text.trim()) state.mealPlan[dateStr] = text.trim();
+    else delete state.mealPlan[dateStr];
+    saveState();
+  }
+  function isoDate(d) { return d.toISOString().slice(0, 10); }
+  function formatDateStrShort(dateStr) {
+    const [y, m, d] = dateStr.split("-");
+    return `${d}.${m}.`;
+  }
+  function addDays(dateStr, n) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    dt.setUTCDate(dt.getUTCDate() + n);
+    return dt.toISOString().slice(0, 10);
+  }
+  function startOfWeek(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    const offset = (dt.getUTCDay() + 6) % 7; // Monday-first
+    dt.setUTCDate(dt.getUTCDate() - offset);
+    return dt.toISOString().slice(0, 10);
+  }
+
+  function nextSwitchDate(schedule, fromDateStr) {
+    for (let i = 1; i <= 60; i++) {
+      const d = addDays(fromDateStr, i);
+      const res = custodyResultForDate(schedule, d);
+      if (res && res.isSwitchDay) return d;
+    }
+    return null;
+  }
+
+  function buildDayCellInner(dateStr, day, maxEvents, showHeader) {
+    const dayEvents = state.events.filter(ev => ev.date === dateStr);
+    const activeFilter = calendarChildFilterIds;
+    const custody = custodyAssignmentsForDate(dateStr).filter(({ schedule }) =>
+      !activeFilter || schedule.childIds.some(id => activeFilter.has(id))
+    );
+    const meal = getMealForDate(dateStr);
+    const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;">
+        <span>${day}</span>${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}
+      </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
+    return `${headerHtml}
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        ${dayEvents.slice(0, maxEvents).map(ev => {
+          const p = getProfile((ev.profileIds || [])[0]);
+          const color = p ? p.color : "var(--accent)";
+          return `<div class="cal-event" data-id="${ev.id}" style="font-size:10.5px;background:${color};color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ev.title)}</div>`;
+        }).join("")}
+        ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
+      </div>
+      ${custody.length ? `<div class="cal-custody-row" style="position:${showHeader ? "absolute" : "static"};margin-top:6px;">${custody.map(({ schedule, result }) => {
+        const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
+        const label = (parents.map(p => p.name).join(" & ") || "frei") + (result.isSwitchDay ? " · Wechseltag" : "");
+        const title = `${escapeHtml(schedule.name)}: ${escapeHtml(label)}`;
+        if (!parents.length) return `<span class="custody-dot custody-dot-empty" title="${title}">–</span>`;
+        return parents.map(p => `<span class="custody-dot${result.isSwitchDay ? " custody-switch" : ""}" style="background:${p.color};" title="${title}">${result.isSwitchDay ? "⇄" : (p.emoji || p.name.charAt(0))}</span>`).join("");
+      }).join("")}</div>` : ""}`;
+  }
+
+  function wireDayCell(cell, dateStr) {
+    cell.onclick = (e) => {
+      const evChip = e.target.closest(".cal-event");
+      if (evChip) { openEventEditor(state.events.find(ev => ev.id === evChip.dataset.id)); return; }
+      openEventEditor(null, dateStr);
+    };
+  }
+
   function renderCalendarView(container) {
+    const allCustodyChildIds = [...new Set(state.custodySchedules.flatMap(s => s.childIds))];
+    if (calendarChildFilterIds === null) calendarChildFilterIds = new Set(allCustodyChildIds);
+
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Streifen = Betreuung laut Wechselmodell, ⇄ = Wechseltag" : ""}.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung laut Wechselmodell, ⇄ = Wechseltag" : ""}.</p></div>`;
     container.appendChild(header);
+
+    // --- "Wer ist heute da" Übersicht ---
+    if (state.custodySchedules.length) {
+      const todayStr0 = new Date().toISOString().slice(0, 10);
+      const bar = document.createElement("div");
+      bar.className = "custody-summary-bar";
+      bar.innerHTML = state.custodySchedules.map(s => {
+        const res = custodyResultForDate(s, todayStr0);
+        if (!res) return "";
+        const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+        const kids = s.childIds.map(id => getProfile(id)).filter(Boolean);
+        const nextSwitch = nextSwitchDate(s, todayStr0);
+        return `<div class="custody-summary-chip">
+          <span>${kids.map(k => k.emoji || k.name.charAt(0)).join(" ")} ${escapeHtml(kids.map(k => k.name).join(", "))}</span>
+          <span class="arrow">→</span>
+          ${parents.map(p => `<span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>`).join("")}
+          <span>${escapeHtml(parents.map(p => p.name).join(" & ") || "—")}</span>
+          ${nextSwitch ? `<span style="color:var(--text-muted);">· Wechsel ${formatDateStrShort(nextSwitch)}</span>` : ""}
+        </div>`;
+      }).join("");
+      container.appendChild(bar);
+    }
+
+    // --- Kind-Filter ---
+    if (allCustodyChildIds.length > 1) {
+      const filterRow = document.createElement("div");
+      filterRow.className = "child-filter-row";
+      allCustodyChildIds.forEach(cid => {
+        const c = getProfile(cid);
+        if (!c) return;
+        const chip = document.createElement("button");
+        chip.className = "child-filter-chip" + (calendarChildFilterIds.has(cid) ? " active" : "");
+        chip.innerHTML = `<span class="mini-avatar" style="background:${c.color};">${c.emoji || c.name.charAt(0)}</span>${escapeHtml(c.name)}`;
+        chip.onclick = () => {
+          if (calendarChildFilterIds.has(cid)) calendarChildFilterIds.delete(cid); else calendarChildFilterIds.add(cid);
+          render();
+        };
+        filterRow.appendChild(chip);
+      });
+      container.appendChild(filterRow);
+    }
 
     const toolbar = document.createElement("div");
     toolbar.className = "mindmap-toolbar";
-    const monthLabel = calendarCursor.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+    const [curY, curM] = calendarCursorStr.split("-").map(Number);
+    const label = calendarViewMode === "month"
+      ? new Date(curY, curM - 1, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" })
+      : (() => {
+          const wStart = startOfWeek(calendarCursorStr);
+          const wEnd = addDays(wStart, 6);
+          return `${formatDateStrShort(wStart)} – ${formatDateStrShort(wEnd)} ${wEnd.slice(0, 4)}`;
+        })();
     toolbar.innerHTML = `
       <button class="btn btn-sm" id="calPrev">‹</button>
-      <span style="font-family:var(--font-display);font-size:17px;min-width:170px;text-align:center;">${monthLabel}</span>
+      <span style="font-family:var(--font-display);font-size:16px;min-width:190px;text-align:center;">${label}</span>
       <button class="btn btn-sm" id="calNext">›</button>
       <button class="btn btn-sm" id="calToday">Heute</button>
-      <button class="btn btn-sm" id="calCustody" style="margin-left:auto;">🔁 Wechselmodell</button>
-      <button class="btn btn-sm btn-accent" id="calAdd">+ Termin</button>
+      <div class="view-toggle">
+        <button id="calModeMonth" class="${calendarViewMode === "month" ? "active" : ""}">Monat</button>
+        <button id="calModeWeek" class="${calendarViewMode === "week" ? "active" : ""}">Woche</button>
+      </div>
+      <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
+      <button class="btn btn-sm" id="calCustody">🔁 Wechselmodell</button>
+      <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
     `;
     container.appendChild(toolbar);
 
-    const grid = document.createElement("div");
-    grid.style.display = "grid";
-    grid.style.gridTemplateColumns = "repeat(7, 1fr)";
-    grid.style.gap = "6px";
-
-    ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach(d => {
-      const h = document.createElement("div");
-      h.style.cssText = "text-align:center;font-size:11.5px;color:var(--text-muted);font-weight:600;padding:4px;";
-      h.textContent = d;
-      grid.appendChild(h);
-    });
-
-    const year = calendarCursor.getFullYear(), month = calendarCursor.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const todayStr = new Date().toISOString().slice(0, 10);
 
-    for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement("div"));
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const cell = document.createElement("div");
-      cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:var(--surface);cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
-      const dayEvents = state.events.filter(ev => ev.date === dateStr);
-      const custody = custodyAssignmentsForDate(dateStr);
-      cell.innerHTML = `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${day}</div>
-        <div style="display:flex;flex-direction:column;gap:2px;">
-          ${dayEvents.slice(0, 3).map(ev => {
-            const p = getProfile((ev.profileIds || [])[0]);
-            const color = p ? p.color : "var(--accent)";
-            return `<div class="cal-event" data-id="${ev.id}" style="font-size:10.5px;background:${color};color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ev.title)}</div>`;
-          }).join("")}
-          ${dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - 3} mehr</div>` : ""}
-        </div>
-        ${custody.length ? `<div class="cal-custody-row">${custody.map(({ schedule, result }) => {
-          const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
-          const label = (parents.map(p => p.name).join(" & ") || "frei") + (result.isSwitchDay ? " · Wechseltag" : "");
-          const title = `${escapeHtml(schedule.name)}: ${escapeHtml(label)}`;
-          if (!parents.length) return `<span class="custody-dot custody-dot-empty" title="${title}">–</span>`;
-          return parents.map(p => `<span class="custody-dot${result.isSwitchDay ? " custody-switch" : ""}" style="background:${p.color};" title="${title}">${result.isSwitchDay ? "⇄" : (p.emoji || p.name.charAt(0))}</span>`).join("");
-        }).join("")}</div>` : ""}`;
-      cell.onclick = (e) => {
-        const evChip = e.target.closest(".cal-event");
-        if (evChip) { openEventEditor(state.events.find(ev => ev.id === evChip.dataset.id)); return; }
-        openEventEditor(null, dateStr);
-      };
-      grid.appendChild(cell);
+    if (calendarViewMode === "month") {
+      const grid = document.createElement("div");
+      grid.style.display = "grid";
+      grid.style.gridTemplateColumns = "repeat(7, 1fr)";
+      grid.style.gap = "6px";
+      ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach(d => {
+        const h = document.createElement("div");
+        h.style.cssText = "text-align:center;font-size:11.5px;color:var(--text-muted);font-weight:600;padding:4px;";
+        h.textContent = d;
+        grid.appendChild(h);
+      });
+      const year = curY, month = curM - 1; // month: 0-based, local-only usage below
+      const startOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement("div"));
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const cell = document.createElement("div");
+        cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:var(--surface);cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
+        cell.innerHTML = buildDayCellInner(dateStr, day, 3, true);
+        wireDayCell(cell, dateStr);
+        grid.appendChild(cell);
+      }
+      container.appendChild(grid);
+      toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, -1); render(); };
+      toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, 1); render(); };
+    } else {
+      const weekGrid = document.createElement("div");
+      weekGrid.className = "week-grid";
+      const wStart = startOfWeek(calendarCursorStr);
+      const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+      for (let i = 0; i < 7; i++) {
+        const dateStr = addDays(wStart, i);
+        const [, , dNum] = dateStr.split("-");
+        const cell = document.createElement("div");
+        cell.className = "week-day-cell";
+        if (dateStr === todayStr) cell.style.outline = "2px solid var(--accent)";
+        cell.innerHTML = `<div><div class="wd-label">${labels[i]}</div><div class="wd-num">${parseInt(dNum, 10)}</div></div>` +
+          buildDayCellInner(dateStr, "", 6, false);
+        wireDayCell(cell, dateStr);
+        weekGrid.appendChild(cell);
+      }
+      container.appendChild(weekGrid);
+      toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, -7); render(); };
+      toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, 7); render(); };
     }
-    container.appendChild(grid);
 
-    toolbar.querySelector("#calPrev").onclick = () => { calendarCursor = new Date(year, month - 1, 1); render(); };
-    toolbar.querySelector("#calNext").onclick = () => { calendarCursor = new Date(year, month + 1, 1); render(); };
-    toolbar.querySelector("#calToday").onclick = () => { calendarCursor = new Date(); render(); };
+    toolbar.querySelector("#calToday").onclick = () => { calendarCursorStr = new Date().toISOString().slice(0, 10); render(); };
     toolbar.querySelector("#calAdd").onclick = () => openEventEditor(null, todayStr);
     toolbar.querySelector("#calCustody").onclick = () => openCustodyManager();
+    toolbar.querySelector("#calMeal").onclick = () => openMealPlanEditor();
+    toolbar.querySelector("#calModeMonth").onclick = () => { calendarViewMode = "month"; render(); };
+    toolbar.querySelector("#calModeWeek").onclick = () => { calendarViewMode = "week"; render(); };
+  }
+
+  function openMealPlanEditor() {
+    const wStart = startOfWeek(new Date().toISOString().slice(0, 10));
+    const days = Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
+    const dayNames = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px;">
+        <div class="modal-header"><h2>🍽️ Essensplan (diese Woche)</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div id="mealRows"></div>
+        <div class="modal-footer"><div></div><div class="modal-footer-right">
+          <button class="btn btn-accent" id="mealCloseBtn">Fertig</button>
+        </div></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const rows = overlay.querySelector("#mealRows");
+    days.forEach((d, i) => {
+      const row = document.createElement("div");
+      row.className = "meal-row";
+      row.innerHTML = `<span class="meal-day">${dayNames[i]}</span><input type="text" value="${escapeHtml(getMealForDate(d))}" placeholder="z. B. Spaghetti Bolognese">`;
+      row.querySelector("input").addEventListener("change", (e) => { setMealForDate(d, e.target.value); });
+      rows.appendChild(row);
+    });
+    function close() { overlay.remove(); render(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#mealCloseBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
   }
 
   function openEventEditor(existing, defaultDate) {
@@ -2386,13 +2700,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         <div class="connector-head"><h4>🌐 Netzwerk-Synchronisierung</h4><span class="badge-soon" id="netStatusBadge">${net.autoSync ? "Auto-Sync aktiv" : "manuell"}</span></div>
         <p style="font-size:12.5px;color:var(--text-muted);margin:-4px 0 12px;">
           Funktioniert mit jeder HTTP(S)-Adresse, die GET (herunterladen) und PUT/POST (hochladen) beherrscht —
-          z. B. WebDAV (Nextcloud, ownCloud, viele NAS wie Synology/QNAP), ein eigenes kleines Skript oder ein Objektspeicher mit signierter URL.
-          Der Server muss CORS-Anfragen von dieser Seite erlauben. Klassisches FTP kann der Browser aus Sicherheitsgründen nicht direkt ansprechen —
-          dafür bräuchte es eine kleine Server-Komponente dazwischen (siehe SharePoint/FTP unten).
+          z. B. WebDAV (Nextcloud, ownCloud, viele NAS wie Synology/QNAP), ein kostenloser JSON-Speicherdienst wie jsonbin.io, oder ein eigenes kleines Skript.
+          Der Server muss CORS-Anfragen von dieser Seite erlauben — das ist bei manchen Cloud-Diensten (z. B. Telekom MagentaCLOUD) leider nicht der Fall.
+          Der Name des Autorisierungs-Headers ist frei wählbar (Standard: <code>Authorization</code>), manche Dienste verlangen einen eigenen Namen wie <code>X-Master-Key</code>.
+          Klassisches FTP kann der Browser aus Sicherheitsgründen nicht direkt ansprechen — dafür bräuchte es eine kleine Server-Komponente dazwischen (siehe SharePoint/FTP unten).
         </p>
         <div class="connector-fields">
-          <input type="text" placeholder="Server-Adresse, z. B. https://mein-nas.local/webdav/ideenbuch.json" value="${escapeHtml(net.url)}" id="netUrl" style="grid-column: 1 / -1;">
-          <input type="text" placeholder="Autorisierung (optional), z. B. Bearer eyJ… oder Basic dXNlcjpwYXNz" value="${escapeHtml(net.authHeader)}" id="netAuth" style="grid-column: 1 / -1;">
+          <input type="text" placeholder="Server-Adresse, z. B. https://mein-nas.local/webdav/dapp.json" value="${escapeHtml(net.url)}" id="netUrl" style="grid-column: 1 / -1;">
+          <input type="text" placeholder="Autorisierungs-Header-Name" value="${escapeHtml(net.authHeaderName || "Authorization")}" id="netAuthName">
+          <input type="text" placeholder="Autorisierungs-Wert, z. B. Bearer eyJ… oder Basic dXNlcjpwYXNz" value="${escapeHtml(net.authHeader)}" id="netAuth">
           <select id="netMethod">
             <option value="PUT" ${net.method === "PUT" ? "selected" : ""}>Hochladen per PUT</option>
             <option value="POST" ${net.method === "POST" ? "selected" : ""}>Hochladen per POST</option>
@@ -2476,11 +2792,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       reader.readAsText(file);
     };
     backupSection.querySelector("#resetBtn").onclick = () => {
-      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Wechselmodelle und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
+      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Wechselmodelle, Essensplan und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
         state = {
           theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
-          adminPasswordHash: state.adminPasswordHash,
+          adminPasswordHash: state.adminPasswordHash, mealPlan: {},
           connectors: state.connectors
         };
         stopAutoSync();
@@ -2643,7 +2959,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function buildSyncHeaders() {
     const headers = { "Content-Type": "application/json" };
     const auth = (state.connectors.network.authHeader || "").trim();
-    if (auth) headers["Authorization"] = auth;
+    const headerName = (state.connectors.network.authHeaderName || "Authorization").trim() || "Authorization";
+    if (auth) headers[headerName] = auth;
     return headers;
   }
 
@@ -2742,6 +3059,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function wireNetworkSyncControls(scope) {
     const net = state.connectors.network;
     const urlEl = scope.querySelector("#netUrl");
+    const authNameEl = scope.querySelector("#netAuthName");
     const authEl = scope.querySelector("#netAuth");
     const methodEl = scope.querySelector("#netMethod");
     const intervalEl = scope.querySelector("#netInterval");
@@ -2752,13 +3070,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     function persistConfig() {
       net.url = urlEl.value.trim();
+      net.authHeaderName = authNameEl.value.trim() || "Authorization";
       net.authHeader = authEl.value.trim();
       net.method = methodEl.value;
       net.intervalMinutes = parseInt(intervalEl.value, 10) || 5;
       saveState({ skipTouch: true });
     }
 
-    [urlEl, authEl].forEach(el => el.addEventListener("change", persistConfig));
+    [urlEl, authNameEl, authEl].forEach(el => el.addEventListener("change", persistConfig));
     methodEl.addEventListener("change", persistConfig);
     intervalEl.addEventListener("change", () => { persistConfig(); startAutoSync(); });
     autoEl.addEventListener("change", () => {
