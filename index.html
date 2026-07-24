@@ -211,10 +211,10 @@ a { color: var(--accent); }
 
 /* 13. Blockwelt — blocky pixel-world look */
 .theme-blockwelt {
-  --bg: #EAE6D6; --surface: #F6F3E7; --surface2: #E1D8B8;
-  --text: #2B2313; --text-muted: #6B5D3F;
-  --accent: #5C8D3C; --accent2: #8B5A2B;
-  --border: #2B2313; --shadow: 4px 4px 0 rgba(0,0,0,.28);
+  --bg: #3E8E2E; --surface: #F4EBD0; --surface2: #E8DCB0;
+  --text: #2B2313; --text-muted: #5E4E2E;
+  --accent: #4CAF32; --accent2: #8B5A2B;
+  --border: #2B2313; --shadow: 5px 5px 0 rgba(0,0,0,.4);
   --font-display: 'Press Start 2P', monospace; --font-body: 'IBM Plex Mono', monospace;
   --radius: 0px; --pattern: none;
 }
@@ -228,19 +228,53 @@ a { color: var(--accent); }
   --radius: 18px; --pattern: none;
 }
 
-/* ---- Blockwelt: pixel bevel buttons + block-select highlight ---- */
+/* ---- Blockwelt: grass-block texture, enchant shimmer, torch-flicker glow, break particles ---- */
+body.theme-blockwelt {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(0,0,0,.09) 0 50%, transparent 50%),
+    linear-gradient(90deg, rgba(0,0,0,.09) 0 50%, transparent 50%),
+    linear-gradient(rgba(255,255,255,.06) 0 50%, transparent 50%);
+  background-size: 32px 32px, 32px 32px, 64px 64px;
+  background-position: 0 0, 0 0, 16px 16px;
+  image-rendering: pixelated;
+}
+.theme-blockwelt .sidebar, .theme-blockwelt .topbar { background-color: var(--surface); background-image: none; }
 .theme-blockwelt .btn { border-radius: 0; border-width: 2px; text-transform: uppercase; letter-spacing: .02em; font-size: 12px; }
 .theme-blockwelt .btn-accent {
-  box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.35), 3px 3px 0 rgba(0,0,0,.3);
+  position: relative; overflow: hidden;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.4), inset -2px -2px 0 rgba(0,0,0,.4), 4px 4px 0 rgba(0,0,0,.4), 0 0 18px rgba(76,175,50,.5);
+  animation: blockTorchFlicker 2.6s ease-in-out infinite;
 }
-.theme-blockwelt .btn-accent:hover { transform: translate(1px, 1px); box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.4), 2px 2px 0 rgba(0,0,0,.3); }
+.theme-blockwelt .btn-accent::after {
+  content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.75), transparent);
+  transform: skewX(-20deg); animation: blockEnchantSweep 2.8s ease-in-out infinite;
+}
+.theme-blockwelt .btn-accent:hover { transform: translate(1px, 1px); box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.5), 3px 3px 0 rgba(0,0,0,.4), 0 0 26px rgba(76,175,50,.7); }
+@keyframes blockEnchantSweep { 0% { left: -60%; } 55% { left: 130%; } 100% { left: 130%; } }
+@keyframes blockTorchFlicker {
+  0%, 100% { box-shadow: inset 2px 2px 0 rgba(255,255,255,.4), inset -2px -2px 0 rgba(0,0,0,.4), 4px 4px 0 rgba(0,0,0,.4), 0 0 18px rgba(76,175,50,.5); }
+  50% { box-shadow: inset 2px 2px 0 rgba(255,255,255,.4), inset -2px -2px 0 rgba(0,0,0,.4), 4px 4px 0 rgba(0,0,0,.4), 0 0 28px rgba(76,175,50,.75); }
+}
 .theme-blockwelt .card, .theme-blockwelt .widget-card, .theme-blockwelt .mm-node { border-radius: 0 !important; border-width: 2px; }
-.theme-blockwelt .card:hover { outline: 2px solid var(--accent); outline-offset: 2px; transform: none; }
-.theme-blockwelt .mm-node.root { background: linear-gradient(180deg, var(--accent) 0 55%, var(--accent2) 55% 100%); border: 2px solid var(--border); box-shadow: 4px 4px 0 rgba(0,0,0,.3); }
-.theme-blockwelt .view-title { text-shadow: 2px 2px 0 rgba(0,0,0,.15); }
+.theme-blockwelt .card:hover, .theme-blockwelt .widget-card:hover { outline: 3px solid var(--accent); outline-offset: 2px; transform: none; box-shadow: 0 0 20px rgba(76,175,50,.45); }
+.theme-blockwelt .mm-node.root { background: linear-gradient(180deg, var(--accent) 0 55%, var(--accent2) 55% 100%); border: 2px solid var(--border); box-shadow: 5px 5px 0 rgba(0,0,0,.4), 0 0 22px rgba(76,175,50,.5); }
+.theme-blockwelt .view-title { text-shadow: 2px 2px 0 rgba(0,0,0,.2); }
 .theme-blockwelt .avatar, .theme-blockwelt .mini-avatar { border-radius: 4px; }
-.theme-blockwelt .avatar.active { border-radius: 4px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.theme-blockwelt .avatar.active { border-radius: 4px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent), 0 0 16px rgba(76,175,50,.7); }
 .theme-blockwelt ::selection { background: var(--accent); color: #fff; }
+.theme-blockwelt .nav-item.active { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 0 14px rgba(76,175,50,.4); }
+
+/* break-particle burst (spawned by JS on click) */
+.mc-particle {
+  position: fixed; width: 6px; height: 6px; pointer-events: none; z-index: 9999;
+  image-rendering: pixelated; animation: mcParticleFly .55s ease-out forwards;
+}
+@keyframes mcParticleFly {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--mcx), var(--mcy)) scale(.3); opacity: 0; }
+}
 
 /* ---- Bausteine: stud bumps + bouncy plastic feel ---- */
 .theme-bausteine .btn { border-width: 2px; font-weight: 700; }
@@ -743,7 +777,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 13;
+  const APP_BUILD_NUMBER = 14;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -759,7 +793,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
     { id: "neon",       name: "Neon",            sub: "Cyberpunk-Glow ✨",   dots: ["#FF2E88", "#00E5FF", "#0A0912"] },
     { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
-    { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#5C8D3C", "#8B5A2B", "#EAE6D6"] },
+    { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
   ];
 
@@ -1070,22 +1104,38 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const upcoming = state.events.filter(ev => ev.date >= todayStr).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""))).slice(0, 5);
     widget("📅", "Nächste Termine", "#3A5A9B",
       upcoming.length ? upcoming.map(ev => {
-        const ps = (ev.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+        const visible = canSeeEventDetails(ev);
+        const ps = visible ? (ev.profileIds || []).map(id => getProfile(id)).filter(Boolean) : [];
         return `<div class="widget-row">
-          <span class="wr-title">${escapeHtml(ev.title)}</span>
+          <span class="wr-title" style="${visible ? "" : "font-style:italic;color:var(--text-muted);"}">${visible ? escapeHtml(ev.title) : "🔒 Privat"}</span>
           ${ps.map(p => `<span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>`).join("")}
-          <span class="wr-meta">${ev.date === todayStr ? "Heute" : formatDateStrShort(ev.date)}${ev.time ? " · " + ev.time : ""}</span>
+          <span class="wr-meta">${ev.date === todayStr ? "Heute" : formatDateStrShort(ev.date)}${visible && ev.time ? " · " + ev.time : ""}</span>
         </div>`;
       }).join("") : `<div class="widget-empty">Keine anstehenden Termine.</div>`,
       "calendar", "Kalender ›");
 
     // --- Aufgaben & Punktestand ---
-    const openTasks = state.tasks.filter(t => !t.done);
+    const openTasks = state.tasks.filter(t => !t.done && t.category !== "homework");
     const pointsHtml = state.profiles.filter(p => p.role === "child").map(p =>
       `<div class="widget-row"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span><span class="wr-title">${escapeHtml(p.name)}</span><span class="wr-meta">${pointsBalance(p.id)} ⭐</span></div>`
     ).join("");
     widget("⭐", "Aufgaben &amp; Punkte", "#C9A24B",
       `${pointsHtml}<div style="margin-top:6px;font-size:12.5px;color:var(--text-muted);">${openTasks.length ? openTasks.length + " offene Aufgabe(n)" : "Keine offenen Aufgaben 🎉"}</div>`,
+      "tasks", "Aufgaben ›");
+
+    // --- Hausaufgaben ---
+    const openHomework = state.tasks.filter(t => t.category === "homework" && !t.done)
+      .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
+    widget("📚", "Hausaufgaben", "#3A5A9B",
+      openHomework.length ? openHomework.slice(0, 5).map(t => {
+        const owner = getProfile(t.assignedTo);
+        const overdue = t.dueDate && t.dueDate < todayStr;
+        return `<div class="widget-row">
+          ${owner ? `<span class="mini-avatar" style="background:${owner.color};">${owner.emoji || owner.name.charAt(0)}</span>` : ""}
+          <span class="wr-title">${escapeHtml(t.title)}</span>
+          <span class="wr-meta" style="${overdue ? "color:#C0453B;" : ""}">${t.dueDate ? (overdue ? "⚠️ " : "") + formatDateStrShort(t.dueDate) : ""}</span>
+        </div>`;
+      }).join("") : `<div class="widget-empty">Keine offenen Hausaufgaben 🎉</div>`,
       "tasks", "Aufgaben ›");
 
     // --- Einkaufsliste ---
@@ -1932,17 +1982,71 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     });
     container.appendChild(overview);
 
-    // Task list
+    // Hausaufgaben
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const homework = state.tasks.filter(t => t.category === "homework");
+    const chores = state.tasks.filter(t => t.category !== "homework");
+
+    const hwSection = document.createElement("div");
+    hwSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">📚 Hausaufgaben</h3>`;
+    container.appendChild(hwSection);
+
+    if (!homework.length) {
+      hwSection.innerHTML += `<div class="empty-state" style="padding:24px;"><span class="empty-icon">📚</span>Keine Hausaufgaben eingetragen.</div>`;
+    } else {
+      const hwList = document.createElement("div");
+      hwList.className = "grid";
+      homework.slice().sort((a, b) => (a.done - b.done) || (a.dueDate || "").localeCompare(b.dueDate || "")).forEach(t => {
+        const owner = getProfile(t.assignedTo);
+        const overdue = !t.done && t.dueDate && t.dueDate < todayStr;
+        const dueToday = !t.done && t.dueDate === todayStr;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        if (overdue) card.style.borderColor = "#C0453B";
+        card.innerHTML = `
+          <div class="card-top">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" ${t.done ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--accent);" class="task-check">
+              <h3 class="card-title" style="${t.done ? "text-decoration:line-through;color:var(--text-muted);" : ""}">${escapeHtml(t.title)}</h3>
+            </div>
+            <button class="card-pin del-task" title="Löschen">🗑️</button>
+          </div>
+          <div class="card-tags">
+            ${t.subject ? `<span class="tag-chip">📖 ${escapeHtml(t.subject)}</span>` : ""}
+            ${owner ? `<span class="tag-chip"><span class="mini-avatar" style="background:${owner.color};display:inline-flex;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-size:10px;">${owner.emoji || owner.name.charAt(0)}</span> ${escapeHtml(owner.name)}</span>` : ""}
+            <span class="tag-chip">⭐ ${t.points} Punkte</span>
+            ${t.dueDate ? `<span class="tag-chip" style="${overdue ? "color:#C0453B;border-color:#C0453B;" : dueToday ? "color:var(--accent);border-color:var(--accent);" : ""}">${overdue ? "⚠️ überfällig" : dueToday ? "📅 heute fällig" : "📅 " + formatDateStrShort(t.dueDate)}</span>` : ""}
+          </div>`;
+        card.querySelector(".task-check").onchange = (e) => {
+          if (e.target.checked) { t.done = true; t.lastEntryId = ledgerAdd(t.assignedTo || null, t.points, "Hausaufgabe: " + t.title); }
+          else { t.done = false; if (t.lastEntryId) { ledgerRemove(t.lastEntryId); t.lastEntryId = null; } }
+          saveState(); renderProfileBar(); render();
+        };
+        card.querySelector(".del-task").onclick = () => {
+          if (confirm("Hausaufgabe wirklich löschen?")) {
+            if (t.lastEntryId) ledgerRemove(t.lastEntryId);
+            state.tasks = state.tasks.filter(x => x.id !== t.id);
+            saveState(); renderProfileBar(); render();
+          }
+        };
+        hwList.appendChild(card);
+      });
+      hwSection.appendChild(hwList);
+    }
+
+    // Task list (Haushalt)
     const taskSection = document.createElement("div");
-    taskSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">Aufgaben</h3>`;
+    taskSection.style.marginTop = "28px";
+    taskSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">🧹 Haushalt</h3>`;
     container.appendChild(taskSection);
 
-    if (!state.tasks.length) {
+    if (!chores.length) {
       taskSection.innerHTML += `<div class="empty-state" style="padding:30px;"><span class="empty-icon">📋</span>Noch keine Aufgaben — leg direkt eine an.</div>`;
     } else {
       const list = document.createElement("div");
       list.className = "grid";
-      state.tasks.slice().sort((a, b) => a.done - b.done).forEach(t => {
+      chores.slice().sort((a, b) => a.done - b.done).forEach(t => {
         const owner = getProfile(t.assignedTo);
         const card = document.createElement("div");
         card.className = "card";
@@ -2030,18 +2134,26 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   function openTaskEditor() {
-    const draft = { id: uid(), title: "", assignedTo: state.profiles[0] ? state.profiles[0].id : "", points: 5, recurring: "", done: false, lastEntryId: null };
+    const draft = { id: uid(), title: "", assignedTo: state.profiles[0] ? state.profiles[0].id : "", points: 5, recurring: "", done: false, lastEntryId: null, category: "chore", dueDate: "", subject: "" };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = `
       <div class="modal" style="max-width:420px;">
         <div class="modal-header"><h2>Neue Aufgabe</h2><button class="close-btn" id="closeModal">✕</button></div>
-        <div class="field"><label>Titel</label><input type="text" id="t-title" placeholder="z. B. Zimmer aufräumen"></div>
+        <div class="field"><label>Art</label>
+          <select id="t-category">
+            <option value="chore">🧹 Haushalt</option>
+            <option value="homework">📚 Hausaufgabe</option>
+          </select>
+        </div>
+        <div class="field"><label>Titel</label><input type="text" id="t-title" placeholder="z. B. Zimmer aufräumen oder Matheheft S. 12"></div>
+        <div class="field" id="t-subject-field" style="display:none;"><label>Fach (optional)</label><input type="text" id="t-subject" placeholder="z. B. Mathe"></div>
         <div class="field"><label>Zugewiesen an</label>
           <select id="t-assignee">${state.profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")}</select>
         </div>
+        <div class="field" id="t-due-field" style="display:none;"><label>Fällig am</label><input type="text" id="t-due" placeholder="JJJJ-MM-TT"></div>
         <div class="field"><label>Punkte</label><input type="text" id="t-points" value="5" inputmode="numeric"></div>
-        <div class="field"><label>Wiederholung</label>
+        <div class="field" id="t-recurring-field"><label>Wiederholung</label>
           <select id="t-recurring">
             <option value="">Einmalig</option>
             <option value="daily">Täglich</option>
@@ -2058,14 +2170,27 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
     overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    function syncCategoryFields() {
+      const isHomework = overlay.querySelector("#t-category").value === "homework";
+      overlay.querySelector("#t-subject-field").style.display = isHomework ? "block" : "none";
+      overlay.querySelector("#t-due-field").style.display = isHomework ? "block" : "none";
+      overlay.querySelector("#t-recurring-field").style.display = isHomework ? "none" : "block";
+      if (isHomework && !overlay.querySelector("#t-due").value) overlay.querySelector("#t-due").value = new Date().toISOString().slice(0, 10);
+    }
+    overlay.querySelector("#t-category").addEventListener("change", syncCategoryFields);
+
     overlay.querySelector("#saveBtn").onclick = () => {
+      draft.category = overlay.querySelector("#t-category").value;
       draft.title = overlay.querySelector("#t-title").value.trim() || "Ohne Titel";
+      draft.subject = overlay.querySelector("#t-subject").value.trim();
       draft.assignedTo = overlay.querySelector("#t-assignee").value || null;
+      draft.dueDate = draft.category === "homework" ? overlay.querySelector("#t-due").value.trim() : "";
       draft.points = Math.max(0, parseInt(overlay.querySelector("#t-points").value, 10) || 0);
-      draft.recurring = overlay.querySelector("#t-recurring").value;
+      draft.recurring = draft.category === "homework" ? "" : overlay.querySelector("#t-recurring").value;
       state.tasks.push(draft);
       saveState(); close(); render();
-      showToast("Aufgabe angelegt.");
+      showToast(draft.category === "homework" ? "Hausaufgabe angelegt." : "Aufgabe angelegt.");
     };
     setTimeout(() => overlay.querySelector("#t-title").focus(), 30);
   }
@@ -2172,8 +2297,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return null;
   }
 
+  function canSeeEventDetails(ev) {
+    if (!ev.private) return true;
+    const activeId = state.activeProfileId;
+    if (!activeId) return false;
+    if (ev.createdBy === activeId) return true;
+    return (ev.profileIds || []).includes(activeId);
+  }
+
   function buildDayCellInner(dateStr, day, maxEvents, showHeader) {
     const dayEvents = state.events.filter(ev => ev.date === dateStr);
+    const dayHomework = state.tasks.filter(t => t.category === "homework" && t.dueDate === dateStr && !t.done);
     const activeFilter = calendarChildFilterIds;
     const custody = custodyAssignmentsForDate(dateStr).filter(({ schedule }) =>
       !activeFilter || schedule.childIds.some(id => activeFilter.has(id))
@@ -2182,13 +2316,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;">
         <span>${day}</span>${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}
       </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
+    const eventChips = dayEvents.slice(0, maxEvents).map(ev => {
+      const visible = canSeeEventDetails(ev);
+      const p = getProfile((ev.profileIds || [])[0]);
+      const color = visible ? (p ? p.color : "var(--accent)") : "var(--text-muted)";
+      const label = visible ? escapeHtml(ev.title) : "🔒 Privat";
+      return `<div class="cal-event" data-id="${ev.id}" style="font-size:10.5px;background:${color};color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${visible ? "" : "font-style:italic;opacity:.75;"}">${label}</div>`;
+    }).join("");
+    const homeworkChips = dayHomework.slice(0, maxEvents).map(t => {
+      const owner = getProfile(t.assignedTo);
+      return `<div class="cal-homework-chip" data-task-id="${t.id}" style="font-size:10.5px;background:#3A5A9B;color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;">📚 ${escapeHtml(t.title)}${owner ? " · " + escapeHtml(owner.name) : ""}</div>`;
+    }).join("");
     return `${headerHtml}
       <div style="display:flex;flex-direction:column;gap:2px;">
-        ${dayEvents.slice(0, maxEvents).map(ev => {
-          const p = getProfile((ev.profileIds || [])[0]);
-          const color = p ? p.color : "var(--accent)";
-          return `<div class="cal-event" data-id="${ev.id}" style="font-size:10.5px;background:${color};color:#fff;border-radius:3px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ev.title)}</div>`;
-        }).join("")}
+        ${eventChips}${homeworkChips}
         ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
       </div>
       ${custody.length ? `<div class="cal-custody-row" style="position:${showHeader ? "absolute" : "static"};margin-top:6px;">${custody.map(({ schedule, result }) => {
@@ -2202,8 +2343,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function wireDayCell(cell, dateStr) {
     cell.onclick = (e) => {
+      const hwChip = e.target.closest(".cal-homework-chip");
+      if (hwChip) { setView("tasks"); return; }
       const evChip = e.target.closest(".cal-event");
-      if (evChip) { openEventEditor(state.events.find(ev => ev.id === evChip.dataset.id)); return; }
+      if (evChip) {
+        const ev = state.events.find(x => x.id === evChip.dataset.id);
+        if (ev && !canSeeEventDetails(ev)) { showToast("🔒 Dieser Termin ist privat."); return; }
+        openEventEditor(ev);
+        return;
+      }
       openEventEditor(null, dateStr);
     };
   }
@@ -2371,7 +2519,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function openEventEditor(existing, defaultDate) {
     const draft = existing ? { ...existing, profileIds: [...(existing.profileIds || [])] } : {
-      id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: []
+      id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: [],
+      private: false, createdBy: state.activeProfileId || null
     };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
@@ -2390,6 +2539,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
               </label>`).join("")}
           </div>
         </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="e-private" ${draft.private ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+          🔒 Privater Termin — andere sehen nur „Privat", keine Details
+        </label>
         <div class="modal-footer">
           <div>${existing ? `<button class="btn btn-danger" id="deleteEventBtn">Löschen</button>` : ""}</div>
           <div class="modal-footer-right">
@@ -2413,6 +2566,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       draft.date = overlay.querySelector("#e-date").value.trim() || draft.date;
       draft.time = overlay.querySelector("#e-time").value.trim();
       draft.profileIds = [...overlay.querySelectorAll(".e-profile:checked")].map(cb => cb.value);
+      draft.private = overlay.querySelector("#e-private").checked;
+      if (!existing) draft.createdBy = state.activeProfileId || null;
       const idx = state.events.findIndex(ev => ev.id === draft.id);
       if (idx >= 0) state.events[idx] = draft; else state.events.push(draft);
       saveState(); close(); render();
@@ -3461,6 +3616,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     renderProfileBar();
     const buildTagEl = document.getElementById("buildTag");
     if (buildTagEl) buildTagEl.textContent = `Build ${APP_BUILD_NUMBER} · ${APP_BUILD_DATE}`;
+    setupBlockBreakEffect();
 
     document.getElementById("hamburger").onclick = () => {
       document.getElementById("sidebar").classList.toggle("open");
@@ -3491,6 +3647,30 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ PWA: Service Worker & Installierbarkeit ============ */
+  function setupBlockBreakEffect() {
+    const PARTICLE_COLORS = ["#4CAF32", "#3E7A22", "#8B5A2B", "#6B4A22"];
+    document.addEventListener("click", (e) => {
+      if (!document.body.classList.contains("theme-blockwelt")) return;
+      const btn = e.target.closest(".btn-accent");
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 8; i++) {
+        const p = document.createElement("div");
+        p.className = "mc-particle";
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 24 + Math.random() * 26;
+        p.style.left = cx + "px";
+        p.style.top = cy + "px";
+        p.style.background = PARTICLE_COLORS[i % PARTICLE_COLORS.length];
+        p.style.setProperty("--mcx", Math.cos(angle) * dist + "px");
+        p.style.setProperty("--mcy", Math.sin(angle) * dist + "px");
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
+      }
+    });
+  }
+
   function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
     // Nur registrieren, wenn die Datei tatsächlich über http(s) ausgeliefert wird
