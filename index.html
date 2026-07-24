@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
@@ -208,6 +208,60 @@ a { color: var(--accent); }
 .theme-stardust .card:hover, .theme-stardust .widget-card:hover { box-shadow: 0 0 24px rgba(255,216,107,.2), 0 1px 2px rgba(0,0,0,.2); }
 .theme-stardust .mm-node.root { box-shadow: 0 0 26px rgba(156,127,255,.5); }
 .theme-stardust .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 14px rgba(156,127,255,.6); }
+
+/* 13. Blockwelt — blocky pixel-world look */
+.theme-blockwelt {
+  --bg: #EAE6D6; --surface: #F6F3E7; --surface2: #E1D8B8;
+  --text: #2B2313; --text-muted: #6B5D3F;
+  --accent: #5C8D3C; --accent2: #8B5A2B;
+  --border: #2B2313; --shadow: 4px 4px 0 rgba(0,0,0,.28);
+  --font-display: 'Press Start 2P', monospace; --font-body: 'IBM Plex Mono', monospace;
+  --radius: 0px; --pattern: none;
+}
+/* 14. Bausteine — colorful building-brick look */
+.theme-bausteine {
+  --bg: #F5F1E6; --surface: #FFFFFF; --surface2: #ECE7D6;
+  --text: #1A1A1A; --text-muted: #6B6B6B;
+  --accent: #D6001C; --accent2: #0057A6;
+  --border: #1A1A1A; --shadow: 0 5px 0 rgba(0,0,0,.2);
+  --font-display: 'Baloo 2', sans-serif; --font-body: 'Fredoka', sans-serif;
+  --radius: 18px; --pattern: none;
+}
+
+/* ---- Blockwelt: pixel bevel buttons + block-select highlight ---- */
+.theme-blockwelt .btn { border-radius: 0; border-width: 2px; text-transform: uppercase; letter-spacing: .02em; font-size: 12px; }
+.theme-blockwelt .btn-accent {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.35), 3px 3px 0 rgba(0,0,0,.3);
+}
+.theme-blockwelt .btn-accent:hover { transform: translate(1px, 1px); box-shadow: inset 2px 2px 0 rgba(255,255,255,.3), inset -2px -2px 0 rgba(0,0,0,.4), 2px 2px 0 rgba(0,0,0,.3); }
+.theme-blockwelt .card, .theme-blockwelt .widget-card, .theme-blockwelt .mm-node { border-radius: 0 !important; border-width: 2px; }
+.theme-blockwelt .card:hover { outline: 2px solid var(--accent); outline-offset: 2px; transform: none; }
+.theme-blockwelt .mm-node.root { background: linear-gradient(180deg, var(--accent) 0 55%, var(--accent2) 55% 100%); border: 2px solid var(--border); box-shadow: 4px 4px 0 rgba(0,0,0,.3); }
+.theme-blockwelt .view-title { text-shadow: 2px 2px 0 rgba(0,0,0,.15); }
+.theme-blockwelt .avatar, .theme-blockwelt .mini-avatar { border-radius: 4px; }
+.theme-blockwelt .avatar.active { border-radius: 4px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.theme-blockwelt ::selection { background: var(--accent); color: #fff; }
+
+/* ---- Bausteine: stud bumps + bouncy plastic feel ---- */
+.theme-bausteine .btn { border-width: 2px; font-weight: 700; }
+.theme-bausteine .btn-accent {
+  position: relative; overflow: visible; transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+}
+.theme-bausteine .btn-accent::before {
+  content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+  width: 14px; height: 8px; border-radius: 7px 7px 0 0; background: inherit; filter: brightness(1.15);
+}
+.theme-bausteine .btn-accent:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 0 rgba(0,0,0,.2); }
+.theme-bausteine .btn-accent:active { transform: translateY(0) scale(.98); }
+.theme-bausteine .card, .theme-bausteine .widget-card {
+  border: 2px solid var(--border); transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+}
+.theme-bausteine .card:hover, .theme-bausteine .widget-card:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 8px 0 rgba(0,0,0,.15); }
+.theme-bausteine .mm-node { border-width: 3px; border-radius: 14px; }
+.theme-bausteine .mm-node.root { background: var(--accent); border: 3px solid var(--border); box-shadow: 0 5px 0 rgba(0,0,0,.25); }
+.theme-bausteine .avatar { border-radius: 30%; }
+.theme-bausteine .avatar.active { border-radius: 30%; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent2); }
+.theme-bausteine .view-title { -webkit-text-stroke: .5px var(--border); }
 
 
 /* ============ LAYOUT ============ */
@@ -427,6 +481,28 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .checklist-view-row:last-child { border-bottom: none; }
 .checklist-view-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .checklist-view-row.done label { text-decoration: line-through; color: var(--text-muted); }
+.shopping-row {
+  display: grid; grid-template-columns: 24px 2fr 1fr 1fr 28px; gap: 10px; align-items: center;
+  padding: 8px 0; border-bottom: 1px dashed var(--border);
+}
+.shopping-row:last-child { border-bottom: none; }
+.shopping-row-head { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.shopping-row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
+.shopping-row .s-text { font-size: 13.5px; }
+.shopping-row.done .s-text { text-decoration: line-through; color: var(--text-muted); }
+.shopping-row select, .shopping-row input[type=text] {
+  padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+  font-size: 12.5px; width: 100%;
+}
+@media (max-width: 640px) {
+  .shopping-row { grid-template-columns: 20px 1fr 24px; grid-template-areas: "cb text del" "sel sel sel" "loc loc loc"; row-gap: 6px; }
+  .shopping-row-head { display: none; }
+  .shopping-row .s-done { grid-area: cb; }
+  .shopping-row .s-text { grid-area: text; }
+  .shopping-row .s-del { grid-area: del; }
+  .shopping-row .s-forwhom { grid-area: sel; }
+  .shopping-row .s-where { grid-area: loc; }
+}
 .add-row-btn { align-self: flex-start; margin-top: 4px; }
 
 /* image dropzone */
@@ -667,7 +743,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 12;
+  const APP_BUILD_NUMBER = 13;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -683,6 +759,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
     { id: "neon",       name: "Neon",            sub: "Cyberpunk-Glow ✨",   dots: ["#FF2E88", "#00E5FF", "#0A0912"] },
     { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
+    { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#5C8D3C", "#8B5A2B", "#EAE6D6"] },
+    { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -703,6 +781,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       custodySchedules: [],
       adminPasswordHash: "",
       mealPlan: {},
+      wishlist: [],
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -2522,8 +2601,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     container.appendChild(header);
 
     const addRow = document.createElement("div");
-    addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;";
-    addRow.innerHTML = `<input type="text" id="shopInput" placeholder="Was fehlt? (Enter zum Hinzufügen)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);">
+    addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;";
+    addRow.innerHTML = `<input type="text" id="shopInput" placeholder="Was fehlt? (Enter zum Hinzufügen)" style="flex:2;min-width:180px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);">
       <button class="btn btn-accent" id="shopAddBtn">+ Hinzufügen</button>`;
     container.appendChild(addRow);
 
@@ -2534,12 +2613,28 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (!state.shoppingList.length) {
       card.innerHTML = `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🛒</span>Die Liste ist leer.</div>`;
     } else {
+      const head = document.createElement("div");
+      head.className = "shopping-row shopping-row-head";
+      head.innerHTML = `<span></span><span>Was</span><span>Für wen</span><span>Wo</span><span></span>`;
+      card.appendChild(head);
+
       state.shoppingList.slice().sort((a, b) => a.done - b.done).forEach(item => {
         const row = document.createElement("div");
-        row.className = "checklist-view-row" + (item.done ? " done" : "");
-        row.innerHTML = `<input type="checkbox" ${item.done ? "checked" : ""}><label style="flex:1;">${escapeHtml(item.text)}</label><button class="card-pin" title="Entfernen">✕</button>`;
-        row.querySelector("input").onchange = (e) => { item.done = e.target.checked; saveState(); render(); };
-        row.querySelector("button").onclick = () => { state.shoppingList = state.shoppingList.filter(x => x.id !== item.id); saveState(); render(); };
+        row.className = "shopping-row" + (item.done ? " done" : "");
+        row.innerHTML = `
+          <input type="checkbox" ${item.done ? "checked" : ""} class="s-done">
+          <label class="s-text">${escapeHtml(item.text)}</label>
+          <select class="s-forwhom">
+            <option value="">Alle</option>
+            ${state.profiles.map(p => `<option value="${p.id}" ${item.forWhom === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
+          </select>
+          <input type="text" class="s-where" value="${escapeHtml(item.location || "")}" placeholder="z. B. Supermarkt">
+          <button class="card-pin s-del" title="Entfernen">✕</button>
+        `;
+        row.querySelector(".s-done").onchange = (e) => { item.done = e.target.checked; saveState(); render(); };
+        row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; saveState(); };
+        row.querySelector(".s-where").addEventListener("change", (e) => { item.location = e.target.value.trim(); saveState(); });
+        row.querySelector(".s-del").onclick = () => { state.shoppingList = state.shoppingList.filter(x => x.id !== item.id); saveState(); render(); };
         card.appendChild(row);
       });
     }
@@ -2558,7 +2653,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const input = document.getElementById("shopInput");
       const text = input.value.trim();
       if (!text) return;
-      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId });
+      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "" });
       saveState(); render();
       setTimeout(() => document.getElementById("shopInput").focus(), 30);
     }
@@ -2907,11 +3002,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       reader.readAsText(file);
     };
     backupSection.querySelector("#resetBtn").onclick = () => {
-      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Wechselmodelle, Essensplan und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
+      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Wechselmodelle, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
         state = {
           theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
-          adminPasswordHash: state.adminPasswordHash, mealPlan: {},
+          adminPasswordHash: state.adminPasswordHash, mealPlan: {}, wishlist: [],
           connectors: state.connectors
         };
         stopAutoSync();
@@ -3062,6 +3157,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       container.appendChild(future);
     }
 
+    renderWishlistSection(container, profile);
+
     const pwSection = document.createElement("div");
     pwSection.className = "settings-section";
     pwSection.innerHTML = `
@@ -3090,6 +3187,89 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       err.style.color = "var(--accent)"; err.textContent = "PIN geändert.";
       pwSection.querySelectorAll("input").forEach(i => i.value = "");
     };
+  }
+
+  function renderWishlistSection(container, profile) {
+    const section = document.createElement("div");
+    section.className = "settings-section";
+    const items = state.wishlist.filter(w => w.ownerId === profile.id).sort((a, b) => a.done - b.done);
+    section.innerHTML = `
+      <h3>🎁 Wunschliste von ${escapeHtml(profile.name)}</h3>
+      <p class="hint">Nur du siehst das hier — perfekt zum Sammeln von Ideen für Geburtstag &amp; Co.</p>
+      <div class="grid" id="wishlistGrid"></div>
+      <button class="btn btn-accent btn-sm add-row-btn" id="addWishBtn">+ Wunsch hinzufügen</button>
+    `;
+    container.appendChild(section);
+
+    const grid = section.querySelector("#wishlistGrid");
+    if (!items.length) {
+      grid.innerHTML = `<div class="empty-state" style="padding:24px;grid-column:1/-1;"><span class="empty-icon">🎁</span>Noch keine Wünsche eingetragen.</div>`;
+    } else {
+      items.forEach(w => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        card.innerHTML = `
+          <div class="card-top">
+            <h3 class="card-title" style="${w.done ? "text-decoration:line-through;color:var(--text-muted);" : ""}">${escapeHtml(w.title)}</h3>
+            <button class="card-pin ${w.done ? "pinned" : ""}" title="Schon bekommen">${w.done ? "🎉" : "☐"}</button>
+          </div>
+          ${w.note ? `<div class="card-body">${escapeHtml(w.note)}</div>` : ""}
+          ${w.link ? `<a href="${escapeHtml(w.link)}" target="_blank" rel="noopener" style="font-size:12px;" onclick="event.stopPropagation()">🔗 Link öffnen</a>` : ""}
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="btn btn-sm edit-wish">Bearbeiten</button>
+            <button class="btn btn-sm btn-danger del-wish">Löschen</button>
+          </div>
+        `;
+        card.querySelector(".card-pin").onclick = () => { w.done = !w.done; saveState(); render(); };
+        card.querySelector(".edit-wish").onclick = () => openWishEditor(profile, w);
+        card.querySelector(".del-wish").onclick = () => {
+          if (confirm("Diesen Wunsch wirklich löschen?")) { state.wishlist = state.wishlist.filter(x => x.id !== w.id); saveState(); render(); }
+        };
+        grid.appendChild(card);
+      });
+    }
+    section.querySelector("#addWishBtn").onclick = () => openWishEditor(profile, null);
+  }
+
+  function openWishEditor(profile, existing) {
+    const draft = existing ? { ...existing } : { id: uid(), ownerId: profile.id, title: "", note: "", link: "", done: false, createdAt: Date.now() };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:440px;">
+        <div class="modal-header"><h2>${existing ? "Wunsch bearbeiten" : "Neuer Wunsch"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Was wünschst du dir?</label><input type="text" id="w-title" value="${escapeHtml(draft.title)}" placeholder="z. B. Lego-Set XY"></div>
+        <div class="field"><label>Notiz (optional)</label><textarea id="w-note" placeholder="z. B. Größe, Farbe, welcher Laden…">${escapeHtml(draft.note)}</textarea></div>
+        <div class="field"><label>Link (optional)</label><input type="text" id="w-link" value="${escapeHtml(draft.link)}" placeholder="https://…"></div>
+        <div class="modal-footer"><div>${existing ? `<button class="btn btn-danger" id="deleteWishBtn">Löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveWishBtn">Speichern</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#cancelBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    if (existing) {
+      overlay.querySelector("#deleteWishBtn").onclick = () => {
+        if (confirm("Diesen Wunsch wirklich löschen?")) { state.wishlist = state.wishlist.filter(x => x.id !== existing.id); saveState(); close(); render(); }
+      };
+    }
+    overlay.querySelector("#saveWishBtn").onclick = () => {
+      draft.title = overlay.querySelector("#w-title").value.trim();
+      if (!draft.title) { showToast("Bitte einen Titel eintragen."); return; }
+      draft.note = overlay.querySelector("#w-note").value.trim();
+      draft.link = overlay.querySelector("#w-link").value.trim();
+      const idx = state.wishlist.findIndex(x => x.id === draft.id);
+      if (idx >= 0) state.wishlist[idx] = draft; else state.wishlist.push(draft);
+      saveState(); close(); render();
+      showToast(existing ? "Wunsch aktualisiert." : "Wunsch hinzugefügt.");
+    };
+    setTimeout(() => overlay.querySelector("#w-title").focus(), 30);
   }
 
   /* ============ NETZWERK-SYNCHRONISIERUNG ============ */
