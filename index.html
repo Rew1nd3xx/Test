@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
@@ -131,6 +131,84 @@ a { color: var(--accent); }
   --font-display: 'Space Grotesk', sans-serif; --font-body: 'Manrope', sans-serif;
   --radius: 14px; --pattern: none;
 }
+/* 11. Neon — cyberpunk glow */
+.theme-neon {
+  --bg: #0A0912; --surface: #120F1F; --surface2: #1B1730;
+  --text: #F2EEFF; --text-muted: #8C86B8;
+  --accent: #FF2E88; --accent2: #00E5FF;
+  --border: #2C2650; --shadow: 0 0 24px rgba(255,46,136,.25);
+  --font-display: 'Orbitron', sans-serif; --font-body: 'Rajdhani', sans-serif;
+  --radius: 10px; --pattern: none;
+}
+/* 12. Sternenstaub — magical starlight */
+.theme-stardust {
+  --bg: #0D0B1F; --surface: #171331; --surface2: #211C42;
+  --text: #EDE8FF; --text-muted: #9C93C4;
+  --accent: #9C7FFF; --accent2: #FFD86B;
+  --border: #2E2757; --shadow: 0 0 22px rgba(156,127,255,.28);
+  --font-display: 'Cinzel', serif; --font-body: 'Manrope', sans-serif;
+  --radius: 12px; --pattern: none;
+}
+
+/* ---- Aurora: drifting glow blobs behind the app ---- */
+.theme-aurora #app {
+  position: relative; z-index: 0;
+}
+.theme-aurora #app::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38vw 38vw at 15% 20%, rgba(177,92,222,.35), transparent 70%),
+    radial-gradient(32vw 32vw at 85% 30%, rgba(53,208,186,.28), transparent 70%),
+    radial-gradient(40vw 40vw at 50% 90%, rgba(255,157,140,.18), transparent 70%);
+  filter: blur(10px);
+  animation: auroraDrift 22s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(2%, -3%) scale(1.06); }
+  100% { transform: translate(-2%, 2%) scale(1); }
+}
+
+/* ---- Neon: glowing edges on interactive elements ---- */
+.theme-neon .brand-mark, .theme-neon .brand-text { text-shadow: 0 0 10px var(--accent), 0 0 22px rgba(255,46,136,.5); }
+.theme-neon .btn-accent { box-shadow: 0 0 14px rgba(255,46,136,.55), 0 0 2px rgba(255,46,136,.8); border-color: var(--accent); }
+.theme-neon .btn-accent:hover { box-shadow: 0 0 22px rgba(255,46,136,.75), 0 0 4px rgba(255,46,136,.9); }
+.theme-neon .nav-item.active { box-shadow: 0 0 16px rgba(255,46,136,.45), inset 0 0 0 1px rgba(255,255,255,.08); }
+.theme-neon .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 16px rgba(255,46,136,.6); }
+.theme-neon .card:hover, .theme-neon .widget-card:hover { box-shadow: 0 0 0 1px var(--accent2), 0 0 24px rgba(0,229,255,.25); }
+.theme-neon .mm-node.root { box-shadow: 0 0 28px rgba(255,46,136,.45), 0 4px 10px rgba(0,0,0,.3); }
+.theme-neon .view-title { text-shadow: 0 0 18px rgba(255,46,136,.35); }
+.theme-neon ::selection { background: var(--accent2); color: #0A0912; }
+
+/* ---- Sternenstaub: soft twinkling starfield + gentle glow ---- */
+.theme-stardust #app {
+  position: relative; z-index: 0;
+}
+.theme-stardust #app::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 22%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 28% 68%, #fff, transparent),
+    radial-gradient(1.8px 1.8px at 45% 12%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 62% 78%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 78% 35%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 88% 60%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 95% 15%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 8% 85%, #fff, transparent),
+    radial-gradient(1.7px 1.7px at 55% 50%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 35% 40%, #fff, transparent);
+  background-repeat: no-repeat;
+  opacity: .55;
+  animation: starTwinkle 5s ease-in-out infinite alternate;
+}
+@keyframes starTwinkle { from { opacity: .3; } to { opacity: .7; } }
+.theme-stardust .brand-text { text-shadow: 0 0 14px rgba(156,127,255,.6); }
+.theme-stardust .btn-accent { box-shadow: 0 0 16px rgba(156,127,255,.5); }
+.theme-stardust .btn-accent:hover { box-shadow: 0 0 24px rgba(156,127,255,.7); }
+.theme-stardust .card:hover, .theme-stardust .widget-card:hover { box-shadow: 0 0 24px rgba(255,216,107,.2), 0 1px 2px rgba(0,0,0,.2); }
+.theme-stardust .mm-node.root { box-shadow: 0 0 26px rgba(156,127,255,.5); }
+.theme-stardust .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 14px rgba(156,127,255,.6); }
+
 
 /* ============ LAYOUT ============ */
 #app { display: flex; min-height: 100vh; }
@@ -449,6 +527,23 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
 
 .theme-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
+.theme-picker-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.theme-picker-row select#themeSelect {
+  flex: 1; min-width: 240px; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); font-size: 14px; cursor: pointer;
+}
+.theme-dot-row { display: flex; gap: 6px; }
+.theme-dot-row span { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); }
+.theme-preview {
+  display: flex; border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  background: var(--bg); color: var(--text); min-height: 170px; box-shadow: var(--shadow);
+  transition: box-shadow .3s ease;
+}
+.theme-preview .tp-sidebar {
+  width: 130px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+  padding: 16px 14px; display: flex; align-items: center; gap: 8px;
+}
+.theme-preview .tp-main { flex: 1; padding: 20px 22px; }
 .theme-cover {
   border-radius: 6px 6px 3px 3px; border: 1px solid rgba(0,0,0,.15); cursor: pointer;
   padding: 14px 12px; height: 108px; display: flex; flex-direction: column; justify-content: space-between;
@@ -540,7 +635,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         <span class="nav-icon">⚙️</span><span class="nav-label">Einstellungen</span>
       </button>
       <button class="nav-item" data-view="admin">
-        <span class="nav-icon">🔐</span><span class="nav-label">Papa-Bereich</span>
+        <span class="nav-icon">🔒</span><span class="nav-label">Mein Bereich</span>
       </button>
       <div class="build-tag" id="buildTag"></div>
     </div>
@@ -572,7 +667,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 11;
+  const APP_BUILD_NUMBER = 12;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -586,6 +681,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
     { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
+    { id: "neon",       name: "Neon",            sub: "Cyberpunk-Glow ✨",   dots: ["#FF2E88", "#00E5FF", "#0A0912"] },
+    { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -653,7 +750,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let state = loadState();
   let currentView = "home";
   let searchQuery = "";
-  let adminUnlocked = false;
+  let personalAreaUnlockedFor = null;
   let activeTagFilter = null;
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -711,7 +808,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       av.style.background = p.color;
       av.textContent = p.emoji || p.name.charAt(0).toUpperCase();
       av.title = p.name + (p.role === "child" ? ` — ${pointsBalance(p.id)} Punkte` : "");
-      av.onclick = () => { state.activeProfileId = p.id; saveState(); renderProfileBar(); render(); };
+      av.onclick = () => {
+        if (state.activeProfileId !== p.id) personalAreaUnlockedFor = null;
+        state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
+      };
       av.ondblclick = () => openProfileEditor(p.id);
       bar.appendChild(av);
     });
@@ -738,7 +838,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const existing = id ? getProfile(id) : null;
     const draft = existing ? { ...existing } : {
       id: uid(), name: "", color: PROFILE_COLORS[state.profiles.length % PROFILE_COLORS.length],
-      emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child"
+      emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child", pinHash: ""
     };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
@@ -2489,6 +2589,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const snap = JSON.parse(JSON.stringify(base || state));
     if (snap.connectors && snap.connectors.network) snap.connectors.network.authHeader = "";
     snap.adminPasswordHash = "";
+    if (Array.isArray(snap.profiles)) snap.profiles.forEach(p => { p.pinHash = ""; });
     return snap;
   }
 
@@ -2656,36 +2757,47 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     header.innerHTML = `<div><h1 class="view-title">Einstellungen</h1><p class="view-sub">Design, Datenquellen &amp; Sicherung.</p></div>`;
     container.appendChild(header);
 
-    // --- Theme shelf ---
+    // --- Theme dropdown + live preview ---
     const themeSection = document.createElement("div");
     themeSection.className = "settings-section";
-    themeSection.innerHTML = `<h3>Design — wähle dein Cover</h3><p class="hint">10 Themes, jederzeit wechselbar. Deine Daten bleiben unverändert.</p>
-      <div class="theme-shelf" id="themeShelf"></div>`;
+    themeSection.innerHTML = `<h3>Design</h3><p class="hint">${THEMES.length} Themes, jederzeit wechselbar — darunter ein paar mit besonderem Glow-Effekt ✨. Deine Daten bleiben unverändert.</p>
+      <div class="theme-picker-row">
+        <select id="themeSelect">
+          ${THEMES.map(t => `<option value="${t.id}" ${state.theme === t.id ? "selected" : ""}>${t.name} — ${t.sub}</option>`).join("")}
+        </select>
+        <div class="theme-dot-row" id="themeDotRow"></div>
+      </div>
+      <div class="theme-preview" id="themePreview"></div>`;
     container.appendChild(themeSection);
 
-    const shelf = themeSection.querySelector("#themeShelf");
-    THEMES.forEach(t => {
-      const cover = document.createElement("div");
-      cover.className = "theme-cover" + (state.theme === t.id ? " active" : "");
-      cover.style.background = t.dots[2];
-      cover.style.color = getReadableTextColor(t.dots[2]);
-      cover.innerHTML = `
-        <div class="spine"></div>
-        <div>
-          <div class="t-name">${t.name}</div>
-          <div class="t-sub">${t.sub}</div>
-        </div>
-        <div class="t-dots">
-          <span style="background:${t.dots[0]}"></span>
-          <span style="background:${t.dots[1]}"></span>
+    function renderThemeDots(t) {
+      themeSection.querySelector("#themeDotRow").innerHTML =
+        `<span style="background:${t.dots[0]}"></span><span style="background:${t.dots[1]}"></span><span style="background:${t.dots[2]}"></span>`;
+    }
+    function renderThemePreview(themeId) {
+      const box = themeSection.querySelector("#themePreview");
+      box.className = `theme-preview theme-${themeId}`;
+      box.innerHTML = `
+        <div class="tp-sidebar"><span class="brand-mark" style="font-size:16px;">✎</span><span class="brand-text" style="font-size:15px;">DApp</span></div>
+        <div class="tp-main">
+          <div class="view-title" style="font-size:19px;margin-bottom:8px;">Willkommen zurück</div>
+          <div class="card" style="cursor:default;padding:12px 14px;margin-bottom:10px;">
+            <div class="card-title" style="font-size:14px;">Beispielkarte</div>
+            <div class="card-body" style="-webkit-line-clamp:unset;max-height:none;">So sieht ein Inhalt in diesem Theme aus.</div>
+          </div>
+          <button class="btn btn-accent btn-sm" type="button">Aktion</button>
         </div>`;
-      cover.onclick = () => {
-        applyTheme(t.id); saveState();
-        shelf.querySelectorAll(".theme-cover").forEach(c => c.classList.remove("active"));
-        cover.classList.add("active");
-        showToast(`Theme „${t.name}" aktiviert.`);
-      };
-      shelf.appendChild(cover);
+    }
+    const initialTheme = THEMES.find(t => t.id === state.theme) || THEMES[0];
+    renderThemeDots(initialTheme);
+    renderThemePreview(state.theme);
+
+    themeSection.querySelector("#themeSelect").addEventListener("change", (e) => {
+      const t = THEMES.find(x => x.id === e.target.value);
+      applyTheme(t.id); saveState();
+      renderThemeDots(t);
+      renderThemePreview(t.id);
+      showToast(`Theme „${t.name}" aktiviert.`);
     });
 
     // --- Connectors ---
@@ -2781,8 +2893,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           if (!imported || !Array.isArray(imported.items)) throw new Error("Ungültiges Format");
           if (confirm("Import überschreibt den aktuellen Stand. Fortfahren?")) {
             const keepAdminHash = state.adminPasswordHash;
+            const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
             state = Object.assign(loadState(), imported);
             if (!imported.adminPasswordHash) state.adminPasswordHash = keepAdminHash;
+            state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: (p.pinHash || localPins.get(p.id) || "") }));
+            personalAreaUnlockedFor = null;
             saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
             startAutoSync();
             showToast("Backup importiert.");
@@ -2812,7 +2927,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return luminance > 0.6 ? "#1a1a1a" : "#f5f5f5";
   }
 
-  /* ============ PAPA-BEREICH (kennwortgeschützter Admin-/Erweiterungsbereich) ============ */
+  /* ============ MEIN BEREICH (pro Profil gesperrt: Eltern- bzw. Kinderbereich) ============ */
   async function sha256Hex(text) {
     if (!window.crypto || !window.crypto.subtle) {
       throw new Error("Web Crypto nicht verfügbar");
@@ -2824,29 +2939,36 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function renderAdminView(container) {
     if (!window.crypto || !window.crypto.subtle) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span>Der Papa-Bereich braucht eine sichere Verbindung (https) oder das lokale Öffnen als Datei — über den Datei-Doppelklick (file://) steht die nötige Verschlüsselungsfunktion in manchen Browsern nicht zur Verfügung. Ruft die App über eure gehostete Adresse auf.</div>`;
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span>Dieser Bereich braucht eine sichere Verbindung (https) — über den Datei-Doppelklick (file://) steht die nötige Verschlüsselungsfunktion in manchen Browsern nicht zur Verfügung. Ruft die App über eure gehostete Adresse auf.</div>`;
       return;
     }
-    if (!state.adminPasswordHash) return renderAdminSetup(container);
-    if (!adminUnlocked) return renderAdminGate(container);
-    return renderAdminPanel(container);
+    const profile = getActiveProfile();
+    if (!profile) {
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">👤</span>Wähle oben links zuerst dein Profil aus (oder leg eins an) — jeder hat hier seinen eigenen gesperrten Bereich.</div>`;
+      return;
+    }
+    if (!profile.pinHash) return renderPersonalSetup(container, profile);
+    if (personalAreaUnlockedFor !== profile.id) return renderPersonalGate(container, profile);
+    return renderPersonalPanel(container, profile);
   }
 
-  function renderAdminSetup(container) {
+  function areaLabel(profile) { return profile.role === "parent" ? "Elternbereich" : "Kinderbereich"; }
+
+  function renderPersonalSetup(container, profile) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Ein eigener, kennwortgeschützter Bereich für Einstellungen und künftige Funktionen.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Ein eigener, gesperrter Bereich nur für dich.</p></div>`;
     container.appendChild(header);
 
     const box = document.createElement("div");
     box.className = "admin-gate";
     box.innerHTML = `
-      <span class="admin-icon">🔐</span>
-      <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:16px;">Noch kein Kennwort vergeben. Lege eins fest, damit nur du (bzw. ihr Eltern) hier reinkommt.</p>
-      <input type="password" id="ap-new" placeholder="Neues Kennwort" autocomplete="new-password">
-      <input type="password" id="ap-confirm" placeholder="Kennwort wiederholen" autocomplete="new-password">
+      <span class="mini-avatar" style="background:${profile.color};width:52px;height:52px;font-size:24px;margin:0 auto 14px;">${profile.emoji || profile.name.charAt(0)}</span>
+      <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:16px;">Noch keine PIN vergeben. Leg eine fest (mind. 4 Ziffern/Zeichen), damit nur du hier reinkommst.</p>
+      <input type="password" id="ap-new" inputmode="numeric" placeholder="Neue PIN" autocomplete="new-password">
+      <input type="password" id="ap-confirm" inputmode="numeric" placeholder="PIN wiederholen" autocomplete="new-password">
       <div class="admin-error" id="ap-error"></div>
-      <button class="btn btn-accent" id="ap-save" style="width:100%;">Kennwort festlegen</button>
+      <button class="btn btn-accent" id="ap-save" style="width:100%;">PIN festlegen</button>
     `;
     container.appendChild(box);
 
@@ -2855,29 +2977,29 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const pw2 = box.querySelector("#ap-confirm").value;
       const err = box.querySelector("#ap-error");
       if (pw.length < 4) { err.textContent = "Mindestens 4 Zeichen."; return; }
-      if (pw !== pw2) { err.textContent = "Kennwörter stimmen nicht überein."; return; }
-      state.adminPasswordHash = await sha256Hex(pw);
-      adminUnlocked = true;
+      if (pw !== pw2) { err.textContent = "PINs stimmen nicht überein."; return; }
+      profile.pinHash = await sha256Hex(pw);
+      personalAreaUnlockedFor = profile.id;
       saveState();
       render();
-      showToast("Papa-Bereich eingerichtet.");
+      showToast(`${areaLabel(profile)} eingerichtet.`);
     }
     box.querySelector("#ap-save").onclick = submit;
     box.querySelectorAll("input").forEach(inp => inp.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); }));
     setTimeout(() => box.querySelector("#ap-new").focus(), 30);
   }
 
-  function renderAdminGate(container) {
+  function renderPersonalGate(container, profile) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Geschützter Bereich — bitte Kennwort eingeben.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Gesperrt — bitte PIN eingeben.</p></div>`;
     container.appendChild(header);
 
     const box = document.createElement("div");
     box.className = "admin-gate";
     box.innerHTML = `
-      <span class="admin-icon">🔒</span>
-      <input type="password" id="ap-pw" placeholder="Kennwort" autocomplete="current-password">
+      <span class="mini-avatar" style="background:${profile.color};width:52px;height:52px;font-size:24px;margin:0 auto 14px;">${profile.emoji || profile.name.charAt(0)}</span>
+      <input type="password" id="ap-pw" inputmode="numeric" placeholder="PIN" autocomplete="current-password">
       <div class="admin-error" id="ap-error"></div>
       <button class="btn btn-accent" id="ap-unlock" style="width:100%;">Entsperren</button>
     `;
@@ -2886,10 +3008,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     async function submit() {
       const pw = box.querySelector("#ap-pw").value;
       const hash = await sha256Hex(pw);
-      if (hash === state.adminPasswordHash) {
-        adminUnlocked = true; render();
+      if (hash === profile.pinHash) {
+        personalAreaUnlockedFor = profile.id; render();
       } else {
-        box.querySelector("#ap-error").textContent = "Falsches Kennwort.";
+        box.querySelector("#ap-error").textContent = "Falsche PIN.";
         box.querySelector("#ap-pw").value = "";
         box.querySelector("#ap-pw").focus();
       }
@@ -2899,43 +3021,60 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     setTimeout(() => box.querySelector("#ap-pw").focus(), 30);
   }
 
-  function renderAdminPanel(container) {
+  function renderPersonalPanel(container, profile) {
+    const isParent = profile.role === "parent";
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Papa-Bereich</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
+    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
       <button class="btn btn-sm" id="ap-lock">🔒 Sperren</button>`;
     container.appendChild(header);
 
-    const info = document.createElement("div");
-    info.className = "build-info-card";
-    info.innerHTML = `
-      <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
-      <div style="font-size:12px;color:var(--text-muted);text-align:right;">
-        ${state.profiles.length} Profile · ${state.items.length} Einträge in DApp<br>
-        ${state.custodySchedules.length} Wechselmodell(e) · ${state.tasks.length} Aufgaben
-      </div>
-    `;
-    container.appendChild(info);
+    if (isParent) {
+      const info = document.createElement("div");
+      info.className = "build-info-card";
+      info.innerHTML = `
+        <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
+        <div style="font-size:12px;color:var(--text-muted);text-align:right;">
+          ${state.profiles.length} Profile · ${state.items.length} Einträge in DApp<br>
+          ${state.custodySchedules.length} Wechselmodell(e) · ${state.tasks.length} Aufgaben
+        </div>
+      `;
+      container.appendChild(info);
 
-    const future = document.createElement("div");
-    future.className = "empty-state";
-    future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
-    future.innerHTML = `<span class="empty-icon">🛠️</span>Hier ist Platz für weitere Funktionen, die nur für Eltern gedacht sind — dieser Bereich wächst mit.`;
-    container.appendChild(future);
+      const future = document.createElement("div");
+      future.className = "empty-state";
+      future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
+      future.innerHTML = `<span class="empty-icon">🛠️</span>Hier ist Platz für weitere Funktionen, die nur für Eltern gedacht sind — dieser Bereich wächst mit.`;
+      container.appendChild(future);
+    } else {
+      const stat = document.createElement("div");
+      stat.className = "build-info-card";
+      stat.innerHTML = `
+        <div><span class="mini-avatar" style="background:${profile.color};width:40px;height:40px;font-size:18px;">${profile.emoji || profile.name.charAt(0)}</span></div>
+        <div style="text-align:right;"><div class="build-num">${pointsBalance(profile.id)} ⭐</div><div style="font-size:12px;color:var(--text-muted);">deine Punkte</div></div>
+      `;
+      container.appendChild(stat);
+
+      const future = document.createElement("div");
+      future.className = "empty-state";
+      future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
+      future.innerHTML = `<span class="empty-icon">🎈</span>Das ist dein ganz persönlicher Bereich! Hier entstehen bald tolle neue Funktionen nur für dich.`;
+      container.appendChild(future);
+    }
 
     const pwSection = document.createElement("div");
     pwSection.className = "settings-section";
     pwSection.innerHTML = `
-      <h3>Kennwort ändern</h3>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-cur" placeholder="Aktuelles Kennwort"></div>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2" placeholder="Neues Kennwort"></div>
-      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2-confirm" placeholder="Neues Kennwort wiederholen"></div>
+      <h3>PIN ändern</h3>
+      <div class="field" style="max-width:320px;"><input type="password" id="ap-cur" inputmode="numeric" placeholder="Aktuelle PIN"></div>
+      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2" inputmode="numeric" placeholder="Neue PIN"></div>
+      <div class="field" style="max-width:320px;"><input type="password" id="ap-new2-confirm" inputmode="numeric" placeholder="Neue PIN wiederholen"></div>
       <div class="admin-error" id="ap-change-error" style="text-align:left;"></div>
-      <button class="btn" id="ap-change-btn">Kennwort ändern</button>
+      <button class="btn" id="ap-change-btn">PIN ändern</button>
     `;
     container.appendChild(pwSection);
 
-    header.querySelector("#ap-lock").onclick = () => { adminUnlocked = false; render(); showToast("Papa-Bereich gesperrt."); };
+    header.querySelector("#ap-lock").onclick = () => { personalAreaUnlockedFor = null; render(); showToast(`${areaLabel(profile)} gesperrt.`); };
 
     pwSection.querySelector("#ap-change-btn").onclick = async () => {
       const cur = pwSection.querySelector("#ap-cur").value;
@@ -2943,12 +3082,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const next2 = pwSection.querySelector("#ap-new2-confirm").value;
       const err = pwSection.querySelector("#ap-change-error");
       const curHash = await sha256Hex(cur);
-      if (curHash !== state.adminPasswordHash) { err.textContent = "Aktuelles Kennwort ist falsch."; return; }
-      if (next.length < 4) { err.textContent = "Neues Kennwort: mindestens 4 Zeichen."; return; }
-      if (next !== next2) { err.textContent = "Neue Kennwörter stimmen nicht überein."; return; }
-      state.adminPasswordHash = await sha256Hex(next);
+      if (curHash !== profile.pinHash) { err.textContent = "Aktuelle PIN ist falsch."; return; }
+      if (next.length < 4) { err.textContent = "Neue PIN: mindestens 4 Zeichen."; return; }
+      if (next !== next2) { err.textContent = "Neue PINs stimmen nicht überein."; return; }
+      profile.pinHash = await sha256Hex(next);
       saveState();
-      err.style.color = "var(--accent)"; err.textContent = "Kennwort geändert.";
+      err.style.color = "var(--accent)"; err.textContent = "PIN geändert.";
       pwSection.querySelectorAll("input").forEach(i => i.value = "");
     };
   }
@@ -3011,9 +3150,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       }
       const keepNetworkConfig = state.connectors.network;
       const keepAdminHash = state.adminPasswordHash;
+      const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
       state = { ...defaultState(), ...remote,
         connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig },
         adminPasswordHash: keepAdminHash };
+      state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: localPins.get(p.id) || p.pinHash || "" }));
+      personalAreaUnlockedFor = null;
       state.connectors.network.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
       applyTheme(state.theme || "papier");
