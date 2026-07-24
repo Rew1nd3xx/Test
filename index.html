@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
@@ -211,10 +211,10 @@ a { color: var(--accent); }
 
 /* 13. Blockwelt — blocky pixel-world look */
 .theme-blockwelt {
-  --bg: #3E8E2E; --surface: #F4EBD0; --surface2: #E8DCB0;
-  --text: #2B2313; --text-muted: #5E4E2E;
-  --accent: #4CAF32; --accent2: #8B5A2B;
-  --border: #2B2313; --shadow: 5px 5px 0 rgba(0,0,0,.4);
+  --bg: #2F7A21; --surface: #E4F0D6; --surface2: #C9E0AC;
+  --text: #16330C; --text-muted: #3C5A2C;
+  --accent: #4CAF32; --accent2: #7A4A20;
+  --border: #16330C; --shadow: 5px 5px 0 rgba(0,0,0,.45);
   --font-display: 'Press Start 2P', monospace; --font-body: 'IBM Plex Mono', monospace;
   --radius: 0px; --pattern: none;
 }
@@ -240,6 +240,8 @@ body.theme-blockwelt {
   image-rendering: pixelated;
 }
 .theme-blockwelt .sidebar, .theme-blockwelt .topbar { background-color: var(--surface); background-image: none; }
+.theme-blockwelt .brand-text, .theme-blockwelt .brand-mark { color: var(--accent); text-shadow: 0 0 8px rgba(76,175,50,.6), 2px 2px 0 rgba(0,0,0,.15); }
+.theme-blockwelt .view-title { color: var(--accent); text-shadow: 0 0 10px rgba(76,175,50,.55), 3px 3px 0 rgba(0,0,0,.25); }
 .theme-blockwelt .btn { border-radius: 0; border-width: 2px; text-transform: uppercase; letter-spacing: .02em; font-size: 12px; }
 .theme-blockwelt .btn-accent {
   position: relative; overflow: hidden;
@@ -260,11 +262,20 @@ body.theme-blockwelt {
 .theme-blockwelt .card, .theme-blockwelt .widget-card, .theme-blockwelt .mm-node { border-radius: 0 !important; border-width: 2px; }
 .theme-blockwelt .card:hover, .theme-blockwelt .widget-card:hover { outline: 3px solid var(--accent); outline-offset: 2px; transform: none; box-shadow: 0 0 20px rgba(76,175,50,.45); }
 .theme-blockwelt .mm-node.root { background: linear-gradient(180deg, var(--accent) 0 55%, var(--accent2) 55% 100%); border: 2px solid var(--border); box-shadow: 5px 5px 0 rgba(0,0,0,.4), 0 0 22px rgba(76,175,50,.5); }
-.theme-blockwelt .view-title { text-shadow: 2px 2px 0 rgba(0,0,0,.2); }
 .theme-blockwelt .avatar, .theme-blockwelt .mini-avatar { border-radius: 4px; }
 .theme-blockwelt .avatar.active { border-radius: 4px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent), 0 0 16px rgba(76,175,50,.7); }
 .theme-blockwelt ::selection { background: var(--accent); color: #fff; }
 .theme-blockwelt .nav-item.active { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 0 14px rgba(76,175,50,.4); }
+.theme-blockwelt #app::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  box-shadow: inset 0 0 120px rgba(0,0,0,.35);
+  animation: blockVignettePulse 3.4s ease-in-out infinite;
+}
+.theme-blockwelt #app { position: relative; z-index: 0; }
+@keyframes blockVignettePulse {
+  0%, 100% { box-shadow: inset 0 0 120px rgba(0,0,0,.3); }
+  50% { box-shadow: inset 0 0 160px rgba(0,0,0,.42); }
+}
 
 /* break-particle burst (spawned by JS on click) */
 .mc-particle {
@@ -296,6 +307,50 @@ body.theme-blockwelt {
 .theme-bausteine .avatar { border-radius: 30%; }
 .theme-bausteine .avatar.active { border-radius: 30%; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent2); }
 .theme-bausteine .view-title { -webkit-text-stroke: .5px var(--border); }
+
+/* 15. Obsidian — absolut exklusives, gedämpftes Dunkel-Theme */
+.theme-obsidian {
+  --bg: #0B0B0A; --surface: #151412; --surface2: #1E1C19;
+  --text: #EDE6D6; --text-muted: #918A78;
+  --accent: #C9A24B; --accent2: #7A6E5C;
+  --border: #2C2822; --shadow: 0 24px 60px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.4);
+  --font-display: 'Cormorant Garamond', serif; --font-body: 'Inter', sans-serif;
+  --radius: 2px; --pattern: none;
+}
+.theme-obsidian body, body.theme-obsidian {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0);
+  background-size: 3px 3px;
+}
+.theme-obsidian .brand-text { font-weight: 600; letter-spacing: .06em; }
+.theme-obsidian .brand-mark { color: var(--accent); }
+.theme-obsidian .view-title { font-weight: 600; letter-spacing: .01em; }
+.theme-obsidian .btn { border-radius: 2px; letter-spacing: .03em; }
+.theme-obsidian .btn-accent {
+  background: transparent; color: var(--accent); border: 1px solid var(--accent);
+  position: relative; overflow: hidden; transition: color .3s ease, background .3s ease;
+}
+.theme-obsidian .btn-accent::before {
+  content: ""; position: absolute; inset: 0; background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .35s cubic-bezier(.4,0,.2,1); z-index: -1;
+}
+.theme-obsidian .btn-accent:hover { color: #0B0B0A; }
+.theme-obsidian .btn-accent:hover::before { transform: scaleX(1); }
+.theme-obsidian .card, .theme-obsidian .widget-card {
+  border: 1px solid var(--border); transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+}
+.theme-obsidian .card:hover, .theme-obsidian .widget-card:hover {
+  border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 24px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(201,162,75,.25);
+}
+.theme-obsidian .widget-card::before { width: 2px; background: var(--accent); opacity: .8; }
+.theme-obsidian .nav-item.active { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.theme-obsidian .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
+.theme-obsidian .mm-node { border-color: var(--border); }
+.theme-obsidian .mm-node.root { background: var(--surface2); color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 0 1px rgba(201,162,75,.2), 0 20px 40px rgba(0,0,0,.5); }
+.theme-obsidian .mindmap-svg path.mm-edge { opacity: .6; }
+.theme-obsidian ::selection { background: var(--accent); color: #0B0B0A; }
+.theme-obsidian .tag-chip, .theme-obsidian .profile-chip { border-color: var(--border); }
+.theme-obsidian input, .theme-obsidian select, .theme-obsidian textarea { border-color: var(--border) !important; }
+.theme-obsidian input:focus, .theme-obsidian select:focus, .theme-obsidian textarea:focus { outline: none; border-color: var(--accent) !important; }
 
 
 /* ============ LAYOUT ============ */
@@ -401,6 +456,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .admin-gate .admin-error { color: #C0453B; font-size: 12.5px; margin-bottom: 10px; min-height: 16px; }
 .build-info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 .build-info-card .build-num { font-family: var(--font-display); font-size: 20px; }
+.hub-back-link { display: block; background: none; border: none; color: var(--text-muted); font-size: 12px; padding: 0; margin-bottom: 6px; cursor: pointer; }
+.hub-back-link:hover { color: var(--accent); }
+.hub-profile-row { display: flex; flex-wrap: wrap; gap: 14px; }
+.hub-profile-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; min-width: 110px;
+  box-shadow: var(--shadow); transition: transform .15s ease;
+}
+.hub-profile-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.hub-profile-name { font-size: 13px; font-weight: 600; }
+.hub-profile-status { font-size: 10.5px; color: var(--text-muted); }
 
 /* custody / Wechselmodell indicator on calendar days */
 .cal-custody-row { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; gap: 3px; flex-wrap: wrap; }
@@ -777,7 +843,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 14;
+  const APP_BUILD_NUMBER = 15;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -795,6 +861,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
     { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
+    { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -816,6 +883,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       adminPasswordHash: "",
       mealPlan: {},
       wishlist: [],
+      schoolHolidays: {},
+      federalState: "",
+      weatherLocation: { name: "", lat: null, lon: null },
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -864,6 +934,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let currentView = "home";
   let searchQuery = "";
   let personalAreaUnlockedFor = null;
+  let personalAreaViewingProfileId = null;
+  let weatherCache = { data: null, fetchedAt: 0 };
   let activeTagFilter = null;
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -922,7 +994,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       av.textContent = p.emoji || p.name.charAt(0).toUpperCase();
       av.title = p.name + (p.role === "child" ? ` — ${pointsBalance(p.id)} Punkte` : "");
       av.onclick = () => {
-        if (state.activeProfileId !== p.id) personalAreaUnlockedFor = null;
+        if (state.activeProfileId !== p.id) { personalAreaUnlockedFor = null; personalAreaViewingProfileId = null; }
         state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
       };
       av.ondblclick = () => openProfileEditor(p.id);
@@ -1050,6 +1122,43 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ HOME (DASHBOARD) ============ */
+  const WMO_WEATHER = {
+    0: { icon: "☀️", label: "Klar" }, 1: { icon: "🌤️", label: "Meist klar" }, 2: { icon: "⛅", label: "Wolkig" }, 3: { icon: "☁️", label: "Bedeckt" },
+    45: { icon: "🌫️", label: "Nebel" }, 48: { icon: "🌫️", label: "Reifnebel" },
+    51: { icon: "🌦️", label: "Nieselregen" }, 53: { icon: "🌦️", label: "Nieselregen" }, 55: { icon: "🌧️", label: "Nieselregen" },
+    61: { icon: "🌧️", label: "Regen" }, 63: { icon: "🌧️", label: "Regen" }, 65: { icon: "🌧️", label: "Starkregen" },
+    71: { icon: "🌨️", label: "Schnee" }, 73: { icon: "🌨️", label: "Schnee" }, 75: { icon: "❄️", label: "Starker Schnee" },
+    80: { icon: "🌦️", label: "Schauer" }, 81: { icon: "🌧️", label: "Schauer" }, 82: { icon: "⛈️", label: "Heftige Schauer" },
+    95: { icon: "⛈️", label: "Gewitter" }, 96: { icon: "⛈️", label: "Gewitter mit Hagel" }, 99: { icon: "⛈️", label: "Gewitter mit Hagel" }
+  };
+  function weatherInfo(code) { return WMO_WEATHER[code] || { icon: "🌡️", label: "" }; }
+
+  async function updateWeatherWidget() {
+    const loc = state.weatherLocation;
+    const el = document.getElementById("weatherWidgetBody");
+    if (!loc || !loc.lat) return;
+    const fresh = Date.now() - weatherCache.fetchedAt < 30 * 60 * 1000;
+    if (!fresh) {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`);
+        const data = await res.json();
+        weatherCache = { data, fetchedAt: Date.now() };
+      } catch (err) { console.warn("Wetter-Abruf fehlgeschlagen:", err); }
+    }
+    if (el && weatherCache.data) {
+      const cw = weatherCache.data.current_weather;
+      const info = weatherInfo(cw.weathercode);
+      const tMax = Math.round(weatherCache.data.daily.temperature_2m_max[0]);
+      const tMin = Math.round(weatherCache.data.daily.temperature_2m_min[0]);
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:34px;">${info.icon}</span>
+          <div><div class="widget-big-stat">${Math.round(cw.temperature)}°</div><div style="font-size:12px;color:var(--text-muted);">${info.label} · ${loc.name}</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Heute: ${tMin}° / ${tMax}°</div>`;
+    }
+  }
+
   function renderHomeView(container) {
     const todayStr = new Date().toISOString().slice(0, 10);
     const activeProfile = getActiveProfile();
@@ -1081,6 +1190,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       grid.appendChild(card);
       return card;
     }
+
+    // --- Wetter ---
+    widget("🌤️", "Wetter", "#0057A6",
+      state.weatherLocation.lat
+        ? `<div id="weatherWidgetBody">${weatherCache.data ? "" : `<div class="widget-empty">Lade Wetter …</div>`}</div>`
+        : `<div class="widget-empty">Kein Ort eingestellt.</div>`,
+      "settings", "Einstellungen ›");
+    if (state.weatherLocation.lat) updateWeatherWidget();
 
     // --- Wechselmodell heute ---
     if (state.custodySchedules.length) {
@@ -2236,6 +2353,74 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return `${newY}-${String(newM + 1).padStart(2, "0")}-01`;
   }
 
+  const GERMAN_STATES = [
+    { code: "BW", name: "Baden-Württemberg" }, { code: "BY", name: "Bayern" }, { code: "BE", name: "Berlin" },
+    { code: "BB", name: "Brandenburg" }, { code: "HB", name: "Bremen" }, { code: "HH", name: "Hamburg" },
+    { code: "HE", name: "Hessen" }, { code: "MV", name: "Mecklenburg-Vorpommern" }, { code: "NI", name: "Niedersachsen" },
+    { code: "NW", name: "Nordrhein-Westfalen" }, { code: "RP", name: "Rheinland-Pfalz" }, { code: "SL", name: "Saarland" },
+    { code: "SN", name: "Sachsen" }, { code: "ST", name: "Sachsen-Anhalt" }, { code: "SH", name: "Schleswig-Holstein" },
+    { code: "TH", name: "Thüringen" }
+  ];
+
+  function easterSunday(year) {
+    // Gauss'sche Osterformel
+    const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  function germanHolidaysForYear(year) {
+    const easter = easterSunday(year);
+    const off = (days) => { const d = new Date(easter); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
+    const y = (m, d) => `${year}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    return {
+      [y(1, 1)]: "Neujahr",
+      [off(-2)]: "Karfreitag",
+      [off(1)]: "Ostermontag",
+      [y(5, 1)]: "Tag der Arbeit",
+      [off(39)]: "Christi Himmelfahrt",
+      [off(50)]: "Pfingstmontag",
+      [y(10, 3)]: "Tag der Deutschen Einheit",
+      [y(12, 25)]: "1. Weihnachtsfeiertag",
+      [y(12, 26)]: "2. Weihnachtsfeiertag"
+    };
+  }
+
+  let holidayCache = {};
+  function getHolidayName(dateStr) {
+    const year = parseInt(dateStr.slice(0, 4), 10);
+    if (!holidayCache[year]) holidayCache[year] = germanHolidaysForYear(year);
+    return holidayCache[year][dateStr] || null;
+  }
+
+  function getSchoolHolidayName(dateStr) {
+    const list = state.schoolHolidays[state.federalState];
+    if (!list) return null;
+    const hit = list.find(f => dateStr >= f.start && dateStr <= f.end);
+    return hit ? hit.name : null;
+  }
+
+  async function fetchSchoolHolidays(stateCode) {
+    try {
+      const res = await fetch(`https://ferien-api.de/api/v1/holidays/${stateCode}`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const FERIEN_LABELS = { winterferien: "Winterferien", osterferien: "Osterferien", pfingstferien: "Pfingstferien", sommerferien: "Sommerferien", herbstferien: "Herbstferien", weihnachtsferien: "Weihnachtsferien", fruehjahrsferien: "Frühjahrsferien" };
+      state.schoolHolidays[stateCode] = data.map(f => ({
+        start: f.start.slice(0, 10), end: f.end.slice(0, 10), name: FERIEN_LABELS[f.name] || f.name
+      }));
+      saveState({ skipTouch: true });
+      return true;
+    } catch (err) {
+      console.warn("Schulferien-Abruf fehlgeschlagen:", err);
+      return false;
+    }
+  }
+
   function dateStrToDayNumber(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
     return Math.floor(Date.UTC(y, (m || 1) - 1, d || 1) / 86400000);
@@ -2313,9 +2498,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       !activeFilter || schedule.childIds.some(id => activeFilter.has(id))
     );
     const meal = getMealForDate(dateStr);
+    const holiday = getHolidayName(dateStr);
+    const ferien = getSchoolHolidayName(dateStr);
+    const dayNumHtml = holiday ? `<span style="color:#C0453B;font-weight:700;" title="${escapeHtml(holiday)}">${day} 🎉</span>` : `<span>${day}</span>`;
     const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;">
-        <span>${day}</span>${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}
+        ${dayNumHtml}${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}
       </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
+    const ferienHtml = ferien ? `<div class="week-meal-tag" style="background:#F2D6A2;color:#6B4A22;" title="${escapeHtml(ferien)}">🏖️ ${escapeHtml(ferien)}</div>` : "";
     const eventChips = dayEvents.slice(0, maxEvents).map(ev => {
       const visible = canSeeEventDetails(ev);
       const p = getProfile((ev.profileIds || [])[0]);
@@ -2332,6 +2521,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         ${eventChips}${homeworkChips}
         ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
       </div>
+      ${ferienHtml}
       ${custody.length ? `<div class="cal-custody-row" style="position:${showHeader ? "absolute" : "static"};margin-top:6px;">${custody.map(({ schedule, result }) => {
         const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
         const label = (parents.map(p => p.name).join(" & ") || "frei") + (result.isSwitchDay ? " · Wechseltag" : "");
@@ -2362,7 +2552,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung laut Wechselmodell, ⇄ = Wechseltag" : ""}.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung laut Wechselmodell, ⇄ = Wechseltag" : ""} · 🎉 = Feiertag${state.federalState ? ", 🏖️ = Schulferien" : ""}.</p></div>`;
     container.appendChild(header);
 
     // --- "Wer ist heute da" Übersicht ---
@@ -2451,7 +2641,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
         const cell = document.createElement("div");
-        cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:var(--surface);cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
+        const isHoliday = !!getHolidayName(dateStr);
+        const isFerien = !!getSchoolHolidayName(dateStr);
+        const bg = isHoliday ? "rgba(192,69,59,.08)" : isFerien ? "rgba(242,214,162,.35)" : "var(--surface)";
+        cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:${bg};cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
         cell.innerHTML = buildDayCellInner(dateStr, day, 3, true);
         wireDayCell(cell, dateStr);
         grid.appendChild(cell);
@@ -2469,6 +2662,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const [, , dNum] = dateStr.split("-");
         const cell = document.createElement("div");
         cell.className = "week-day-cell";
+        const isHoliday = !!getHolidayName(dateStr);
+        const isFerien = !!getSchoolHolidayName(dateStr);
+        if (isHoliday) cell.style.background = "rgba(192,69,59,.08)";
+        else if (isFerien) cell.style.background = "rgba(242,214,162,.35)";
         if (dateStr === todayStr) cell.style.outline = "2px solid var(--accent)";
         cell.innerHTML = `<div><div class="wd-label">${labels[i]}</div><div class="wd-num">${parseInt(dNum, 10)}</div></div>` +
           buildDayCellInner(dateStr, "", 6, false);
@@ -3050,6 +3247,57 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       showToast(`Theme „${t.name}" aktiviert.`);
     });
 
+    // --- Kalender & Wetter ---
+    const calWeatherSection = document.createElement("div");
+    calWeatherSection.className = "settings-section";
+    calWeatherSection.innerHTML = `
+      <h3>Kalender &amp; Wetter</h3>
+      <p class="hint">Bundesland für automatische Schulferien, Ort für das Wetter-Widget auf dem Homescreen.</p>
+      <div class="field" style="max-width:320px;"><label>Bundesland (Schulferien)</label>
+        <select id="federalStateSelect">
+          <option value="">— nicht ausgewählt —</option>
+          ${GERMAN_STATES.map(s => `<option value="${s.code}" ${state.federalState === s.code ? "selected" : ""}>${s.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field" style="max-width:320px;"><label>Ort für Wetter</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="weatherCityInput" value="${escapeHtml(state.weatherLocation.name)}" placeholder="z. B. Köln">
+          <button class="btn btn-sm" id="weatherSaveBtn">Speichern</button>
+        </div>
+        <div class="hint" id="weatherStatus" style="margin-top:6px;">${state.weatherLocation.lat ? `Aktuell: ${escapeHtml(state.weatherLocation.name)}` : "Noch kein Ort gespeichert."}</div>
+      </div>
+    `;
+    container.appendChild(calWeatherSection);
+
+    calWeatherSection.querySelector("#federalStateSelect").addEventListener("change", async (e) => {
+      state.federalState = e.target.value;
+      saveState();
+      if (state.federalState && !state.schoolHolidays[state.federalState]) {
+        showToast("Lade Schulferien …");
+        const ok = await fetchSchoolHolidays(state.federalState);
+        showToast(ok ? "Schulferien geladen." : "Schulferien konnten nicht geladen werden.");
+      }
+      render();
+    });
+
+    calWeatherSection.querySelector("#weatherSaveBtn").onclick = async () => {
+      const city = calWeatherSection.querySelector("#weatherCityInput").value.trim();
+      const statusEl = calWeatherSection.querySelector("#weatherStatus");
+      if (!city) { statusEl.textContent = "Bitte einen Ort eingeben."; return; }
+      statusEl.textContent = "Suche Ort …";
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=de`);
+        const data = await res.json();
+        if (!data.results || !data.results.length) { statusEl.textContent = "Ort nicht gefunden."; return; }
+        const r = data.results[0];
+        state.weatherLocation = { name: r.name + (r.admin1 ? ", " + r.admin1 : ""), lat: r.latitude, lon: r.longitude };
+        weatherCache = { data: null, fetchedAt: 0 };
+        saveState();
+        statusEl.textContent = `Gespeichert: ${state.weatherLocation.name}`;
+        showToast("Ort für Wetter gespeichert.");
+      } catch (err) { statusEl.textContent = "Suche fehlgeschlagen — Netzwerk prüfen."; }
+    };
+
     // --- Connectors ---
     const connSection = document.createElement("div");
     connSection.className = "settings-section";
@@ -3162,6 +3410,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
           adminPasswordHash: state.adminPasswordHash, mealPlan: {}, wishlist: [],
+          schoolHolidays: state.schoolHolidays, federalState: state.federalState, weatherLocation: state.weatherLocation,
           connectors: state.connectors
         };
         stopAutoSync();
@@ -3192,14 +3441,51 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span>Dieser Bereich braucht eine sichere Verbindung (https) — über den Datei-Doppelklick (file://) steht die nötige Verschlüsselungsfunktion in manchen Browsern nicht zur Verfügung. Ruft die App über eure gehostete Adresse auf.</div>`;
       return;
     }
-    const profile = getActiveProfile();
-    if (!profile) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-icon">👤</span>Wähle oben links zuerst dein Profil aus (oder leg eins an) — jeder hat hier seinen eigenen gesperrten Bereich.</div>`;
+    if (!state.profiles.length) {
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">👤</span>Legt zuerst mindestens ein Profil an (links oben, das „+") — jeder hat hier seinen eigenen gesperrten Bereich.</div>`;
       return;
     }
-    if (!profile.pinHash) return renderPersonalSetup(container, profile);
-    if (personalAreaUnlockedFor !== profile.id) return renderPersonalGate(container, profile);
-    return renderPersonalPanel(container, profile);
+    const viewingProfile = personalAreaViewingProfileId ? getProfile(personalAreaViewingProfileId) : null;
+    if (!viewingProfile) return renderPersonalHub(container);
+    if (!viewingProfile.pinHash) return renderPersonalSetup(container, viewingProfile);
+    if (personalAreaUnlockedFor !== viewingProfile.id) return renderPersonalGate(container, viewingProfile);
+    return renderPersonalPanel(container, viewingProfile);
+  }
+
+  function renderPersonalHub(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Mein Bereich</h1><p class="view-sub">Jede Person hat ihren eigenen gesperrten Bereich — wähle dich aus.</p></div>`;
+    container.appendChild(header);
+
+    function section(title, icon, role) {
+      const profiles = state.profiles.filter(p => p.role === role);
+      const box = document.createElement("div");
+      box.className = "settings-section";
+      box.innerHTML = `<h3>${icon} ${title}</h3>`;
+      if (!profiles.length) {
+        box.innerHTML += `<div class="empty-state" style="padding:20px;"><span class="empty-icon">${icon}</span>Noch kein Profil mit dieser Rolle angelegt.</div>`;
+      } else {
+        const row = document.createElement("div");
+        row.className = "hub-profile-row";
+        profiles.forEach(p => {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "hub-profile-card";
+          card.innerHTML = `
+            <span class="avatar" style="background:${p.color};cursor:pointer;">${p.emoji || p.name.charAt(0)}</span>
+            <span class="hub-profile-name">${escapeHtml(p.name)}</span>
+            <span class="hub-profile-status">${p.pinHash ? "🔒 gesperrt" : "einrichten"}</span>
+          `;
+          card.onclick = () => { personalAreaViewingProfileId = p.id; render(); };
+          row.appendChild(card);
+        });
+        box.appendChild(row);
+      }
+      container.appendChild(box);
+    }
+    section("Elternbereich", "🔐", "parent");
+    section("Kinderbereich", "🧒", "child");
   }
 
   function areaLabel(profile) { return profile.role === "parent" ? "Elternbereich" : "Kinderbereich"; }
@@ -3207,8 +3493,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function renderPersonalSetup(container, profile) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Ein eigener, gesperrter Bereich nur für dich.</p></div>`;
+    header.innerHTML = `<div><button class="widget-link hub-back-link" id="hubBack">‹ Alle Bereiche</button><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Ein eigener, gesperrter Bereich nur für dich.</p></div>`;
     container.appendChild(header);
+    header.querySelector("#hubBack").onclick = () => { personalAreaViewingProfileId = null; render(); };
 
     const box = document.createElement("div");
     box.className = "admin-gate";
@@ -3242,8 +3529,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function renderPersonalGate(container, profile) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Gesperrt — bitte PIN eingeben.</p></div>`;
+    header.innerHTML = `<div><button class="widget-link hub-back-link" id="hubBack">‹ Alle Bereiche</button><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Gesperrt — bitte PIN eingeben.</p></div>`;
     container.appendChild(header);
+    header.querySelector("#hubBack").onclick = () => { personalAreaViewingProfileId = null; render(); };
 
     const box = document.createElement("div");
     box.className = "admin-gate";
@@ -3275,9 +3563,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const isParent = profile.role === "parent";
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
+    header.innerHTML = `<div><button class="widget-link hub-back-link" id="hubBack">‹ Alle Bereiche</button><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
       <button class="btn btn-sm" id="ap-lock">🔒 Sperren</button>`;
     container.appendChild(header);
+    header.querySelector("#hubBack").onclick = () => { personalAreaViewingProfileId = null; render(); };
 
     if (isParent) {
       const info = document.createElement("div");
@@ -3651,7 +3940,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const PARTICLE_COLORS = ["#4CAF32", "#3E7A22", "#8B5A2B", "#6B4A22"];
     document.addEventListener("click", (e) => {
       if (!document.body.classList.contains("theme-blockwelt")) return;
-      const btn = e.target.closest(".btn-accent");
+      const btn = e.target.closest(".btn");
       if (!btn) return;
       const rect = btn.getBoundingClientRect();
       const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
