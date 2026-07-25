@@ -990,7 +990,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 30;
+  const APP_BUILD_NUMBER = 31;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -4221,11 +4221,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           if (confirm("Import ERSETZT den aktuellen Stand komplett. Für Geräte-Abgleich meist besser: Von Datei hinzufügen. Trotzdem ersetzen?")) {
             const keepAdminHash = state.adminPasswordHash;
             const keepSharedAreas = state.sharedAreas;
+            const keepActiveProfileId = state.activeProfileId;
             const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
             state = Object.assign(loadState(), imported);
             if (!imported.adminPasswordHash) state.adminPasswordHash = keepAdminHash;
             if (!imported.sharedAreas) state.sharedAreas = keepSharedAreas;
             state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: (p.pinHash || localPins.get(p.id) || "") }));
+            if (keepActiveProfileId && state.profiles.some(p => p.id === keepActiveProfileId)) {
+              state.activeProfileId = keepActiveProfileId;
+            }
             personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
             saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
             startAutoSync();
@@ -4690,12 +4694,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const keepNetworkConfig = state.connectors.network;
       const keepAdminHash = state.adminPasswordHash;
       const keepSharedAreas = state.sharedAreas;
+      const keepActiveProfileId = state.activeProfileId;
+      const keepTheme = state.theme;
       const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
       state = { ...defaultState(), ...remote,
         connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig },
         adminPasswordHash: keepAdminHash,
         sharedAreas: keepSharedAreas };
       state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: localPins.get(p.id) || p.pinHash || "" }));
+      if (keepActiveProfileId && state.profiles.some(p => p.id === keepActiveProfileId)) {
+        state.activeProfileId = keepActiveProfileId;
+      }
+      if (keepTheme) state.theme = keepTheme;
       personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
       state.connectors.network.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
