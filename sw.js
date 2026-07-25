@@ -4,7 +4,7 @@
    für externe Ressourcen (Google Fonts, jsPDF).
 */
 
-const CACHE_VERSION = "dapp-v3";
+const CACHE_VERSION = "dapp-v4";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -65,7 +65,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Externe Ressourcen (Google Fonts, jsPDF-CDN): network-first, mit Cache-Fallback für Offline-Nutzung
+  // Nur bekannte statische Ressourcen-CDNs cachen (Schriften, jsPDF).
+  // Alle anderen fremden Adressen (eigene Sync-Server, Wetter-/Ferien-APIs, …)
+  // NICHT abfangen — die sollen sich wie ein normaler fetch() verhalten,
+  // damit echte Fehler (CORS, Zertifikat, Server down) nicht hinter einem
+  // verschluckten Cache-Fallback verschwinden.
+  const STATIC_ASSET_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
+  if (!STATIC_ASSET_HOSTS.includes(url.hostname)) return;
+
   event.respondWith(
     fetch(req)
       .then((res) => {
@@ -73,6 +80,6 @@ self.addEventListener("fetch", (event) => {
         caches.open(RUNTIME_CACHE).then((cache) => cache.put(req, copy));
         return res;
       })
-      .catch(() => caches.match(req))
+      .catch(() => caches.match(req).then((cached) => cached || new Response("", { status: 504, statusText: "Offline" })))
   );
 });
