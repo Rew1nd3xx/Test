@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Black+Ops+One&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
@@ -220,12 +220,12 @@ a { color: var(--accent); }
 }
 /* 14. Bausteine — colorful building-brick look */
 .theme-bausteine {
-  --bg: #F5F1E6; --surface: #FFFFFF; --surface2: #ECE7D6;
+  --bg: #EDE7D3; --surface: #FFFFFF; --surface2: #ECE7D6;
   --text: #1A1A1A; --text-muted: #6B6B6B;
   --accent: #D6001C; --accent2: #0057A6;
-  --border: #1A1A1A; --shadow: 0 5px 0 rgba(0,0,0,.2);
+  --border: #1A1A1A; --shadow: 0 6px 0 rgba(0,0,0,.22);
   --font-display: 'Baloo 2', sans-serif; --font-body: 'Fredoka', sans-serif;
-  --radius: 18px; --pattern: none;
+  --radius: 16px; --pattern: none;
 }
 
 /* ---- Blockwelt: grass-block texture, enchant shimmer, torch-flicker glow, break particles ---- */
@@ -290,23 +290,55 @@ body.theme-blockwelt {
 /* ---- Bausteine: stud bumps + bouncy plastic feel ---- */
 .theme-bausteine .btn { border-width: 2px; font-weight: 700; }
 .theme-bausteine .btn-accent {
-  position: relative; overflow: visible; transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  position: relative; overflow: visible; border-width: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff 15%), var(--accent) 45%, color-mix(in srgb, var(--accent) 80%, #000 20%));
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--accent) 55%, #000 45%), 0 6px 10px rgba(0,0,0,.25);
+  transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease;
 }
 .theme-bausteine .btn-accent::before {
-  content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
-  width: 14px; height: 8px; border-radius: 7px 7px 0 0; background: inherit; filter: brightness(1.15);
+  content: ""; position: absolute; top: -8px; left: 14px; width: 14px; height: 9px; border-radius: 7px 7px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 90%, #fff 10%), var(--accent));
 }
-.theme-bausteine .btn-accent:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 0 rgba(0,0,0,.2); }
-.theme-bausteine .btn-accent:active { transform: translateY(0) scale(.98); }
+.theme-bausteine .btn-accent::after {
+  content: ""; position: absolute; top: -8px; right: 14px; width: 14px; height: 9px; border-radius: 7px 7px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 90%, #fff 10%), var(--accent));
+}
+.theme-bausteine .btn-accent:hover { transform: translateY(-2px); box-shadow: 0 8px 0 color-mix(in srgb, var(--accent) 55%, #000 45%), 0 10px 16px rgba(0,0,0,.3); }
+.theme-bausteine .btn-accent:active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 55%, #000 45%); }
+
+body.theme-bausteine {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, rgba(0,0,0,.07) 2.4px, transparent 2.6px);
+  background-size: 30px 30px;
+}
+.theme-bausteine .sidebar, .theme-bausteine .topbar { background-color: var(--surface); background-image: none; }
+
 .theme-bausteine .card, .theme-bausteine .widget-card {
-  border: 2px solid var(--border); transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  position: relative; border: 2px solid var(--border); border-radius: 12px; overflow: visible;
+  background: linear-gradient(180deg, #fff, var(--surface2) 130%);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  margin-top: 10px;
 }
-.theme-bausteine .card:hover, .theme-bausteine .widget-card:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 8px 0 rgba(0,0,0,.15); }
-.theme-bausteine .mm-node { border-width: 3px; border-radius: 14px; }
-.theme-bausteine .mm-node.root { background: var(--accent); border: 3px solid var(--border); box-shadow: 0 5px 0 rgba(0,0,0,.25); }
+.theme-bausteine .card::before, .theme-bausteine .widget-card::before {
+  content: ""; position: absolute; top: -9px; left: 20px; width: 16px; height: 10px; border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #fff, var(--surface2)); border: 2px solid var(--border); border-bottom: none;
+  box-shadow: 34px 0 0 -2px transparent, 0 0 0 0 transparent;
+}
+.theme-bausteine .card::after, .theme-bausteine .widget-card::after {
+  content: ""; position: absolute; top: -9px; left: 52px; width: 16px; height: 10px; border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #fff, var(--surface2)); border: 2px solid var(--border); border-bottom: none;
+}
+.theme-bausteine .widget-card::before { background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--widget-accent, var(--accent)) 18%, #fff)); }
+.theme-bausteine .widget-card::after { background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--widget-accent, var(--accent)) 18%, #fff)); }
+.theme-bausteine .card:hover, .theme-bausteine .widget-card:hover { transform: translateY(-5px) rotate(-.5deg); box-shadow: 0 10px 0 rgba(0,0,0,.12), 0 14px 22px rgba(0,0,0,.18); }
+.theme-bausteine .card:active, .theme-bausteine .widget-card:active { transform: translateY(2px) rotate(0deg); }
+
+.theme-bausteine .mm-node { border-width: 3px; border-radius: 14px; background: linear-gradient(180deg, var(--surface), var(--surface2)); }
+.theme-bausteine .mm-node.root { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff 15%), var(--accent)); color: #fff; border: 3px solid var(--border); box-shadow: 0 6px 0 color-mix(in srgb, var(--accent) 55%, #000 45%); }
 .theme-bausteine .avatar { border-radius: 30%; }
 .theme-bausteine .avatar.active { border-radius: 30%; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent2); }
 .theme-bausteine .view-title { -webkit-text-stroke: .5px var(--border); }
+.theme-bausteine .nav-item.active { box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 55%, #000 45%); }
 
 /* 15. Obsidian — absolut exklusives, gedämpftes Dunkel-Theme */
 .theme-obsidian {
@@ -351,6 +383,45 @@ body.theme-blockwelt {
 .theme-obsidian .tag-chip, .theme-obsidian .profile-chip { border-color: var(--border); }
 .theme-obsidian input, .theme-obsidian select, .theme-obsidian textarea { border-color: var(--border) !important; }
 .theme-obsidian input:focus, .theme-obsidian select:focus, .theme-obsidian textarea:focus { outline: none; border-color: var(--accent) !important; }
+
+/* 16. Militär — camo, stencil, radar */
+.theme-militaer {
+  --bg: #2B2E1F; --surface: #4B5320; --surface2: #5C6B2E;
+  --text: #E8E4D0; --text-muted: #A8A585;
+  --accent: #B8A369; --accent2: #A63A2C;
+  --border: #1A1C12; --shadow: 3px 3px 0 rgba(0,0,0,.5);
+  --font-display: 'Black Ops One', sans-serif; --font-body: 'Oswald', sans-serif;
+  --radius: 2px; --pattern: none;
+}
+body.theme-militaer {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 140px 90px at 10% 20%, rgba(90,100,50,.55), transparent 70%),
+    radial-gradient(ellipse 180px 110px at 70% 10%, rgba(60,50,30,.5), transparent 70%),
+    radial-gradient(ellipse 160px 100px at 40% 60%, rgba(110,110,70,.45), transparent 70%),
+    radial-gradient(ellipse 150px 95px at 85% 70%, rgba(50,60,30,.5), transparent 70%),
+    radial-gradient(ellipse 170px 100px at 15% 85%, rgba(80,70,40,.45), transparent 70%);
+  background-size: 480px 420px;
+}
+.theme-militaer .sidebar, .theme-militaer .topbar { background-color: var(--surface); background-image: none; }
+.theme-militaer #app { position: relative; z-index: 0; overflow: hidden; }
+.theme-militaer #app::before {
+  content: ""; position: fixed; top: 50%; left: 50%; width: 220vmax; height: 220vmax; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(184,163,105,.16), transparent 18%, transparent 100%);
+  transform: translate(-50%, -50%); animation: militaerRadar 6s linear infinite;
+}
+@keyframes militaerRadar { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.theme-militaer .brand-text, .theme-militaer .view-title { text-transform: uppercase; letter-spacing: .04em; text-shadow: 2px 2px 0 rgba(0,0,0,.5), -1px 0 0 rgba(255,255,255,.06); }
+.theme-militaer .btn { border-radius: 2px; text-transform: uppercase; letter-spacing: .05em; font-size: 12px; border-width: 2px; }
+.theme-militaer .btn-accent { background: var(--accent); color: #1A1C12; border-color: var(--border); box-shadow: 3px 3px 0 rgba(0,0,0,.5); }
+.theme-militaer .btn-accent:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 rgba(0,0,0,.5); }
+.theme-militaer .card, .theme-militaer .widget-card { border-width: 2px; border-radius: 2px; }
+.theme-militaer .card:hover, .theme-militaer .widget-card:hover { outline: 2px solid var(--accent2); outline-offset: 2px; transform: none; }
+.theme-militaer .nav-item.active { background: var(--accent2); color: #fff; border-color: var(--border); }
+.theme-militaer .avatar, .theme-militaer .mini-avatar { border-radius: 2px; }
+.theme-militaer .avatar.active { border-radius: 2px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent2); }
+.theme-militaer .mm-node.root { background: var(--accent2); color: #fff; border: 2px solid var(--border); }
+.theme-militaer ::selection { background: var(--accent2); color: #fff; }
 
 
 /* ============ LAYOUT ============ */
@@ -407,6 +478,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .home-greeting { margin-bottom: 22px; }
 .home-greeting h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 4px; }
 .home-greeting .home-date { color: var(--text-muted); font-size: 13.5px; text-transform: capitalize; }
+.home-ticker {
+  display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: 9px 16px; margin-bottom: 20px; font-size: 12.5px; box-shadow: var(--shadow);
+}
+.home-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
+@keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.home-ticker-text { transition: opacity .25s ease; }
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
 .family-share-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
@@ -858,7 +936,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 20;
+  const APP_BUILD_NUMBER = 21;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -877,6 +955,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
     { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
+    { id: "militaer",   name: "Militär",         sub: "Camouflage & Stencil 🎖️", dots: ["#B8A369", "#A63A2C", "#2B2E1F"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -952,6 +1031,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let personalAreaUnlockedFor = null;
   let personalAreaViewingProfileId = null;
   let weatherCache = { data: null, fetchedAt: 0 };
+  let tickerInterval = null;
   let activeTagFilter = null;
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -1189,6 +1269,63 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     `;
     container.appendChild(greeting);
 
+    if (tickerInterval) { clearInterval(tickerInterval); tickerInterval = null; }
+    const tickerMessages = [];
+    const upcomingForTicker = state.events.filter(ev => ev.date >= todayStr && canSeeEventDetails(ev))
+      .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")))[0];
+    if (upcomingForTicker) {
+      tickerMessages.push(`📅 Nächster Termin: ${upcomingForTicker.title} — ${upcomingForTicker.date === todayStr ? "heute" : formatDateStrShort(upcomingForTicker.date)}`);
+    }
+    const nextHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.dueDate)
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+    if (nextHomework) {
+      const owner = getProfile(nextHomework.assignedTo);
+      tickerMessages.push(`📚 ${nextHomework.title}${owner ? " (" + owner.name + ")" : ""} — fällig ${nextHomework.dueDate === todayStr ? "heute" : formatDateStrShort(nextHomework.dueDate)}`);
+    }
+    if (state.custodySchedules.length) {
+      state.custodySchedules.forEach(s => {
+        const res = custodyResultForDate(s, todayStr);
+        if (res && res.isSwitchDay) {
+          const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+          tickerMessages.push(`🔁 Heute Wechseltag${parents.length ? " zu " + parents.map(p => p.name).join(" & ") : ""}`);
+        }
+      });
+    }
+    const ferienForTicker = getFerienStatus();
+    if (ferienForTicker) {
+      tickerMessages.push(ferienForTicker.type === "current"
+        ? `🎉 Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} (${ferienForTicker.name})`
+        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name}`);
+    }
+    if (weatherCache.data) {
+      const cw = weatherCache.data.current_weather;
+      tickerMessages.push(`${weatherInfo(cw.weathercode).icon} ${Math.round(cw.temperature)}° in ${state.weatherLocation.name}`);
+    }
+    const openShoppingCount = state.shoppingList.filter(i => !i.done).length;
+    if (openShoppingCount) tickerMessages.push(`🛒 ${openShoppingCount} Ding${openShoppingCount === 1 ? "" : "e"} auf der Einkaufsliste`);
+    const kidsForLeader = state.profiles.filter(p => p.role === "child");
+    if (kidsForLeader.length) {
+      const leader = kidsForLeader.map(p => ({ p, pts: pointsBalance(p.id) })).sort((a, b) => b.pts - a.pts)[0];
+      if (leader && leader.pts > 0) tickerMessages.push(`⭐ ${leader.p.name} führt mit ${leader.pts} Punkten`);
+    }
+    if (!tickerMessages.length) tickerMessages.push("👋 Willkommen bei DApp — leg direkt los!");
+
+    const ticker = document.createElement("div");
+    ticker.className = "home-ticker";
+    ticker.innerHTML = `<span class="home-ticker-dot"></span><span class="home-ticker-text" id="homeTickerText">${escapeHtml(tickerMessages[0])}</span>`;
+    container.appendChild(ticker);
+    if (tickerMessages.length > 1) {
+      let tickerIdx = 0;
+      tickerInterval = setInterval(() => {
+        if (!document.body.contains(ticker)) { clearInterval(tickerInterval); tickerInterval = null; return; }
+        tickerIdx = (tickerIdx + 1) % tickerMessages.length;
+        const textEl = document.getElementById("homeTickerText");
+        if (!textEl) return;
+        textEl.style.opacity = "0";
+        setTimeout(() => { textEl.textContent = tickerMessages[tickerIdx]; textEl.style.opacity = "1"; }, 250);
+      }, 4500);
+    }
+
     const grid = document.createElement("div");
     grid.className = "widget-grid";
     container.appendChild(grid);
@@ -1214,6 +1351,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         : `<div class="widget-empty">Kein Ort eingestellt.</div>`,
       "settings", "Einstellungen ›");
     if (state.weatherLocation.lat) updateWeatherWidget();
+
+    // --- Feriencountdown ---
+    const ferienStatus = getFerienStatus();
+    if (state.federalState) {
+      widget("🏖️", "Ferien-Countdown", "#F2D6A2",
+        ferienStatus
+          ? (ferienStatus.type === "current"
+              ? `<div class="widget-big-stat">🎉 Ferien!</div><div style="font-size:12.5px;color:var(--text-muted);">${escapeHtml(ferienStatus.name)} — noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"}</div>`
+              : `<div class="widget-big-stat">${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"}</div><div style="font-size:12.5px;color:var(--text-muted);">bis ${escapeHtml(ferienStatus.name)}</div>`)
+          : `<div class="widget-empty">Noch keine Ferientermine geladen.</div>`,
+        "calendar", "Kalender ›");
+    }
 
     // --- Betreuung heute ---
     if (state.custodySchedules.length) {
@@ -2563,26 +2712,46 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return hit ? hit.name : null;
   }
 
+  function getFerienStatus() {
+    const list = state.schoolHolidays[state.federalState];
+    if (!list || !list.length) return null;
+    const today = new Date().toISOString().slice(0, 10);
+    const sorted = list.slice().sort((a, b) => a.start.localeCompare(b.start));
+    const current = sorted.find(f => f.start <= today && today >= f.start && today <= f.end);
+    if (current) return { type: "current", name: current.name, days: dateStrToDayNumber(current.end) - dateStrToDayNumber(today) };
+    const next = sorted.find(f => f.start > today);
+    if (next) return { type: "next", name: next.name, days: dateStrToDayNumber(next.start) - dateStrToDayNumber(today) };
+    return null;
+  }
+
+  let lastFerienError = "";
   async function fetchSchoolHolidays(stateCode) {
     const FERIEN_LABELS = { winterferien: "Winterferien", osterferien: "Osterferien", pfingstferien: "Pfingstferien", sommerferien: "Sommerferien", herbstferien: "Herbstferien", weihnachtsferien: "Weihnachtsferien", fruehjahrsferien: "Frühjahrsferien" };
     const thisYear = new Date().getFullYear();
     const years = [thisYear - 1, thisYear, thisYear + 1, thisYear + 2];
+    lastFerienError = "";
+    let anyHttpError = "";
     try {
       const results = await Promise.all(years.map(async (year) => {
         try {
           const res = await fetch(`https://schulferien-api.de/api/v1/${year}/${stateCode}`);
-          if (!res.ok) return [];
-          return await res.json();
-        } catch (err) { return []; }
+          if (!res.ok) { anyHttpError = "HTTP " + res.status; return []; }
+          const json = await res.json();
+          if (Array.isArray(json)) return json;
+          if (json && Array.isArray(json.data)) return json.data;
+          if (json && Array.isArray(json.holidays)) return json.holidays;
+          return [];
+        } catch (err) { anyHttpError = err.message || "Netzwerkfehler (evtl. CORS)"; return []; }
       }));
-      const flat = results.flat().filter(Boolean);
-      if (!flat.length) throw new Error("Keine Daten erhalten");
+      const flat = results.flat().filter(f => f && f.start && f.end);
+      if (!flat.length) { lastFerienError = anyHttpError || "Keine Daten erhalten"; throw new Error(lastFerienError); }
       state.schoolHolidays[stateCode] = flat.map(f => ({
         start: f.start.slice(0, 10), end: f.end.slice(0, 10), name: FERIEN_LABELS[f.name] || f.name
       }));
       saveState({ skipTouch: true });
       return true;
     } catch (err) {
+      lastFerienError = lastFerienError || err.message || "Unbekannter Fehler";
       console.warn("Schulferien-Abruf fehlgeschlagen:", err);
       return false;
     }
@@ -2721,9 +2890,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     };
   }
 
+  let ferienAutoFetchTried = false;
   function renderCalendarView(container) {
     const allCustodyChildIds = [...new Set(state.custodySchedules.flatMap(s => s.childIds))];
     if (calendarChildFilterIds === null) calendarChildFilterIds = new Set(allCustodyChildIds);
+
+    if (state.federalState && !ferienAutoFetchTried &&
+        (!state.schoolHolidays[state.federalState] || !state.schoolHolidays[state.federalState].length)) {
+      ferienAutoFetchTried = true;
+      fetchSchoolHolidays(state.federalState).then(ok => {
+        if (ok) render();
+        else showToast(`Schulferien-Abruf fehlgeschlagen: ${lastFerienError || "unbekannter Fehler"}`);
+      });
+    }
 
     const header = document.createElement("div");
     header.className = "view-header";
@@ -3540,7 +3719,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const ok = await fetchSchoolHolidays(state.federalState);
         statusEl.textContent = ok
           ? `${(state.schoolHolidays[state.federalState] || []).length} Ferienzeiträume geladen.`
-          : "Schulferien konnten nicht geladen werden — Netzwerk prüfen, dann Aktualisieren.";
+          : `Fehlgeschlagen: ${lastFerienError || "unbekannter Fehler"}. Netzwerk prüfen, dann Aktualisieren.`;
         showToast(ok ? "Schulferien geladen." : "Schulferien konnten nicht geladen werden.");
       } else {
         statusEl.textContent = "Kein Bundesland ausgewählt.";
@@ -3556,8 +3735,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const ok = await fetchSchoolHolidays(stateCode);
       statusEl.textContent = ok
         ? `${(state.schoolHolidays[stateCode] || []).length} Ferienzeiträume geladen.`
-        : "Schulferien konnten nicht geladen werden — Netzwerk prüfen.";
+        : `Fehlgeschlagen: ${lastFerienError || "unbekannter Fehler"}.`;
       showToast(ok ? "Schulferien aktualisiert." : "Aktualisieren fehlgeschlagen.");
+      render();
     };
 
     calWeatherSection.querySelector("#weatherSaveBtn").onclick = async () => {
