@@ -712,6 +712,22 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .checklist-row { display: flex; align-items: center; gap: 8px; }
 .checklist-row-hw { flex-wrap: wrap; background: var(--surface2); padding: 8px; border-radius: var(--radius); }
 .checklist-row-hw input[type=text], .checklist-row-hw input[type=date] { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+.md-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.md-btn {
+  padding: 5px 9px; font-size: 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface2); color: var(--text); cursor: pointer;
+}
+.md-btn:hover { border-color: var(--accent); }
+.mic-btn { font-size: 13px; }
+.mic-btn.listening { background: #C0453B; color: #fff; border-color: #C0453B; animation: tickerPulse 1s ease-in-out infinite; }
+.md-preview p { margin: 0 0 4px; }
+.md-preview h4 { margin: 4px 0; font-family: var(--font-display); font-size: 14px; }
+.md-preview ul, .md-preview ol { margin: 2px 0 4px 18px; padding: 0; }
+.md-preview code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.mm-text p { margin: 0; display: inline; }
+.mm-text h4 { margin: 0; font-size: inherit; font-family: inherit; display: inline; }
+.mm-text ul, .mm-text ol { margin: 2px 0 0 16px; padding: 0; text-align: left; }
+.mm-text code { background: rgba(0,0,0,.08); padding: 0 4px; border-radius: 3px; }
 .checklist-row input[type=text] { flex: 1; padding: 8px 10px; }
 .checklist-row .del { background: none; border: none; color: var(--text-muted); font-size: 16px; }
 .checklist-view-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
@@ -992,7 +1008,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 32;
+  const APP_BUILD_NUMBER = 33;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1122,6 +1138,84 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return String(str || "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
+  }
+
+  function mdToHtml(text) {
+    // Leichtgewichtige, sichere Markdown-Formatierung: erst escapen, dann Muster ersetzen.
+    const lines = escapeHtml(text || "").split("\n");
+    let html = ""; let inUl = false; let inOl = false;
+    function closeLists() {
+      if (inUl) { html += "</ul>"; inUl = false; }
+      if (inOl) { html += "</ol>"; inOl = false; }
+    }
+    lines.forEach((line) => {
+      const heading = line.match(/^##\s+(.*)/);
+      const bullet = line.match(/^[-*]\s+(.*)/);
+      const numbered = line.match(/^\d+\.\s+(.*)/);
+      let inline = (s) => s
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>")
+        .replace(/`(.+?)`/g, "<code>$1</code>");
+      if (heading) { closeLists(); html += `<h4>${inline(heading[1])}</h4>`; }
+      else if (bullet) { if (!inUl) { closeLists(); html += "<ul>"; inUl = true; } html += `<li>${inline(bullet[1])}</li>`; }
+      else if (numbered) { if (!inOl) { closeLists(); html += "<ol>"; inOl = true; } html += `<li>${inline(numbered[1])}</li>`; }
+      else if (line.trim() === "") { closeLists(); html += "<br>"; }
+      else { closeLists(); html += `<p>${inline(line)}</p>`; }
+    });
+    closeLists();
+    return html;
+  }
+
+  function attachSpeechInput(btn, target) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { btn.style.display = "none"; return; }
+    let recognizing = false;
+    let recognition;
+    btn.onclick = () => {
+      if (recognizing) { recognition.stop(); return; }
+      recognition = new SR();
+      recognition.lang = "de-DE";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = () => { recognizing = true; btn.classList.add("listening"); btn.textContent = "🔴"; };
+      recognition.onend = () => { recognizing = false; btn.classList.remove("listening"); btn.textContent = "🎤"; };
+      recognition.onerror = () => { showToast("Spracherkennung fehlgeschlagen — Mikrofonzugriff erlaubt?"); };
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        const el = typeof target === "function" ? target() : target;
+        if (!el) return;
+        const s = el.selectionStart ?? el.value.length, en = el.selectionEnd ?? el.value.length;
+        const needsSpace = s > 0 && el.value[s - 1] && !/\s$/.test(el.value.slice(0, s));
+        const insert = (needsSpace ? " " : "") + transcript;
+        el.value = el.value.slice(0, s) + insert + el.value.slice(en);
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.focus();
+        el.selectionStart = el.selectionEnd = s + insert.length;
+      };
+      recognition.start();
+    };
+  }
+
+  function wrapSelection(textarea, before, after) {
+    const s = textarea.selectionStart, e = textarea.selectionEnd;
+    const val = textarea.value;
+    const selected = val.slice(s, e) || "Text";
+    textarea.value = val.slice(0, s) + before + selected + (after || before) + val.slice(e);
+    textarea.focus();
+    textarea.selectionStart = s + before.length;
+    textarea.selectionEnd = s + before.length + selected.length;
+  }
+
+  function prefixLines(textarea, prefix) {
+    const s = textarea.selectionStart, e = textarea.selectionEnd;
+    const val = textarea.value;
+    const lineStart = val.lastIndexOf("\n", s - 1) + 1;
+    let lineEnd = val.indexOf("\n", e);
+    if (lineEnd === -1) lineEnd = val.length;
+    const block = val.slice(lineStart, lineEnd);
+    const prefixed = block.split("\n").map(l => l.startsWith(prefix) ? l : prefix + l).join("\n");
+    textarea.value = val.slice(0, lineStart) + prefixed + val.slice(lineEnd);
+    textarea.focus();
   }
 
   function fmtDate(ts) {
@@ -1617,7 +1711,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     let bodyHtml = "";
     if (it.type === "note") {
-      bodyHtml = `<div class="card-body">${escapeHtml(it.body || "").slice(0, 220)}</div>`;
+      bodyHtml = `<div class="card-body md-preview">${mdToHtml((it.body || "").slice(0, 260))}</div>`;
     } else if (it.type === "checklist") {
       const total = (it.items || []).length;
       const done = (it.items || []).filter(c => c.done).length;
@@ -1693,7 +1787,16 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (type === "note") {
       bodyFieldHtml = `
         <div class="field"><label>Inhalt</label>
-          <textarea id="f-body" placeholder="Worum geht's bei der Idee?">${escapeHtml(draft.body)}</textarea>
+          <div class="md-toolbar">
+            <button type="button" class="md-btn" data-md="bold" title="Fett"><b>F</b></button>
+            <button type="button" class="md-btn" data-md="italic" title="Kursiv"><i>K</i></button>
+            <button type="button" class="md-btn" data-md="heading" title="Überschrift">H</button>
+            <button type="button" class="md-btn" data-md="bullet" title="Liste">• Liste</button>
+            <button type="button" class="md-btn" data-md="numbered" title="Nummerierte Liste">1. Liste</button>
+            <button type="button" class="md-btn" data-md="code" title="Code">&lt;/&gt;</button>
+            <button type="button" class="md-btn mic-btn" id="micBodyBtn" title="Diktieren">🎤</button>
+          </div>
+          <textarea id="f-body" placeholder="Worum geht's bei der Idee? (**fett**, *kursiv*, ## Überschrift, - Liste)">${escapeHtml(draft.body)}</textarea>
         </div>`;
     } else if (type === "checklist") {
       bodyFieldHtml = `
@@ -1749,7 +1852,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <button class="close-btn" id="closeModal">✕</button>
         </div>
         <div class="field"><label>Titel</label>
-          <input type="text" id="f-title" value="${escapeHtml(draft.title)}" placeholder="Titel der Idee">
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="f-title" value="${escapeHtml(draft.title)}" placeholder="Titel der Idee" style="flex:1;">
+            <button type="button" class="md-btn mic-btn" id="micTitleBtn" title="Diktieren">🎤</button>
+          </div>
         </div>
         ${bodyFieldHtml}
         <div class="field"><label>Tags (mit Komma trennen)</label>
@@ -1780,6 +1886,23 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     `;
     document.body.appendChild(overlay);
 
+    attachSpeechInput(overlay.querySelector("#micTitleBtn"), () => overlay.querySelector("#f-title"));
+    if (type === "note") {
+      const bodyTextarea = overlay.querySelector("#f-body");
+      attachSpeechInput(overlay.querySelector("#micBodyBtn"), () => bodyTextarea);
+      overlay.querySelectorAll(".md-btn[data-md]").forEach(btn => {
+        btn.onclick = () => {
+          const action = btn.dataset.md;
+          if (action === "bold") wrapSelection(bodyTextarea, "**");
+          else if (action === "italic") wrapSelection(bodyTextarea, "*");
+          else if (action === "code") wrapSelection(bodyTextarea, "`");
+          else if (action === "heading") prefixLines(bodyTextarea, "## ");
+          else if (action === "bullet") prefixLines(bodyTextarea, "- ");
+          else if (action === "numbered") prefixLines(bodyTextarea, "1. ");
+        };
+      });
+    }
+
     // checklist rows
     const todayStrEditor = new Date().toISOString().slice(0, 10);
     function renderChecklistRows() {
@@ -1795,21 +1918,41 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         r.innerHTML = hw ? `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" class="hw-text" value="${escapeHtml(row.text)}" placeholder="Aufgabe (z. B. S. 12, Nr. 3)" style="flex:2;">
+          <button type="button" class="md-btn mic-btn" title="Diktieren">🎤</button>
           <input type="text" class="hw-subject" value="${escapeHtml(row.subject || "")}" placeholder="Fach" style="flex:1;max-width:110px;">
           <input type="date" class="hw-due" value="${escapeHtml(row.dueDate || "")}" style="max-width:150px;${overdue ? "color:#C0453B;border-color:#C0453B;" : ""}">
+          <select class="hw-recurring" style="max-width:120px;padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);">
+            <option value="" ${!row.recurring ? "selected" : ""}>Einmalig</option>
+            <option value="daily" ${row.recurring === "daily" ? "selected" : ""}>🔁 Täglich</option>
+            <option value="weekly" ${row.recurring === "weekly" ? "selected" : ""}>🔁 Wöchentlich</option>
+          </select>
           <button type="button" class="del" title="Entfernen">✕</button>` : `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" value="${escapeHtml(row.text)}" placeholder="Aufgabe...">
+          <button type="button" class="md-btn mic-btn" title="Diktieren">🎤</button>
           <button type="button" class="del" title="Entfernen">✕</button>`;
         if (hw) {
-          const [cb, txt, subj, due, del] = r.children;
-          cb.onchange = () => { row.done = cb.checked; renderChecklistRows(); };
+          const [cb, txt, mic, subj, due, rec, del] = r.children;
+          cb.onchange = () => {
+            if (cb.checked && row.recurring && row.dueDate) {
+              const nextDays = row.recurring === "daily" ? 1 : 7;
+              row.dueDate = addDays(row.dueDate, nextDays);
+              row.done = false;
+              showToast(`Erledigt — nächster Termin: ${formatDateStrShort(row.dueDate)}`);
+            } else {
+              row.done = cb.checked;
+            }
+            renderChecklistRows();
+          };
           txt.oninput = () => { row.text = txt.value; };
+          attachSpeechInput(mic, () => txt);
           subj.oninput = () => { row.subject = subj.value; };
           due.onchange = () => { row.dueDate = due.value; renderChecklistRows(); };
+          rec.onchange = () => { row.recurring = rec.value; };
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
         } else {
-          const [cb, txt, del] = r.children;
+          const [cb, txt, mic, del] = r.children;
+          attachSpeechInput(mic, () => txt);
           cb.onchange = () => { row.done = cb.checked; };
           txt.oninput = () => { row.text = txt.value; };
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
@@ -1820,7 +1963,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (type === "checklist") {
       renderChecklistRows();
       overlay.querySelector("#addChecklistRow").onclick = () => {
-        draft.items.push({ id: uid(), text: "", done: false, subject: "", dueDate: draft.hwMode ? todayStrEditor : "" });
+        draft.items.push({ id: uid(), text: "", done: false, subject: "", dueDate: draft.hwMode ? todayStrEditor : "", recurring: "" });
         renderChecklistRows();
         const rows = overlay.querySelectorAll(".checklist-row input[type=text]");
         if (rows.length) rows[rows.length - 1].focus();
@@ -2332,7 +2475,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         textEl.className = "mm-text";
         textEl.contentEditable = "true";
         textEl.spellcheck = false;
-        textEl.textContent = node.text;
+        textEl.innerHTML = mdToHtml(node.text);
         el.appendChild(textEl);
 
         const childCount = mmChildren(node.id).length;
@@ -2368,9 +2511,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           if (e.target !== textEl) { textEl.focus(); selectAllText(textEl); }
         });
 
+        textEl.addEventListener("focus", () => { textEl.textContent = node.text; });
         textEl.addEventListener("blur", () => {
           node.text = textEl.textContent.trim() || "Ohne Titel";
           saveState();
+          textEl.innerHTML = mdToHtml(node.text);
         });
         textEl.addEventListener("keydown", (e) => {
           if (e.key === "Enter") { e.preventDefault(); node.text = textEl.textContent.trim() || "Ohne Titel"; saveState(); addSiblingTo(node.id); }
