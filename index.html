@@ -554,6 +554,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   padding: 3px 10px 3px 3px; font-size: 12px; font-weight: 600;
 }
 .points-pill .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
+.reward-list { display: flex; flex-direction: column; gap: 6px; }
+.reward-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px;
+}
+.reward-title { font-weight: 600; font-size: 13.5px; flex: 1; min-width: 120px; }
+.reward-row .redeem-profile { padding: 5px 7px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
+.reward-row .card-pin { font-size: 13px; padding: 2px; }
 .widget-row:last-child { border-bottom: none; }
 .widget-row .wr-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .widget-row .wr-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
@@ -1026,7 +1035,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 35;
+  const APP_BUILD_NUMBER = 36;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1073,6 +1082,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       federalState: "",
       weatherLocation: { name: "", lat: null, lon: null },
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
+      checklistTemplates: [],
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -1675,6 +1685,82 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ EDITOR MODAL ============ */
+  function drawColoringTemplate(ctx, id) {
+    ctx.save();
+    ctx.strokeStyle = "#2B2621";
+    ctx.fillStyle = "#2B2621";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (id === "auto") {
+      ctx.beginPath(); ctx.roundRect(120, 190, 320, 90, 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(170, 190); ctx.lineTo(210, 130); ctx.lineTo(370, 130); ctx.lineTo(410, 190); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(200, 285, 35, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(370, 285, 35, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.rect(240, 150, 60, 40); ctx.stroke();
+    } else if (id === "haus") {
+      ctx.beginPath(); ctx.rect(160, 180, 280, 160); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(140, 180); ctx.lineTo(300, 70); ctx.lineTo(460, 180); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.rect(270, 260, 60, 80); ctx.stroke();
+      ctx.beginPath(); ctx.rect(190, 210, 50, 50); ctx.stroke();
+      ctx.beginPath(); ctx.rect(360, 210, 50, 50); ctx.stroke();
+    } else if (id === "katze") {
+      ctx.beginPath(); ctx.arc(300, 230, 90, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(230, 170); ctx.lineTo(210, 100); ctx.lineTo(270, 150); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(370, 170); ctx.lineTo(390, 100); ctx.lineTo(330, 150); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(265, 220, 8, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(335, 220, 8, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 235); ctx.lineTo(300, 250); ctx.lineTo(285, 260); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(380, 260); ctx.quadraticCurveTo(440, 220, 420, 160); ctx.stroke();
+    } else if (id === "rakete") {
+      ctx.beginPath(); ctx.moveTo(300, 60); ctx.quadraticCurveTo(360, 130, 350, 260); ctx.lineTo(250, 260); ctx.quadraticCurveTo(240, 130, 300, 60); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(300, 150, 22, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(250, 230); ctx.lineTo(200, 290); ctx.lineTo(250, 270); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(350, 230); ctx.lineTo(400, 290); ctx.lineTo(350, 270); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(275, 260); ctx.lineTo(265, 310); ctx.lineTo(285, 310); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(325, 260); ctx.lineTo(315, 310); ctx.lineTo(335, 310); ctx.closePath(); ctx.stroke();
+    } else if (id === "blume") {
+      ctx.beginPath(); ctx.arc(150, 100, 40, 0, Math.PI * 2); ctx.stroke();
+      [0, 1, 2, 3, 4].forEach(i => { const a = (i / 5) * Math.PI * 2; ctx.beginPath(); ctx.ellipse(150 + Math.cos(a) * 45, 100 + Math.sin(a) * 45, 22, 14, a, 0, Math.PI * 2); ctx.stroke(); });
+      ctx.beginPath(); ctx.moveTo(150, 140); ctx.lineTo(150, 300); ctx.stroke();
+      ctx.beginPath(); ctx.arc(420, 130, 36, 0, Math.PI * 2); ctx.stroke();
+      [0, 1, 2, 3, 4].forEach(i => { const a = (i / 5) * Math.PI * 2 + 0.3; ctx.beginPath(); ctx.ellipse(420 + Math.cos(a) * 40, 130 + Math.sin(a) * 40, 20, 12, a, 0, Math.PI * 2); ctx.stroke(); });
+      ctx.beginPath(); ctx.moveTo(420, 166); ctx.lineTo(420, 300); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(60, 310); ctx.lineTo(540, 310); ctx.stroke();
+    } else if (id === "boot") {
+      ctx.beginPath(); ctx.moveTo(150, 260); ctx.lineTo(450, 260); ctx.lineTo(400, 310); ctx.lineTo(200, 310); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 260); ctx.lineTo(300, 90); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 100); ctx.lineTo(380, 220); ctx.lineTo(300, 220); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(295, 140); ctx.lineTo(230, 220); ctx.lineTo(295, 220); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(80, 330); ctx.quadraticCurveTo(150, 310, 220, 330); ctx.quadraticCurveTo(300, 350, 380, 330); ctx.quadraticCurveTo(460, 310, 520, 330); ctx.stroke();
+    } else if (id === "dino") {
+      ctx.beginPath();
+      ctx.moveTo(120, 300); ctx.quadraticCurveTo(110, 220, 170, 200); ctx.quadraticCurveTo(160, 140, 220, 110);
+      ctx.quadraticCurveTo(240, 90, 260, 110); ctx.quadraticCurveTo(230, 130, 240, 150);
+      ctx.quadraticCurveTo(320, 130, 400, 170); ctx.quadraticCurveTo(460, 190, 470, 230);
+      ctx.quadraticCurveTo(440, 220, 420, 240); ctx.quadraticCurveTo(400, 260, 410, 300);
+      ctx.lineTo(380, 300); ctx.quadraticCurveTo(370, 270, 350, 260);
+      ctx.quadraticCurveTo(280, 280, 220, 270); ctx.quadraticCurveTo(200, 290, 195, 300);
+      ctx.lineTo(165, 300); ctx.quadraticCurveTo(160, 270, 170, 250); ctx.quadraticCurveTo(130, 260, 120, 300);
+      ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(230, 115, 6, 0, Math.PI * 2); ctx.stroke();
+      [0, 1, 2].forEach(i => { ctx.beginPath(); ctx.moveTo(230 + i * 40, 140); ctx.lineTo(240 + i * 40, 115); ctx.stroke(); });
+    } else if (id === "roboter") {
+      ctx.beginPath(); ctx.roundRect(220, 130, 160, 130, 16); ctx.stroke();
+      ctx.beginPath(); ctx.arc(270, 180, 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(330, 180, 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(265, 225); ctx.lineTo(335, 225); ctx.stroke();
+      ctx.beginPath(); ctx.rect(260, 270, 80, 90); ctx.stroke();
+      ctx.beginPath(); ctx.rect(150, 280, 40, 60); ctx.stroke();
+      ctx.beginPath(); ctx.rect(410, 280, 40, 60); ctx.stroke();
+      ctx.beginPath(); ctx.rect(275, 360, 25, 20); ctx.stroke();
+      ctx.beginPath(); ctx.rect(320, 360, 25, 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 130); ctx.lineTo(300, 100); ctx.stroke();
+      ctx.beginPath(); ctx.arc(300, 92, 8, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function openEditor(type, id) {
     const existing = id ? state.items.find(i => i.id === id) : null;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
@@ -1704,8 +1790,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <textarea id="f-body" placeholder="Worum geht's bei der Idee? (**fett**, *kursiv*, ## Überschrift, - Liste)">${escapeHtml(draft.body)}</textarea>
         </div>`;
     } else if (type === "checklist") {
+      const templateOptions = state.checklistTemplates.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
       bodyFieldHtml = `
         <div class="field">
+          ${!existing && state.checklistTemplates.length ? `
+          <label>Vorlage verwenden (optional)</label>
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <select id="f-template" style="flex:1;">
+              <option value="">— leer starten —</option>
+              ${templateOptions}
+            </select>
+            <button type="button" class="btn btn-sm btn-danger" id="deleteTemplateBtn">Vorlage löschen</button>
+          </div>` : ""}
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
             <input type="checkbox" id="f-hwmode" ${draft.hwMode ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
             📚 Hausaufgabenheft-Modus (Fach &amp; Fälligkeitsdatum pro Eintrag, für die Schule)
@@ -1713,6 +1809,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <label>Punkte</label>
           <div class="checklist-items" id="checklistItems"></div>
           <button type="button" class="btn btn-sm add-row-btn" id="addChecklistRow">+ Punkt hinzufügen</button>
+          <button type="button" class="btn btn-sm" id="saveTemplateBtn" style="margin-left:8px;">💾 Als Vorlage speichern</button>
         </div>`;
     } else if (type === "image") {
       bodyFieldHtml = `
@@ -1729,6 +1826,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           </div>
           <div id="drawPane" style="display:none;">
             <div class="draw-toolbar">
+              <select id="drawTemplate">
+                <option value="">Vorlage laden …</option>
+                <option value="auto">🚗 Auto</option>
+                <option value="haus">🏠 Haus</option>
+                <option value="katze">🐱 Katze</option>
+                <option value="rakete">🚀 Rakete</option>
+                <option value="blume">🌻 Blumenwiese</option>
+                <option value="boot">⛵ Segelboot</option>
+                <option value="dino">🦕 Dinosaurier</option>
+                <option value="roboter">🤖 Roboter</option>
+              </select>
               <div class="draw-colors" id="drawColors"></div>
               <input type="color" id="drawCustomColor" value="#2B2621" title="Eigene Farbe">
               <select id="drawSize">
@@ -1870,6 +1978,40 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         draft.hwMode = e.target.checked;
         renderChecklistRows();
       });
+      const templateSelect = overlay.querySelector("#f-template");
+      if (templateSelect) {
+        templateSelect.addEventListener("change", () => {
+          const tpl = state.checklistTemplates.find(t => t.id === templateSelect.value);
+          if (!tpl) return;
+          draft.hwMode = !!tpl.hwMode;
+          draft.items = tpl.items.map(it => ({ ...it, id: uid(), done: false }));
+          if (!draft.title) draft.title = tpl.name;
+          overlay.querySelector("#f-hwmode").checked = draft.hwMode;
+          overlay.querySelector("#f-title").value = draft.title;
+          renderChecklistRows();
+        });
+        overlay.querySelector("#deleteTemplateBtn").onclick = () => {
+          const tplId = templateSelect.value;
+          if (!tplId) { showToast("Bitte zuerst eine Vorlage auswählen."); return; }
+          const tpl = state.checklistTemplates.find(t => t.id === tplId);
+          if (tpl && confirm(`Vorlage „${tpl.name}" wirklich löschen?`)) {
+            state.checklistTemplates = state.checklistTemplates.filter(t => t.id !== tplId);
+            saveState({ skipTouch: true });
+            templateSelect.querySelector(`option[value="${tplId}"]`).remove();
+            showToast("Vorlage gelöscht.");
+          }
+        };
+      }
+      overlay.querySelector("#saveTemplateBtn").onclick = () => {
+        const name = prompt("Name für diese Vorlage:", draft.title || "Neue Vorlage");
+        if (!name || !name.trim()) return;
+        state.checklistTemplates.push({
+          id: uid(), name: name.trim(), hwMode: draft.hwMode,
+          items: draft.items.map(it => ({ text: it.text, subject: it.subject || "", dueDate: "", recurring: it.recurring || "" }))
+        });
+        saveState({ skipTouch: true });
+        showToast("Als Vorlage gespeichert.");
+      };
     }
 
     // image upload
@@ -1955,6 +2097,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       };
+      overlay.querySelector("#drawTemplate").addEventListener("change", (e) => {
+        const tplId = e.target.value;
+        if (!tplId) return;
+        pushUndo();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawColoringTemplate(ctx, tplId);
+        e.target.value = "";
+      });
 
       let drawing = false;
       function pos(e) {
@@ -2769,25 +2920,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       rewardSection.innerHTML += `<div class="empty-state" style="padding:30px;"><span class="empty-icon">🎁</span>Noch keine Belohnungen angelegt.</div>`;
     } else {
       const rlist = document.createElement("div");
-      rlist.className = "grid";
+      rlist.className = "reward-list";
       approvedRewards.forEach(r => {
         const card = document.createElement("div");
-        card.className = "card";
-        card.style.cursor = "default";
+        card.className = "reward-row";
         const profileOptions = state.profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${pointsBalance(p.id)} P.)</option>`).join("");
         card.innerHTML = `
-          <div class="card-top">
-            <h3 class="card-title">🎁 ${escapeHtml(r.title)}</h3>
-            <div style="display:flex;gap:4px;">
-              <button class="card-pin edit-reward" title="Bearbeiten">✎</button>
-              <button class="card-pin del-reward" title="Löschen">🗑️</button>
-            </div>
-          </div>
-          <div class="card-tags"><span class="tag-chip">⭐ ${r.cost} Punkte</span></div>
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <select class="redeem-profile" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);">${profileOptions}</select>
-            <button class="btn btn-sm btn-accent redeem-btn">Einlösen</button>
-          </div>`;
+          <span class="reward-title">🎁 ${escapeHtml(r.title)}</span>
+          <span class="tag-chip">⭐ ${r.cost}</span>
+          <select class="redeem-profile">${profileOptions}</select>
+          <button class="btn btn-sm btn-accent redeem-btn">Einlösen</button>
+          <button class="card-pin edit-reward" title="Bearbeiten">✎</button>
+          <button class="card-pin del-reward" title="Löschen">🗑️</button>`;
         card.querySelector(".edit-reward").onclick = () => openRewardEditor(r);
         card.querySelector(".del-reward").onclick = () => {
           if (confirm("Belohnung wirklich löschen?")) { state.rewards = state.rewards.filter(x => x.id !== r.id); saveState(); render(); }
