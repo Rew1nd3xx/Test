@@ -520,13 +520,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .home-greeting { margin-bottom: 22px; }
 .home-greeting h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 4px; }
 .home-greeting .home-date { color: var(--text-muted); font-size: 13.5px; text-transform: capitalize; }
-.home-ticker {
-  display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 999px; padding: 9px 16px; margin-bottom: 20px; font-size: 12.5px; box-shadow: var(--shadow);
+.global-ticker {
+  display: flex; align-items: center; gap: 10px; background: var(--surface2); border-bottom: 1px solid var(--border);
+  padding: 7px 26px; font-size: 12.5px;
 }
-.home-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
+.global-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
 @keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.home-ticker-text { transition: opacity .25s ease; }
+.global-ticker-text { transition: opacity .25s ease; }
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
 .family-share-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
@@ -657,6 +657,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   .hamburger { display: block; }
   .view-container { padding: 16px; }
   .topbar { padding: 12px 16px; }
+  .global-ticker { padding: 6px 16px; font-size: 11.5px; }
 }
 
 /* ============ GRID / CARDS ============ */
@@ -969,6 +970,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <button class="btn btn-accent" id="newItemBtn">+ Neue Idee</button>
     </header>
 
+    <div class="global-ticker" id="globalTicker">
+      <span class="global-ticker-dot"></span><span class="global-ticker-text" id="globalTickerText"></span>
+    </div>
+
     <main class="view-container" id="viewContainer">
       <!-- Views are rendered here by JS -->
     </main>
@@ -985,7 +990,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 25;
+  const APP_BUILD_NUMBER = 27;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1330,63 +1335,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     `;
     container.appendChild(greeting);
 
-    if (tickerInterval) { clearInterval(tickerInterval); tickerInterval = null; }
-    const tickerMessages = [];
-    const upcomingForTicker = state.events.filter(ev => ev.date >= todayStr && canSeeEventDetails(ev))
-      .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")))[0];
-    if (upcomingForTicker) {
-      tickerMessages.push(`📅 Nächster Termin: ${upcomingForTicker.title} — ${upcomingForTicker.date === todayStr ? "heute" : formatDateStrShort(upcomingForTicker.date)}`);
-    }
-    const nextHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.dueDate)
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
-    if (nextHomework) {
-      const owner = getProfile(nextHomework.assignedTo);
-      tickerMessages.push(`📚 ${nextHomework.title}${owner ? " (" + owner.name + ")" : ""} — fällig ${nextHomework.dueDate === todayStr ? "heute" : formatDateStrShort(nextHomework.dueDate)}`);
-    }
-    if (state.custodySchedules.length) {
-      state.custodySchedules.forEach(s => {
-        const res = custodyResultForDate(s, todayStr);
-        if (res && res.isSwitchDay) {
-          const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
-          tickerMessages.push(`🔁 Heute Wechseltag${parents.length ? " zu " + parents.map(p => p.name).join(" & ") : ""}`);
-        }
-      });
-    }
-    const ferienForTicker = getFerienStatus();
-    if (ferienForTicker) {
-      tickerMessages.push(ferienForTicker.type === "current"
-        ? `🎉 Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} (${ferienForTicker.name})`
-        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name}`);
-    }
-    if (weatherCache.data) {
-      const cw = weatherCache.data.current_weather;
-      tickerMessages.push(`${weatherInfo(cw.weathercode).icon} ${Math.round(cw.temperature)}° in ${state.weatherLocation.name}`);
-    }
-    const openShoppingCount = state.shoppingList.filter(i => !i.done).length;
-    if (openShoppingCount) tickerMessages.push(`🛒 ${openShoppingCount} Ding${openShoppingCount === 1 ? "" : "e"} auf der Einkaufsliste`);
-    const kidsForLeader = state.profiles.filter(p => p.role === "child");
-    if (kidsForLeader.length) {
-      const leader = kidsForLeader.map(p => ({ p, pts: pointsBalance(p.id) })).sort((a, b) => b.pts - a.pts)[0];
-      if (leader && leader.pts > 0) tickerMessages.push(`⭐ ${leader.p.name} führt mit ${leader.pts} Punkten`);
-    }
-    if (!tickerMessages.length) tickerMessages.push("👋 Willkommen bei DApp — leg direkt los!");
-
-    const ticker = document.createElement("div");
-    ticker.className = "home-ticker";
-    ticker.innerHTML = `<span class="home-ticker-dot"></span><span class="home-ticker-text" id="homeTickerText">${escapeHtml(tickerMessages[0])}</span>`;
-    container.appendChild(ticker);
-    if (tickerMessages.length > 1) {
-      let tickerIdx = 0;
-      tickerInterval = setInterval(() => {
-        if (!document.body.contains(ticker)) { clearInterval(tickerInterval); tickerInterval = null; return; }
-        tickerIdx = (tickerIdx + 1) % tickerMessages.length;
-        const textEl = document.getElementById("homeTickerText");
-        if (!textEl) return;
-        textEl.style.opacity = "0";
-        setTimeout(() => { textEl.textContent = tickerMessages[tickerIdx]; textEl.style.opacity = "1"; }, 250);
-      }, 4500);
-    }
-
     const grid = document.createElement("div");
     grid.className = "widget-grid";
     container.appendChild(grid);
@@ -1460,7 +1408,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     // --- Für dich markiert ---
     if (activeProfile) {
       const forYouItems = state.items.filter(it => (it.taggedProfileIds || []).includes(activeProfile.id) && canSeeItemDetails(it));
-      const forYouTasks = state.tasks.filter(t => t.assignedTo === activeProfile.id && !t.done);
+      const forYouTasks = state.tasks.filter(t => t.assignedTo === activeProfile.id && !t.done && t.approved !== false);
       const forYouCount = forYouItems.length + forYouTasks.length;
       if (forYouCount) {
         const rows = [
@@ -1481,7 +1429,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     }
 
     // --- Aufgaben & Punktestand ---
-    const openTasks = state.tasks.filter(t => !t.done && t.category !== "homework");
+    const openTasks = state.tasks.filter(t => !t.done && t.category !== "homework" && t.approved !== false);
     const pointsHtml = state.profiles.filter(p => p.role === "child").map(p =>
       `<div class="widget-row"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span><span class="wr-title">${escapeHtml(p.name)}</span><span class="wr-meta">${pointsBalance(p.id)} ⭐</span></div>`
     ).join("");
@@ -1490,7 +1438,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       "tasks", "Aufgaben ›");
 
     // --- Hausaufgaben ---
-    const openHomework = state.tasks.filter(t => t.category === "homework" && !t.done)
+    const openHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.approved !== false)
       .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
     widget("📚", "Hausaufgaben", "#3A5A9B",
       openHomework.length ? openHomework.slice(0, 5).map(t => {
@@ -2558,8 +2506,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     // Hausaufgaben
     const todayStr = new Date().toISOString().slice(0, 10);
-    const homework = state.tasks.filter(t => t.category === "homework");
-    const chores = state.tasks.filter(t => t.category !== "homework");
+    const homework = state.tasks.filter(t => t.category === "homework" && t.approved !== false);
+    const chores = state.tasks.filter(t => t.category !== "homework" && t.approved !== false);
 
     const hwSection = document.createElement("div");
     hwSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">📚 Hausaufgaben</h3>`;
@@ -2661,17 +2609,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     }
 
     // Rewards catalog
+    const approvedRewards = state.rewards.filter(r => r.approved !== false);
     const rewardSection = document.createElement("div");
     rewardSection.style.marginTop = "28px";
     rewardSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">Belohnungen</h3>`;
     container.appendChild(rewardSection);
 
-    if (!state.rewards.length) {
+    if (!approvedRewards.length) {
       rewardSection.innerHTML += `<div class="empty-state" style="padding:30px;"><span class="empty-icon">🎁</span>Noch keine Belohnungen angelegt.</div>`;
     } else {
       const rlist = document.createElement("div");
       rlist.className = "grid";
-      state.rewards.forEach(r => {
+      approvedRewards.forEach(r => {
         const card = document.createElement("div");
         card.className = "card";
         card.style.cursor = "default";
@@ -2701,6 +2650,72 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         rlist.appendChild(card);
       });
       rewardSection.appendChild(rlist);
+    }
+
+    // Wartet auf Freigabe (von Kindern angelegte Aufgaben/Belohnungen)
+    const pendingTasks = state.tasks.filter(t => t.approved === false);
+    const pendingRewards = state.rewards.filter(r => r.approved === false);
+    if (pendingTasks.length || pendingRewards.length) {
+      const activeP = getActiveProfile();
+      const isParentActive = activeP && activeP.role === "parent";
+      const pendingSection = document.createElement("div");
+      pendingSection.style.marginTop = "28px";
+      pendingSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:6px;">⏳ Wartet auf Freigabe</h3>
+        <p class="hint" style="margin-bottom:10px;">${isParentActive ? "Von Kindern angelegt — prüfen und freigeben." : "Wird erst nach Freigabe durch ein Elternteil sichtbar/nutzbar."}</p>`;
+      container.appendChild(pendingSection);
+      const plist = document.createElement("div");
+      plist.className = "grid";
+      pendingTasks.forEach(t => {
+        const owner = getProfile(t.assignedTo);
+        const creator = getProfile(t.createdBy);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        card.style.borderColor = "#C9A24B";
+        card.innerHTML = `
+          <div class="card-top"><h3 class="card-title">${t.category === "homework" ? "📚" : "🧹"} ${escapeHtml(t.title)}</h3></div>
+          <div class="card-tags">
+            ${creator ? `<span class="tag-chip">von ${escapeHtml(creator.name)}</span>` : ""}
+            ${owner ? `<span class="tag-chip">für ${escapeHtml(owner.name)}</span>` : ""}
+            <span class="tag-chip">⭐ ${t.points} Punkte</span>
+          </div>
+          ${isParentActive ? `<div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-sm btn-accent approve-task">✓ Freigeben</button>
+            <button class="btn btn-sm btn-danger reject-task">✕ Ablehnen</button>
+          </div>` : ""}`;
+        if (isParentActive) {
+          card.querySelector(".approve-task").onclick = () => { t.approved = true; saveState(); render(); showToast("Aufgabe freigegeben."); };
+          card.querySelector(".reject-task").onclick = () => {
+            if (confirm("Diese Aufgabe wirklich ablehnen und löschen?")) { state.tasks = state.tasks.filter(x => x.id !== t.id); saveState(); render(); }
+          };
+        }
+        plist.appendChild(card);
+      });
+      pendingRewards.forEach(r => {
+        const creator = getProfile(r.createdBy);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        card.style.borderColor = "#C9A24B";
+        card.innerHTML = `
+          <div class="card-top"><h3 class="card-title">🎁 ${escapeHtml(r.title)}</h3></div>
+          <div class="card-tags">
+            ${creator ? `<span class="tag-chip">von ${escapeHtml(creator.name)}</span>` : ""}
+            <span class="tag-chip">⭐ ${r.cost} Punkte</span>
+          </div>
+          ${isParentActive ? `<div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-sm btn-accent approve-reward">✓ Freigeben</button>
+            <button class="btn btn-sm btn-danger reject-reward">✕ Ablehnen</button>
+          </div>` : ""}`;
+        if (isParentActive) {
+          card.querySelector(".approve-reward").onclick = () => { r.approved = true; saveState(); render(); showToast("Belohnung freigegeben."); };
+          card.querySelector(".reject-reward").onclick = () => {
+            if (confirm("Diese Belohnung wirklich ablehnen und löschen?")) { state.rewards = state.rewards.filter(x => x.id !== r.id); saveState(); render(); }
+          };
+        }
+        plist.appendChild(card);
+      });
+      pendingSection.appendChild(plist);
     }
 
     header.querySelector("#addTaskBtn").onclick = () => openTaskEditor();
@@ -2762,9 +2777,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       draft.dueDate = draft.category === "homework" ? overlay.querySelector("#t-due").value.trim() : "";
       draft.points = Math.max(0, parseInt(overlay.querySelector("#t-points").value, 10) || 0);
       draft.recurring = draft.category === "homework" ? "" : overlay.querySelector("#t-recurring").value;
+      const creator = getActiveProfile();
+      draft.createdBy = state.activeProfileId || null;
+      draft.approved = !creator || creator.role !== "child";
       state.tasks.push(draft);
       saveState(); close(); render();
-      showToast(draft.category === "homework" ? "Hausaufgabe angelegt." : "Aufgabe angelegt.");
+      showToast(draft.approved
+        ? (draft.category === "homework" ? "Hausaufgabe angelegt." : "Aufgabe angelegt.")
+        : "Aufgabe angelegt — wartet auf Freigabe durch ein Elternteil.");
     };
     setTimeout(() => overlay.querySelector("#t-title").focus(), 30);
   }
@@ -2791,9 +2811,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     overlay.querySelector("#saveBtn").onclick = () => {
       draft.title = overlay.querySelector("#r-title").value.trim() || "Belohnung";
       draft.cost = Math.max(0, parseInt(overlay.querySelector("#r-cost").value, 10) || 0);
+      const creator = getActiveProfile();
+      draft.createdBy = state.activeProfileId || null;
+      draft.approved = !creator || creator.role !== "child";
       state.rewards.push(draft);
       saveState(); close(); render();
-      showToast("Belohnung angelegt.");
+      showToast(draft.approved ? "Belohnung angelegt." : "Belohnung angelegt — wartet auf Freigabe durch ein Elternteil.");
     };
     setTimeout(() => overlay.querySelector("#r-title").focus(), 30);
   }
@@ -2985,7 +3008,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function buildDayCellInner(dateStr, day, maxEvents, showHeader) {
     const dayEvents = state.events.filter(ev => ev.date === dateStr);
-    const dayHomework = state.tasks.filter(t => t.category === "homework" && t.dueDate === dateStr && !t.done);
+    const dayHomework = state.tasks.filter(t => t.category === "homework" && t.dueDate === dateStr && !t.done && t.approved !== false);
     const activeFilter = calendarChildFilterIds;
     const custody = custodyAssignmentsForDate(dateStr).filter(({ schedule }) =>
       !activeFilter || schedule.childIds.some(id => activeFilter.has(id))
@@ -4689,6 +4712,65 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ INIT ============ */
+  function buildTickerMessages() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const messages = [];
+    const upcomingForTicker = state.events.filter(ev => ev.date >= todayStr && canSeeEventDetails(ev))
+      .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")))[0];
+    if (upcomingForTicker) {
+      messages.push(`📅 Nächster Termin: ${upcomingForTicker.title} — ${upcomingForTicker.date === todayStr ? "heute" : formatDateStrShort(upcomingForTicker.date)}`);
+    }
+    const nextHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.dueDate && t.approved !== false)
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+    if (nextHomework) {
+      const owner = getProfile(nextHomework.assignedTo);
+      messages.push(`📚 ${nextHomework.title}${owner ? " (" + owner.name + ")" : ""} — fällig ${nextHomework.dueDate === todayStr ? "heute" : formatDateStrShort(nextHomework.dueDate)}`);
+    }
+    if (state.custodySchedules.length) {
+      state.custodySchedules.forEach(s => {
+        const res = custodyResultForDate(s, todayStr);
+        if (res && res.isSwitchDay) {
+          const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+          messages.push(`🔁 Heute Wechseltag${parents.length ? " zu " + parents.map(p => p.name).join(" & ") : ""}`);
+        }
+      });
+    }
+    const ferienForTicker = getFerienStatus();
+    if (ferienForTicker) {
+      messages.push(ferienForTicker.type === "current"
+        ? `🎉 Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} (${ferienForTicker.name})`
+        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name}`);
+    }
+    if (weatherCache.data) {
+      const cw = weatherCache.data.current_weather;
+      messages.push(`${weatherInfo(cw.weathercode).icon} ${Math.round(cw.temperature)}° in ${state.weatherLocation.name}`);
+    }
+    const openShoppingCount = state.shoppingList.filter(i => !i.done).length;
+    if (openShoppingCount) messages.push(`🛒 ${openShoppingCount} Ding${openShoppingCount === 1 ? "" : "e"} auf der Einkaufsliste`);
+    const kidsForLeader = state.profiles.filter(p => p.role === "child");
+    if (kidsForLeader.length) {
+      const leader = kidsForLeader.map(p => ({ p, pts: pointsBalance(p.id) })).sort((a, b) => b.pts - a.pts)[0];
+      if (leader && leader.pts > 0) messages.push(`⭐ ${leader.p.name} führt mit ${leader.pts} Punkten`);
+    }
+    if (!messages.length) messages.push("👋 Willkommen bei DApp — leg direkt los!");
+    return messages;
+  }
+
+  function setupGlobalTicker() {
+    const textEl = document.getElementById("globalTickerText");
+    if (!textEl) return;
+    let messages = buildTickerMessages();
+    let idx = 0;
+    textEl.textContent = messages[0];
+    if (tickerInterval) { clearInterval(tickerInterval); tickerInterval = null; }
+    tickerInterval = setInterval(() => {
+      messages = buildTickerMessages();
+      idx = (idx + 1) % messages.length;
+      textEl.style.opacity = "0";
+      setTimeout(() => { textEl.textContent = messages[idx]; textEl.style.opacity = "1"; }, 250);
+    }, 4500);
+  }
+
   function init() {
     applyTheme(state.theme || "papier");
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
@@ -4720,6 +4802,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     render();
     registerServiceWorker();
     setupInstallPrompt();
+    setupGlobalTicker();
     if (state.connectors.network.autoSync && state.connectors.network.url) {
       pullFromNetwork(true, { onlyIfNewer: true, skipConfirm: true }).then(() => startAutoSync());
     }
