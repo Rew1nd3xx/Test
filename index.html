@@ -1035,7 +1035,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 36;
+  const APP_BUILD_NUMBER = 37;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1083,6 +1083,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       weatherLocation: { name: "", lat: null, lon: null },
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
+      militaryTemplatesEnabled: false,
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -1757,6 +1758,31 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       ctx.beginPath(); ctx.rect(320, 360, 25, 20); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(300, 130); ctx.lineTo(300, 100); ctx.stroke();
       ctx.beginPath(); ctx.arc(300, 92, 8, 0, Math.PI * 2); ctx.stroke();
+    } else if (id === "panzer") {
+      ctx.beginPath(); ctx.roundRect(130, 240, 340, 60, 10); ctx.stroke();
+      [0, 1, 2, 3, 4, 5].forEach(i => { ctx.beginPath(); ctx.arc(160 + i * 55, 300, 22, 0, Math.PI * 2); ctx.stroke(); });
+      ctx.beginPath(); ctx.roundRect(220, 180, 160, 65, 12); ctx.stroke();
+      ctx.beginPath(); ctx.arc(300, 210, 26, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 210); ctx.lineTo(430, 195); ctx.lineWidth = 10; ctx.stroke(); ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(150, 240); ctx.lineTo(150, 320); ctx.moveTo(450, 240); ctx.lineTo(450, 320); ctx.stroke();
+    } else if (id === "jet") {
+      ctx.beginPath();
+      ctx.moveTo(500, 190); ctx.lineTo(360, 175); ctx.lineTo(230, 165); ctx.lineTo(90, 190);
+      ctx.lineTo(230, 205); ctx.lineTo(360, 205); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 165); ctx.lineTo(250, 90); ctx.lineTo(300, 130); ctx.lineTo(330, 90); ctx.lineTo(320, 165); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 205); ctx.lineTo(250, 290); ctx.lineTo(300, 245); ctx.lineTo(330, 290); ctx.lineTo(320, 205); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(150, 185); ctx.quadraticCurveTo(140, 165, 165, 168); ctx.quadraticCurveTo(150, 175, 150, 185); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(230, 183, 20, 9, 0, 0, Math.PI * 2); ctx.stroke();
+    } else if (id === "helikopter") {
+      ctx.beginPath(); ctx.ellipse(300, 230, 100, 55, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(400, 220); ctx.quadraticCurveTo(480, 210, 500, 195); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(470, 175); ctx.lineTo(500, 215); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(200, 260); ctx.lineTo(150, 300); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(230, 275); ctx.lineTo(120, 285); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(300, 175); ctx.lineTo(300, 150); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(210, 150); ctx.lineTo(390, 150); ctx.stroke();
+      ctx.beginPath(); ctx.arc(220, 270, 15, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(280, 285, 15, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
   }
@@ -1836,6 +1862,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
                 <option value="boot">⛵ Segelboot</option>
                 <option value="dino">🦕 Dinosaurier</option>
                 <option value="roboter">🤖 Roboter</option>
+                ${state.militaryTemplatesEnabled ? `
+                <option value="panzer">🪖 Panzer</option>
+                <option value="jet">✈️ Kampfjet</option>
+                <option value="helikopter">🚁 Hubschrauber</option>
+                ` : ""}
               </select>
               <div class="draw-colors" id="drawColors"></div>
               <input type="color" id="drawCustomColor" value="#2B2621" title="Eigene Farbe">
@@ -4190,6 +4221,27 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     });
 
     // --- Kalender & Wetter ---
+    const coloringSection = document.createElement("div");
+    coloringSection.className = "settings-section";
+    const activeForColoring = getActiveProfile();
+    const isParentActiveForColoring = !activeForColoring || activeForColoring.role === "parent";
+    coloringSection.innerHTML = `
+      <h3>🎨 Malvorlagen</h3>
+      <p class="hint">Fahrzeug-Vorlagen für Militärfahrzeuge (Panzer, Jet, Hubschrauber) sind eine eigene Gruppe, die erst nach Freigabe erscheint${isParentActiveForColoring ? "" : " — nur ein Elternprofil kann das hier umschalten"}.</p>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;${isParentActiveForColoring ? "cursor:pointer;" : "opacity:.5;"}">
+        <input type="checkbox" id="militaryTemplatesToggle" ${state.militaryTemplatesEnabled ? "checked" : ""} ${isParentActiveForColoring ? "" : "disabled"} style="width:16px;height:16px;accent-color:var(--accent);">
+        🪖 Militärfahrzeug-Vorlagen freigeben
+      </label>
+    `;
+    container.appendChild(coloringSection);
+    if (isParentActiveForColoring) {
+      coloringSection.querySelector("#militaryTemplatesToggle").addEventListener("change", (e) => {
+        state.militaryTemplatesEnabled = e.target.checked;
+        saveState();
+        showToast(state.militaryTemplatesEnabled ? "Militärfahrzeug-Vorlagen freigegeben." : "Militärfahrzeug-Vorlagen gesperrt.");
+      });
+    }
+
     const calWeatherSection = document.createElement("div");
     calWeatherSection.className = "settings-section";
     calWeatherSection.innerHTML = `
