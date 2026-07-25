@@ -548,6 +548,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .widget-head .widget-link { font-size: 11.5px; color: var(--text-muted); }
 .widget-card .widget-body { font-size: 13px; color: var(--text); }
 .widget-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.points-pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.points-pill {
+  display: inline-flex; align-items: center; gap: 5px; background: var(--surface2); border-radius: 999px;
+  padding: 3px 10px 3px 3px; font-size: 12px; font-weight: 600;
+}
+.points-pill .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
 .widget-row:last-child { border-bottom: none; }
 .widget-row .wr-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .widget-row .wr-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
@@ -720,8 +726,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   background: var(--surface2); color: var(--text); cursor: pointer;
 }
 .md-btn:hover { border-color: var(--accent); }
-.mic-btn { font-size: 13px; }
-.mic-btn.listening { background: #C0453B; color: #fff; border-color: #C0453B; animation: tickerPulse 1s ease-in-out infinite; }
 .md-preview p { margin: 0 0 4px; }
 .md-preview h4 { margin: 4px 0; font-family: var(--font-display); font-size: 14px; }
 .md-preview ul, .md-preview ol { margin: 2px 0 4px 18px; padding: 0; }
@@ -739,16 +743,16 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .checklist-view-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .checklist-view-row.done label { text-decoration: line-through; color: var(--text-muted); }
 .shopping-row {
-  display: grid; grid-template-columns: 24px 2fr 1fr 1fr 28px; gap: 10px; align-items: center;
-  padding: 8px 0; border-bottom: 1px dashed var(--border);
+  display: grid; grid-template-columns: 22px 2fr 1fr 1fr 24px; gap: 8px; align-items: center;
+  padding: 5px 0; border-bottom: 1px dashed var(--border);
 }
 .shopping-row:last-child { border-bottom: none; }
-.shopping-row-head { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-.shopping-row input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
-.shopping-row .s-text { font-size: 13.5px; }
+.shopping-row-head { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+.shopping-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+.shopping-row .s-text { font-size: 13px; }
 .shopping-row.done .s-text { text-decoration: line-through; color: var(--text-muted); }
 .shopping-row select, .shopping-row input[type=text] {
-  padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+  padding: 4px 7px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
   font-size: 12.5px; width: 100%;
 }
 @media (max-width: 640px) {
@@ -1022,7 +1026,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 34;
+  const APP_BUILD_NUMBER = 35;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1180,70 +1184,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     });
     closeLists();
     return html;
-  }
-
-  function attachSpeechInput(btn, target) {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { btn.style.display = "none"; return; }
-    let recognizing = false;
-    let recognition;
-    let insertPos = 0;
-    let interimLen = 0;
-    btn.onclick = () => {
-      if (recognizing) { recognition.stop(); return; }
-      const el = typeof target === "function" ? target() : target;
-      if (!el) return;
-      insertPos = el.selectionStart ?? el.value.length;
-      interimLen = 0;
-      recognition = new SR();
-      recognition.lang = "de-DE";
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
-      recognition.onstart = () => { recognizing = true; btn.classList.add("listening"); btn.textContent = "🔴"; };
-      recognition.onend = () => { recognizing = false; btn.classList.remove("listening"); btn.textContent = "🎤"; };
-      recognition.onerror = (e) => {
-        const messages = {
-          "not-allowed": "Mikrofonzugriff wurde nicht erlaubt.",
-          "no-speech": "Nichts gehört — nochmal versuchen.",
-          "network": "Spracherkennung braucht eine Internetverbindung.",
-          "audio-capture": "Kein Mikrofon gefunden."
-        };
-        if (e.error !== "no-speech" && e.error !== "aborted") {
-          showToast(messages[e.error] || "Spracherkennung fehlgeschlagen.");
-        }
-      };
-      recognition.onresult = (e) => {
-        let finalText = "", interimText = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
-          else interimText += e.results[i][0].transcript;
-        }
-        const cur = el.value;
-        const before = cur.slice(0, insertPos);
-        const needsSpace = insertPos > 0 && before && !/\s$/.test(before);
-        const prefix = needsSpace ? " " : "";
-        if (finalText) {
-          const insert = prefix + finalText;
-          el.value = before + insert + cur.slice(insertPos + interimLen);
-          insertPos = insertPos + insert.length;
-          interimLen = 0;
-        }
-        if (interimText) {
-          const curNow = el.value;
-          const beforeNow = curNow.slice(0, insertPos);
-          const needsSpace2 = insertPos > 0 && beforeNow && !/\s$/.test(beforeNow);
-          const interimInsert = (needsSpace2 ? " " : "") + interimText;
-          el.value = beforeNow + interimInsert + curNow.slice(insertPos + interimLen);
-          interimLen = interimInsert.length;
-        }
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-        el.focus();
-        const caret = insertPos + interimLen;
-        el.selectionStart = el.selectionEnd = caret;
-      };
-      recognition.start();
-    };
   }
 
   function wrapSelection(textarea, before, after) {
@@ -1504,39 +1444,41 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       return card;
     }
 
-    // --- Wetter & Ferien (kombiniert) ---
+    // --- Heute: Wetter, Ferien & Betreuung (kombiniert) ---
     const ferienStatus = getFerienStatus();
-    if (state.weatherLocation.lat || state.federalState) {
-      const weatherPart = state.weatherLocation.lat
+    const hasWeather = !!state.weatherLocation.lat;
+    const hasFerien = !!state.federalState;
+    const hasCustody = state.custodySchedules.length > 0;
+    if (hasWeather || hasFerien || hasCustody) {
+      const weatherPart = hasWeather
         ? `<div id="weatherWidgetBody">${weatherCache.data ? "" : `<div class="widget-empty">Lade Wetter …</div>`}</div>`
         : "";
-      const ferienPart = state.federalState
+      const ferienPart = hasFerien
         ? (ferienStatus
             ? `<div class="today-sub-stat">${ferienStatus.type === "current"
                 ? `🎉 Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} (${escapeHtml(ferienStatus.name)})`
                 : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)}`}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
-      widget("🌤️", "Heute", "#0057A6", weatherPart + ferienPart, "settings", "Einstellungen ›");
-      if (state.weatherLocation.lat) updateWeatherWidget();
-    }
-
-    // --- Betreuung heute ---
-    if (state.custodySchedules.length) {
-      const rows = state.custodySchedules.map(s => {
-        const res = custodyResultForDate(s, todayStr);
-        if (!res) return "";
-        const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
-        const kids = s.childIds.map(id => getProfile(id)).filter(Boolean);
-        return `<div class="custody-today-row">
-          <span style="font-size:12.5px;">${kids.map(k => k.emoji || k.name.charAt(0)).join(" ")} ${escapeHtml(kids.map(k => k.name).join(", "))}</span>
-          <span class="arrow">→</span>
-          ${parents.map(p => `<span class="mini-avatar" style="background:${p.color};width:22px;height:22px;font-size:12px;">${p.emoji || p.name.charAt(0)}</span>`).join("")}
-          <span style="font-size:12px;color:var(--text-muted);">${escapeHtml(parents.map(p => p.name).join(" & "))}</span>
-          ${res.isSwitchDay ? `<span class="tag-chip" style="margin-left:auto;">⇄ Wechseltag</span>` : ""}
-        </div>`;
-      }).join("");
-      widget("🔁", "Betreuung heute", "#B15CDE", rows || `<div class="widget-empty">Nichts hinterlegt.</div>`, "calendar", "Kalender ›");
+      let custodyPart = "";
+      if (hasCustody) {
+        const rows = state.custodySchedules.map(s => {
+          const res = custodyResultForDate(s, todayStr);
+          if (!res) return "";
+          const parents = (res.block.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+          const kids = s.childIds.map(id => getProfile(id)).filter(Boolean);
+          return `<div class="custody-today-row">
+            <span style="font-size:12.5px;">${kids.map(k => k.emoji || k.name.charAt(0)).join(" ")} ${escapeHtml(kids.map(k => k.name).join(", "))}</span>
+            <span class="arrow">→</span>
+            ${parents.map(p => `<span class="mini-avatar" style="background:${p.color};width:22px;height:22px;font-size:12px;">${p.emoji || p.name.charAt(0)}</span>`).join("")}
+            <span style="font-size:12px;color:var(--text-muted);">${escapeHtml(parents.map(p => p.name).join(" & "))}</span>
+            ${res.isSwitchDay ? `<span class="tag-chip" style="margin-left:auto;">⇄ Wechseltag</span>` : ""}
+          </div>`;
+        }).join("");
+        custodyPart = `<div class="today-sub-stat">${rows || `<div class="widget-empty" style="padding:0;">Nichts hinterlegt.</div>`}</div>`;
+      }
+      widget("🌤️", "Heute", "#0057A6", weatherPart + ferienPart + custodyPart, "calendar", "Kalender ›");
+      if (hasWeather) updateWeatherWidget();
     }
 
     // --- Nächste Termine ---
@@ -1578,11 +1520,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     // --- Aufgaben & Punktestand ---
     const openTasks = state.tasks.filter(t => !t.done && t.category !== "homework" && t.approved !== false);
-    const pointsHtml = state.profiles.filter(p => p.role === "child").map(p =>
-      `<div class="widget-row"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span><span class="wr-title">${escapeHtml(p.name)}</span><span class="wr-meta">${pointsBalance(p.id)} ⭐</span></div>`
-    ).join("");
+    const pointsHtml = `<div class="points-pill-row">${state.profiles.filter(p => p.role === "child").map(p =>
+      `<span class="points-pill"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>${escapeHtml(p.name)} · ${pointsBalance(p.id)}⭐</span>`
+    ).join("")}</div>`;
     widget("⭐", "Aufgaben &amp; Punkte", "#C9A24B",
-      `${pointsHtml}<div style="margin-top:6px;font-size:12.5px;color:var(--text-muted);">${openTasks.length ? openTasks.length + " offene Aufgabe(n)" : "Keine offenen Aufgaben 🎉"}</div>`,
+      `${pointsHtml}<div style="margin-top:8px;font-size:12.5px;color:var(--text-muted);">${openTasks.length ? openTasks.length + " offene Aufgabe(n)" : "Keine offenen Aufgaben 🎉"}</div>`,
       "tasks", "Aufgaben ›");
 
     // --- Hausaufgaben ---
@@ -1626,82 +1568,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       row.onclick = () => openEditor(row.dataset.type, row.dataset.item);
     });
 
-    const net = state.connectors.network;
-    const shareBar = document.createElement("div");
-    shareBar.className = "family-share-bar";
-    shareBar.innerHTML = `
-      <span class="family-share-text">${net.url ? `🔄 <strong>Sync</strong> — ${net.lastSyncAt ? "zuletzt " + fmtDate(net.lastSyncAt) : "noch nie synchronisiert"}` : `🔗 <strong>Familien-Update</strong> — manuell verteilen, z. B. per Teams-Chat`}</span>
-      <div class="family-share-actions">
-        ${net.url ? `
-          <button class="btn btn-sm" id="homeSyncPullBtn">⇩ Aktualisieren</button>
-          <button class="btn btn-sm btn-accent" id="homeSyncPushBtn">⇧ Hochladen</button>
-          <span class="family-share-divider"></span>
-        ` : ""}
-        <button class="btn btn-sm" id="homeShareBtn">🔗 Teilen</button>
-        <button class="btn btn-sm" id="homeMergeBtn">⊕ Einfügen</button>
-        <input type="file" id="homeMergeFile" accept=".json" style="display:none">
-      </div>
-    `;
-    container.appendChild(shareBar);
-
-    if (net.url) {
-      shareBar.querySelector("#homeSyncPullBtn").onclick = async () => {
-        shareBar.querySelector("#homeSyncPullBtn").textContent = "Lädt …";
-        await pullFromNetwork(false);
-        renderProfileBar(); render();
-      };
-      shareBar.querySelector("#homeSyncPushBtn").onclick = async () => {
-        shareBar.querySelector("#homeSyncPushBtn").textContent = "Lädt hoch …";
-        await pushToNetwork(false);
-        render();
-      };
-    }
-
-    shareBar.querySelector("#homeShareBtn").onclick = () => {
-      const bundle = {
-        events: state.events.filter(canSeeEventDetails),
-        shoppingList: state.shoppingList,
-        custodySchedules: state.custodySchedules,
-        mealPlan: state.mealPlan,
-        tasks: state.tasks,
-        pointsLedger: state.pointsLedger,
-        items: state.items.filter(canSeeItemDetails),
-        mindmaps: state.mindmaps.filter(canSeeMindmap).map(m => ({ id: m.id, name: m.name, nodes: m.nodes, createdBy: m.createdBy }))
-      };
-      shareOrDownloadJson(bundle, `dapp-familien-update-${Date.now()}.json`, "DApp Familien-Update");
-    };
-    const homeMergeFile = shareBar.querySelector("#homeMergeFile");
-    shareBar.querySelector("#homeMergeBtn").onclick = () => homeMergeFile.click();
-    homeMergeFile.onchange = () => {
-      const file = homeMergeFile.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          const before = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length + state.items.length;
-          state.events = unionById(state.events, data.events);
-          state.shoppingList = unionById(state.shoppingList, data.shoppingList);
-          state.custodySchedules = unionById(state.custodySchedules, data.custodySchedules);
-          state.tasks = unionById(state.tasks, data.tasks);
-          state.pointsLedger = unionById(state.pointsLedger, data.pointsLedger);
-          state.mealPlan = { ...(data.mealPlan || {}), ...state.mealPlan };
-          state.items = unionById(state.items, data.items).map(it => {
-            const remoteMatch = (data.items || []).find(r => r.id === it.id);
-            const localMatch = state.items.find(l => l.id === it.id);
-            if (remoteMatch && localMatch && remoteMatch.updatedAt > localMatch.updatedAt) return remoteMatch;
-            return it;
-          });
-          const incomingMindmaps = data.mindmaps || (data.mindmap ? [data.mindmap] : []);
-          mergeMindmapsFrom(incomingMindmaps);
-          const after = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length + state.items.length;
-          saveState(); renderProfileBar(); render();
-          showToast(after > before ? `${after - before} neue Einträge übernommen.` : "Nichts Neues (schon vorhanden).");
-        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige DApp-Datei?"); }
-      };
-      reader.readAsText(file);
-      homeMergeFile.value = "";
-    };
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -1834,7 +1700,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             <button type="button" class="md-btn" data-md="code" title="Code">&lt;/&gt;</button>
             <button type="button" class="md-btn" data-md="highlight" title="Hervorheben">🖍️</button>
             <button type="button" class="md-btn" data-md="strike" title="Durchstreichen"><s>S</s></button>
-            <button type="button" class="md-btn mic-btn" id="micBodyBtn" title="Diktieren">🎤</button>
           </div>
           <textarea id="f-body" placeholder="Worum geht's bei der Idee? (**fett**, *kursiv*, ## Überschrift, - Liste)">${escapeHtml(draft.body)}</textarea>
         </div>`;
@@ -1892,10 +1757,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <button class="close-btn" id="closeModal">✕</button>
         </div>
         <div class="field"><label>Titel</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="f-title" value="${escapeHtml(draft.title)}" placeholder="Titel der Idee" style="flex:1;">
-            <button type="button" class="md-btn mic-btn" id="micTitleBtn" title="Diktieren">🎤</button>
-          </div>
+          <input type="text" id="f-title" value="${escapeHtml(draft.title)}" placeholder="Titel der Idee">
         </div>
         ${bodyFieldHtml}
         <div class="field"><label>Tags (mit Komma trennen)</label>
@@ -1926,10 +1788,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     `;
     document.body.appendChild(overlay);
 
-    attachSpeechInput(overlay.querySelector("#micTitleBtn"), () => overlay.querySelector("#f-title"));
     if (type === "note") {
       const bodyTextarea = overlay.querySelector("#f-body");
-      attachSpeechInput(overlay.querySelector("#micBodyBtn"), () => bodyTextarea);
       overlay.querySelectorAll(".md-btn[data-md]").forEach(btn => {
         btn.onclick = () => {
           const action = btn.dataset.md;
@@ -1960,7 +1820,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         r.innerHTML = hw ? `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" class="hw-text" value="${escapeHtml(row.text)}" placeholder="Aufgabe (z. B. S. 12, Nr. 3)" style="flex:2;">
-          <button type="button" class="md-btn mic-btn" title="Diktieren">🎤</button>
           <input type="text" class="hw-subject" value="${escapeHtml(row.subject || "")}" placeholder="Fach" style="flex:1;max-width:110px;">
           <input type="date" class="hw-due" value="${escapeHtml(row.dueDate || "")}" style="max-width:150px;${overdue ? "color:#C0453B;border-color:#C0453B;" : ""}">
           <select class="hw-recurring" style="max-width:120px;padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);">
@@ -1971,10 +1830,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <button type="button" class="del" title="Entfernen">✕</button>` : `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" value="${escapeHtml(row.text)}" placeholder="Aufgabe...">
-          <button type="button" class="md-btn mic-btn" title="Diktieren">🎤</button>
           <button type="button" class="del" title="Entfernen">✕</button>`;
         if (hw) {
-          const [cb, txt, mic, subj, due, rec, del] = r.children;
+          const [cb, txt, subj, due, rec, del] = r.children;
           cb.onchange = () => {
             if (cb.checked && row.recurring && row.dueDate) {
               const nextDays = row.recurring === "daily" ? 1 : 7;
@@ -1987,14 +1845,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             renderChecklistRows();
           };
           txt.oninput = () => { row.text = txt.value; };
-          attachSpeechInput(mic, () => txt);
           subj.oninput = () => { row.subject = subj.value; };
           due.onchange = () => { row.dueDate = due.value; renderChecklistRows(); };
           rec.onchange = () => { row.recurring = rec.value; };
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
         } else {
-          const [cb, txt, mic, del] = r.children;
-          attachSpeechInput(mic, () => txt);
+          const [cb, txt, del] = r.children;
           cb.onchange = () => { row.done = cb.checked; };
           txt.oninput = () => { row.text = txt.value; };
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
@@ -3868,6 +3724,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const card = document.createElement("div");
     card.className = "card";
     card.style.cursor = "default";
+    card.style.padding = "10px 16px";
 
     if (!state.shoppingList.length) {
       card.innerHTML = `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🛒</span>Die Liste ist leer.</div>`;
