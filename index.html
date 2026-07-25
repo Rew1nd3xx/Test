@@ -710,6 +710,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 /* checklist items in editor */
 .checklist-items { display: flex; flex-direction: column; gap: 6px; }
 .checklist-row { display: flex; align-items: center; gap: 8px; }
+.checklist-row-hw { flex-wrap: wrap; background: var(--surface2); padding: 8px; border-radius: var(--radius); }
+.checklist-row-hw input[type=text], .checklist-row-hw input[type=date] { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
 .checklist-row input[type=text] { flex: 1; padding: 8px 10px; }
 .checklist-row .del { background: none; border: none; color: var(--text-muted); font-size: 16px; }
 .checklist-view-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--border); }
@@ -990,7 +992,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 31;
+  const APP_BUILD_NUMBER = 32;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1620,8 +1622,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const total = (it.items || []).length;
       const done = (it.items || []).filter(c => c.done).length;
       const pct = total ? Math.round((done / total) * 100) : 0;
+      const todayStrCard = new Date().toISOString().slice(0, 10);
+      const overdueCount = it.hwMode ? (it.items || []).filter(c => !c.done && c.dueDate && c.dueDate < todayStrCard).length : 0;
       bodyHtml = `
-        <div class="card-body">${done}/${total} erledigt</div>
+        <div class="card-body">${it.hwMode ? "📚 " : ""}${done}/${total} erledigt${overdueCount ? ` · <span style="color:#C0453B;">${overdueCount} überfällig</span>` : ""}</div>
         <div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div>`;
     } else if (it.type === "image") {
       bodyHtml = `${it.dataUrl ? `<img class="card-thumb" src="${it.dataUrl}" alt="">` : ""}
@@ -1676,7 +1680,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function openEditor(type, id) {
     const existing = id ? state.items.find(i => i.id === id) : null;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
-      id: uid(), type, title: "", tags: [], pinned: false, private: false, taggedProfileIds: [],
+      id: uid(), type, title: "", tags: [], pinned: false, private: false, taggedProfileIds: [], hwMode: false,
       createdAt: Date.now(), updatedAt: Date.now(),
       body: "", items: [], dataUrl: "", caption: ""
     };
@@ -1693,7 +1697,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         </div>`;
     } else if (type === "checklist") {
       bodyFieldHtml = `
-        <div class="field"><label>Punkte</label>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
+            <input type="checkbox" id="f-hwmode" ${draft.hwMode ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+            📚 Hausaufgabenheft-Modus (Fach &amp; Fälligkeitsdatum pro Eintrag, für die Schule)
+          </label>
+          <label>Punkte</label>
           <div class="checklist-items" id="checklistItems"></div>
           <button type="button" class="btn btn-sm add-row-btn" id="addChecklistRow">+ Punkt hinzufügen</button>
         </div>`;
@@ -1772,32 +1781,54 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     document.body.appendChild(overlay);
 
     // checklist rows
+    const todayStrEditor = new Date().toISOString().slice(0, 10);
     function renderChecklistRows() {
       const wrap = overlay.querySelector("#checklistItems");
       if (!wrap) return;
       wrap.innerHTML = "";
+      const hw = draft.hwMode;
       (draft.items || []).forEach((row) => {
+        const overdue = hw && row.dueDate && !row.done && row.dueDate < todayStrEditor;
         const r = document.createElement("div");
         r.className = "checklist-row";
-        r.innerHTML = `
+        if (hw) r.classList.add("checklist-row-hw");
+        r.innerHTML = hw ? `
+          <input type="checkbox" ${row.done ? "checked" : ""}>
+          <input type="text" class="hw-text" value="${escapeHtml(row.text)}" placeholder="Aufgabe (z. B. S. 12, Nr. 3)" style="flex:2;">
+          <input type="text" class="hw-subject" value="${escapeHtml(row.subject || "")}" placeholder="Fach" style="flex:1;max-width:110px;">
+          <input type="date" class="hw-due" value="${escapeHtml(row.dueDate || "")}" style="max-width:150px;${overdue ? "color:#C0453B;border-color:#C0453B;" : ""}">
+          <button type="button" class="del" title="Entfernen">✕</button>` : `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" value="${escapeHtml(row.text)}" placeholder="Aufgabe...">
           <button type="button" class="del" title="Entfernen">✕</button>`;
-        const [cb, txt, del] = r.children;
-        cb.onchange = () => { row.done = cb.checked; };
-        txt.oninput = () => { row.text = txt.value; };
-        del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
+        if (hw) {
+          const [cb, txt, subj, due, del] = r.children;
+          cb.onchange = () => { row.done = cb.checked; renderChecklistRows(); };
+          txt.oninput = () => { row.text = txt.value; };
+          subj.oninput = () => { row.subject = subj.value; };
+          due.onchange = () => { row.dueDate = due.value; renderChecklistRows(); };
+          del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
+        } else {
+          const [cb, txt, del] = r.children;
+          cb.onchange = () => { row.done = cb.checked; };
+          txt.oninput = () => { row.text = txt.value; };
+          del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
+        }
         wrap.appendChild(r);
       });
     }
     if (type === "checklist") {
       renderChecklistRows();
       overlay.querySelector("#addChecklistRow").onclick = () => {
-        draft.items.push({ id: uid(), text: "", done: false });
+        draft.items.push({ id: uid(), text: "", done: false, subject: "", dueDate: draft.hwMode ? todayStrEditor : "" });
         renderChecklistRows();
         const rows = overlay.querySelectorAll(".checklist-row input[type=text]");
         if (rows.length) rows[rows.length - 1].focus();
       };
+      overlay.querySelector("#f-hwmode").addEventListener("change", (e) => {
+        draft.hwMode = e.target.checked;
+        renderChecklistRows();
+      });
     }
 
     // image upload
@@ -3840,7 +3871,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         if (it.tags && it.tags.length) md += it.tags.map(t => `\`#${t}\``).join(" ") + "\n\n";
         if (type === "note") md += `${it.body || "_(leer)_"}\n\n`;
         if (type === "checklist") {
-          (it.items || []).forEach(row => { md += `- [${row.done ? "x" : " "}] ${row.text}\n`; });
+          (it.items || []).forEach(row => {
+            const extra = it.hwMode ? [row.subject, row.dueDate ? "fällig " + row.dueDate : ""].filter(Boolean).join(", ") : "";
+            md += `- [${row.done ? "x" : " "}] ${row.text}${extra ? " (" + extra + ")" : ""}\n`;
+          });
           md += "\n";
         }
         if (type === "image") md += `${it.caption ? it.caption + "\n\n" : ""}_(Bild eingebettet im JSON- oder PDF-Export)_\n\n`;
@@ -3894,7 +3928,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         heading(it.title, 12);
         if (it.tags && it.tags.length) { doc.setTextColor(130); paragraph("Tags: " + it.tags.join(", ")); doc.setTextColor(20); }
         if (type === "note") paragraph(it.body || "(leer)");
-        if (type === "checklist") (it.items || []).forEach(row => paragraph(`${row.done ? "[x]" : "[ ]"} ${row.text}`));
+        if (type === "checklist") (it.items || []).forEach(row => {
+          const extra = it.hwMode ? [row.subject, row.dueDate ? "fällig " + row.dueDate : ""].filter(Boolean).join(", ") : "";
+          paragraph(`${row.done ? "[x]" : "[ ]"} ${row.text}${extra ? " (" + extra + ")" : ""}`);
+        });
         if (type === "image") {
           if (it.caption) paragraph(it.caption);
           if (it.dataUrl) {
