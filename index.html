@@ -468,7 +468,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .hub-profile-name { font-size: 13px; font-weight: 600; }
 .hub-profile-status { font-size: 10.5px; color: var(--text-muted); }
 
-/* custody / Wechselmodell indicator on calendar days */
+/* custody / Betreuung indicator on calendar days */
 .cal-custody-row { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; gap: 3px; flex-wrap: wrap; }
 .custody-dot { width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.3); flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
 .custody-dot.custody-switch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--text); }
@@ -843,7 +843,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 15;
+  const APP_BUILD_NUMBER = 16;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -886,6 +886,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       schoolHolidays: {},
       federalState: "",
       weatherLocation: { name: "", lat: null, lon: null },
+      sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
         ftp: { host: "", port: "", user: "", path: "" },
@@ -1199,7 +1200,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       "settings", "Einstellungen ›");
     if (state.weatherLocation.lat) updateWeatherWidget();
 
-    // --- Wechselmodell heute ---
+    // --- Betreuung heute ---
     if (state.custodySchedules.length) {
       const rows = state.custodySchedules.map(s => {
         const res = custodyResultForDate(s, todayStr);
@@ -1214,7 +1215,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           ${res.isSwitchDay ? `<span class="tag-chip" style="margin-left:auto;">⇄ Wechseltag</span>` : ""}
         </div>`;
       }).join("");
-      widget("🔁", "Wechselmodell heute", "#B15CDE", rows || `<div class="widget-empty">Nichts hinterlegt.</div>`, "calendar", "Kalender ›");
+      widget("🔁", "Betreuung heute", "#B15CDE", rows || `<div class="widget-empty">Nichts hinterlegt.</div>`, "calendar", "Kalender ›");
     }
 
     // --- Nächste Termine ---
@@ -2552,7 +2553,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung laut Wechselmodell, ⇄ = Wechseltag" : ""} · 🎉 = Feiertag${state.federalState ? ", 🏖️ = Schulferien" : ""}.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung, ⇄ = Wechseltag" : ""} · 🎉 = Feiertag${state.federalState ? ", 🏖️ = Schulferien" : ""}.</p></div>`;
     container.appendChild(header);
 
     // --- "Wer ist heute da" Übersicht ---
@@ -2616,7 +2617,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         <button id="calModeWeek" class="${calendarViewMode === "week" ? "active" : ""}">Woche</button>
       </div>
       <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
-      <button class="btn btn-sm" id="calCustody">🔁 Wechselmodell</button>
+      <button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>
       <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
     `;
     container.appendChild(toolbar);
@@ -2782,7 +2783,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const children = state.profiles.filter(p => p.role === "child");
       overlay.innerHTML = `
         <div class="modal" style="max-width:560px;">
-          <div class="modal-header"><h2>Wechselmodell</h2><button class="close-btn" id="closeModal">✕</button></div>
+          <div class="modal-header"><h2>Betreuung</h2><button class="close-btn" id="closeModal">✕</button></div>
           <p style="font-size:13px;color:var(--text-muted);margin-top:-6px;">
             Legt fest, wer an welchem Tag die Kinder betreut — mit frei wählbarem Rhythmus (z. B. Woche/Woche, 2-2-3, oder eigenes Muster) und einem frei verschiebbaren Startdatum, das den Wechseltag bestimmt.
           </p>
@@ -2805,13 +2806,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
                 <p style="font-size:12.5px;color:var(--text-muted);margin:0 0 4px;">Kinder: ${escapeHtml(childNames)} · Zyklus: ${cyc} Tage ab ${s.startDate}</p>
                 <p style="font-size:12.5px;">${escapeHtml(pattern)}</p>
               </div>`;
-            }).join("") || (parents.length && children.length ? `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🔁</span>Noch kein Wechselmodell angelegt.</div>` : "")}
+            }).join("") || (parents.length && children.length ? `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🔁</span>Noch keine Betreuung angelegt.</div>` : "")}
           </div>
           <div class="modal-footer">
             <div></div>
             <div class="modal-footer-right">
               <button class="btn btn-ghost" id="cancelBtn">Schließen</button>
-              ${parents.length && children.length ? `<button class="btn btn-accent" id="addScheduleBtn">+ Neues Wechselmodell</button>` : ""}
+              ${parents.length && children.length ? `<button class="btn btn-accent" id="addScheduleBtn">+ Neue Betreuung</button>` : ""}
             </div>
           </div>
         </div>`;
@@ -2828,7 +2829,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       overlay.querySelectorAll(".del-schedule").forEach(btn => {
         btn.onclick = () => {
           const id = btn.closest("[data-id]").dataset.id;
-          if (confirm("Dieses Wechselmodell wirklich löschen?")) {
+          if (confirm("Diese Betreuung wirklich löschen?")) {
             state.custodySchedules = state.custodySchedules.filter(s => s.id !== id);
             saveState(); renderList(); render();
           }
@@ -2842,7 +2843,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function openCustodyScheduleEditor(existing, onDone) {
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
-      id: uid(), name: "Wechselmodell", startDate: new Date().toISOString().slice(0, 10),
+      id: uid(), name: "Betreuung", startDate: new Date().toISOString().slice(0, 10),
       childIds: [], blocks: [{ days: 7, profileIds: [] }, { days: 7, profileIds: [] }]
     };
     const parents = state.profiles.filter(p => p.role === "parent");
@@ -2852,8 +2853,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     overlay.style.zIndex = "70";
     overlay.innerHTML = `
       <div class="modal" style="max-width:520px;">
-        <div class="modal-header"><h2>${existing ? "Wechselmodell bearbeiten" : "Neues Wechselmodell"}</h2><button class="close-btn" id="closeModal">✕</button></div>
-        <div class="field"><label>Name</label><input type="text" id="cs-name" value="${escapeHtml(draft.name)}" placeholder="z. B. Wechselmodell Mia &amp; Ben"></div>
+        <div class="modal-header"><h2>${existing ? "Betreuung bearbeiten" : "Neue Betreuung"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Name</label><input type="text" id="cs-name" value="${escapeHtml(draft.name)}" placeholder="z. B. Betreuung Mia &amp; Ben"></div>
         <div class="field"><label>Betroffene Kinder</label>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
             ${children.map(c => `<label class="profile-chip" style="cursor:pointer;">
@@ -2925,14 +2926,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     overlay.onclick = (e) => { if (e.target === overlay) close(); };
     if (existing) {
       overlay.querySelector("#deleteBtn").onclick = () => {
-        if (confirm("Dieses Wechselmodell wirklich löschen?")) {
+        if (confirm("Diese Betreuung wirklich löschen?")) {
           state.custodySchedules = state.custodySchedules.filter(s => s.id !== existing.id);
           saveState(); close(); if (onDone) onDone(); render();
         }
       };
     }
     overlay.querySelector("#saveBtn").onclick = () => {
-      draft.name = overlay.querySelector("#cs-name").value.trim() || "Wechselmodell";
+      draft.name = overlay.querySelector("#cs-name").value.trim() || "Betreuung";
       draft.childIds = [...overlay.querySelectorAll(".cs-child:checked")].map(cb => cb.value);
       draft.startDate = overlay.querySelector("#cs-start").value.trim() || draft.startDate;
       if (!draft.childIds.length) { showToast("Bitte mindestens ein Kind auswählen."); return; }
@@ -2940,7 +2941,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const idx = state.custodySchedules.findIndex(s => s.id === draft.id);
       if (idx >= 0) state.custodySchedules[idx] = draft; else state.custodySchedules.push(draft);
       saveState(); close(); if (onDone) onDone(); render();
-      showToast(existing ? "Wechselmodell aktualisiert." : "Wechselmodell angelegt.");
+      showToast(existing ? "Betreuung aktualisiert." : "Betreuung angelegt.");
     };
     setTimeout(() => overlay.querySelector("#cs-name").focus(), 30);
   }
@@ -3037,6 +3038,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (snap.connectors && snap.connectors.network) snap.connectors.network.authHeader = "";
     snap.adminPasswordHash = "";
     if (Array.isArray(snap.profiles)) snap.profiles.forEach(p => { p.pinHash = ""; });
+    if (snap.sharedAreas) { if (snap.sharedAreas.parent) snap.sharedAreas.parent.pinHash = ""; if (snap.sharedAreas.child) snap.sharedAreas.child.pinHash = ""; }
     return snap;
   }
 
@@ -3361,27 +3363,88 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
     wireNetworkSyncControls(connSection);
 
-    // --- Backup / local import-export ---
-    const backupSection = document.createElement("div");
-    backupSection.className = "settings-section";
-    backupSection.innerHTML = `
-      <h3>Sicherung</h3>
-      <p class="hint">Funktioniert schon jetzt lokal — unabhängig von SharePoint/FTP.</p>
+  function mergeStateFrom(remote) {
+    function unionById(local, incoming) {
+      local = local || []; incoming = incoming || [];
+      const extra = incoming.filter(r => r && r.id && !local.some(l => l.id === r.id));
+      return [...local, ...extra];
+    }
+    state.items = unionById(state.items, remote.items).map(it => {
+      const local = state.items.find(l => l.id === it.id);
+      const remoteMatch = (remote.items || []).find(r => r.id === it.id);
+      if (local && remoteMatch && remoteMatch.updatedAt > local.updatedAt) return remoteMatch;
+      return it;
+    });
+    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: "" })));
+    state.tasks = unionById(state.tasks, remote.tasks);
+    state.rewards = unionById(state.rewards, remote.rewards);
+    state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
+    state.events = unionById(state.events, remote.events);
+    state.shoppingList = unionById(state.shoppingList, remote.shoppingList);
+    state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
+    state.wishlist = unionById(state.wishlist, remote.wishlist);
+    state.mealPlan = { ...(remote.mealPlan || {}), ...state.mealPlan };
+    if (state.mindmap.nodes.length <= 1 && remote.mindmap && remote.mindmap.nodes && remote.mindmap.nodes.length > 1) {
+      state.mindmap = remote.mindmap;
+    }
+    if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
+  }
+
+  // --- Backup / local import-export ---
+  const backupSection = document.createElement("div");
+  backupSection.className = "settings-section";
+  backupSection.innerHTML = `
+      <h3>Sicherung &amp; Geräte-Abgleich</h3>
+      <p class="hint">Ganz ohne Server: Backup teilen (AirDrop, WhatsApp, Mail, Nearby Share, …), auf dem anderen Gerät „Hinzufügen" — fertig zusammengeführt, nichts geht verloren.</p>
       <div class="backup-row">
-        <button class="btn" id="backupExportBtn">⇩ Komplettes Backup (JSON) herunterladen</button>
-        <button class="btn" id="backupImportBtn">⇧ Backup importieren</button>
+        <button class="btn btn-accent" id="backupShareBtn">🔗 Teilen / Herunterladen</button>
+        <button class="btn" id="backupMergeBtn">⊕ Von Datei hinzufügen</button>
+        <button class="btn" id="backupImportBtn">⇧ Backup importieren (ersetzt alles)</button>
         <input type="file" id="backupFileInput" accept=".json" style="display:none">
+        <input type="file" id="backupMergeFileInput" accept=".json" style="display:none">
         <button class="btn btn-danger" id="resetBtn">Alle Daten löschen</button>
       </div>
     `;
-    container.appendChild(backupSection);
+  container.appendChild(backupSection);
 
-    backupSection.querySelector("#backupExportBtn").onclick = () => {
-      exportScope = "all"; exportJson();
+  backupSection.querySelector("#backupShareBtn").onclick = async () => {
+    const data = sanitizedStateSnapshot();
+    const json = JSON.stringify(data, null, 2);
+    const filename = `dapp-alle-${Date.now()}.json`;
+    if (navigator.share && navigator.canShare) {
+      try {
+        const file = new File([json], filename, { type: "application/json" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "DApp Backup" });
+          return;
+        }
+      } catch (err) { /* Nutzer hat abgebrochen oder Teilen nicht möglich — Fallback unten */ }
+    }
+    downloadBlob(json, filename, "application/json");
+  };
+
+  const mergeFileInput = backupSection.querySelector("#backupMergeFileInput");
+  backupSection.querySelector("#backupMergeBtn").onclick = () => mergeFileInput.click();
+  mergeFileInput.onchange = () => {
+    const file = mergeFileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const incoming = JSON.parse(e.target.result);
+        if (!incoming || !Array.isArray(incoming.items)) throw new Error("Ungültiges Format");
+        mergeStateFrom(incoming);
+        saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
+        showToast("Daten zusammengeführt.");
+      } catch (err) { showToast("Zusammenführen fehlgeschlagen — ist das eine gültige DApp-JSON-Datei?"); }
     };
-    const fileInput = backupSection.querySelector("#backupFileInput");
-    backupSection.querySelector("#backupImportBtn").onclick = () => fileInput.click();
-    fileInput.onchange = () => {
+    reader.readAsText(file);
+    mergeFileInput.value = "";
+  };
+
+  const fileInput = backupSection.querySelector("#backupFileInput");
+  backupSection.querySelector("#backupImportBtn").onclick = () => fileInput.click();
+  fileInput.onchange = () => {
       const file = fileInput.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -3389,13 +3452,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         try {
           const imported = JSON.parse(e.target.result);
           if (!imported || !Array.isArray(imported.items)) throw new Error("Ungültiges Format");
-          if (confirm("Import überschreibt den aktuellen Stand. Fortfahren?")) {
+          if (confirm("Import ERSETZT den aktuellen Stand komplett. Für Geräte-Abgleich meist besser: Von Datei hinzufügen. Trotzdem ersetzen?")) {
             const keepAdminHash = state.adminPasswordHash;
+            const keepSharedAreas = state.sharedAreas;
             const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
             state = Object.assign(loadState(), imported);
             if (!imported.adminPasswordHash) state.adminPasswordHash = keepAdminHash;
+            if (!imported.sharedAreas) state.sharedAreas = keepSharedAreas;
             state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: (p.pinHash || localPins.get(p.id) || "") }));
-            personalAreaUnlockedFor = null;
+            personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
             saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
             startAutoSync();
             showToast("Backup importiert.");
@@ -3403,17 +3468,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige DApp-JSON-Datei?"); }
       };
       reader.readAsText(file);
-    };
-    backupSection.querySelector("#resetBtn").onclick = () => {
-      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Wechselmodelle, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
+      fileInput.value = "";
+  };
+  backupSection.querySelector("#resetBtn").onclick = () => {
+      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Betreuungen, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
         state = {
           theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
           adminPasswordHash: state.adminPasswordHash, mealPlan: {}, wishlist: [],
           schoolHolidays: state.schoolHolidays, federalState: state.federalState, weatherLocation: state.weatherLocation,
+          sharedAreas: state.sharedAreas,
           connectors: state.connectors
         };
         stopAutoSync();
+        personalAreaViewingProfileId = null; personalAreaUnlockedFor = null;
         saveState(); renderProfileBar(); render(); showToast("Alle Daten wurden gelöscht.");
       }
     };
@@ -3436,6 +3504,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
+  const SHARED_AREA_DEFS = [
+    { id: "shared-parent", role: "parent", name: "Eltern gemeinsam", emoji: "👨‍👩‍👧", color: "#C9A24B" },
+    { id: "shared-child", role: "child", name: "Kinder gemeinsam", emoji: "🧒", color: "#4CAF32" }
+  ];
+  function getAreaEntity(id) {
+    const shared = SHARED_AREA_DEFS.find(s => s.id === id);
+    if (shared) return { ...shared, shared: true, pinHash: state.sharedAreas[shared.role].pinHash };
+    return getProfile(id);
+  }
+  function setAreaPinHash(entity, hash) {
+    if (entity.shared) state.sharedAreas[entity.role].pinHash = hash;
+    else { const p = getProfile(entity.id); if (p) p.pinHash = hash; }
+  }
+
   function renderAdminView(container) {
     if (!window.crypto || !window.crypto.subtle) {
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span>Dieser Bereich braucht eine sichere Verbindung (https) — über den Datei-Doppelklick (file://) steht die nötige Verschlüsselungsfunktion in manchen Browsern nicht zur Verfügung. Ruft die App über eure gehostete Adresse auf.</div>`;
@@ -3445,24 +3527,45 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">👤</span>Legt zuerst mindestens ein Profil an (links oben, das „+") — jeder hat hier seinen eigenen gesperrten Bereich.</div>`;
       return;
     }
-    const viewingProfile = personalAreaViewingProfileId ? getProfile(personalAreaViewingProfileId) : null;
-    if (!viewingProfile) return renderPersonalHub(container);
-    if (!viewingProfile.pinHash) return renderPersonalSetup(container, viewingProfile);
-    if (personalAreaUnlockedFor !== viewingProfile.id) return renderPersonalGate(container, viewingProfile);
-    return renderPersonalPanel(container, viewingProfile);
+    const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
+    if (!viewingEntity) return renderPersonalHub(container);
+    if (!viewingEntity.pinHash) return renderPersonalSetup(container, viewingEntity);
+    if (personalAreaUnlockedFor !== viewingEntity.id) return renderPersonalGate(container, viewingEntity);
+    return renderPersonalPanel(container, viewingEntity);
   }
 
   function renderPersonalHub(container) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Mein Bereich</h1><p class="view-sub">Jede Person hat ihren eigenen gesperrten Bereich — wähle dich aus.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Mein Bereich</h1><p class="view-sub">Jede Person hat ihren eigenen gesperrten Bereich — dazu ein gemeinsamer Bereich für alle Eltern und einer für alle Kinder.</p></div>`;
     container.appendChild(header);
+
+    const sharedBox = document.createElement("div");
+    sharedBox.className = "settings-section";
+    sharedBox.innerHTML = `<h3>Gemeinsame Bereiche</h3>`;
+    const sharedRow = document.createElement("div");
+    sharedRow.className = "hub-profile-row";
+    SHARED_AREA_DEFS.forEach(def => {
+      const entity = getAreaEntity(def.id);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "hub-profile-card hub-shared-card";
+      card.innerHTML = `
+        <span class="avatar" style="background:${def.color};cursor:pointer;">${def.emoji}</span>
+        <span class="hub-profile-name">${escapeHtml(def.name)}</span>
+        <span class="hub-profile-status">${entity.pinHash ? "🔒 gesperrt" : "einrichten"}</span>
+      `;
+      card.onclick = () => { personalAreaViewingProfileId = def.id; render(); };
+      sharedRow.appendChild(card);
+    });
+    sharedBox.appendChild(sharedRow);
+    container.appendChild(sharedBox);
 
     function section(title, icon, role) {
       const profiles = state.profiles.filter(p => p.role === role);
       const box = document.createElement("div");
       box.className = "settings-section";
-      box.innerHTML = `<h3>${icon} ${title}</h3>`;
+      box.innerHTML = `<h3>${icon} ${title} (persönlich)</h3>`;
       if (!profiles.length) {
         box.innerHTML += `<div class="empty-state" style="padding:20px;"><span class="empty-icon">${icon}</span>Noch kein Profil mit dieser Rolle angelegt.</div>`;
       } else {
@@ -3488,7 +3591,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     section("Kinderbereich", "🧒", "child");
   }
 
-  function areaLabel(profile) { return profile.role === "parent" ? "Elternbereich" : "Kinderbereich"; }
+  function areaLabel(profile) {
+    const base = profile.role === "parent" ? "Elternbereich" : "Kinderbereich";
+    return profile.shared ? base + " (gemeinsam)" : base;
+  }
 
   function renderPersonalSetup(container, profile) {
     const header = document.createElement("div");
@@ -3501,7 +3607,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     box.className = "admin-gate";
     box.innerHTML = `
       <span class="mini-avatar" style="background:${profile.color};width:52px;height:52px;font-size:24px;margin:0 auto 14px;">${profile.emoji || profile.name.charAt(0)}</span>
-      <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:16px;">Noch keine PIN vergeben. Leg eine fest (mind. 4 Ziffern/Zeichen), damit nur du hier reinkommst.</p>
+      <p style="color:var(--text-muted);font-size:13.5px;margin-bottom:16px;">Noch keine PIN vergeben. Leg eine fest (mind. 4 Ziffern/Zeichen)${profile.shared ? " — diese PIN teilen sich alle, die hier reinkommen sollen" : ", damit nur du hier reinkommst"}.</p>
       <input type="password" id="ap-new" inputmode="numeric" placeholder="Neue PIN" autocomplete="new-password">
       <input type="password" id="ap-confirm" inputmode="numeric" placeholder="PIN wiederholen" autocomplete="new-password">
       <div class="admin-error" id="ap-error"></div>
@@ -3515,7 +3621,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const err = box.querySelector("#ap-error");
       if (pw.length < 4) { err.textContent = "Mindestens 4 Zeichen."; return; }
       if (pw !== pw2) { err.textContent = "PINs stimmen nicht überein."; return; }
-      profile.pinHash = await sha256Hex(pw);
+      setAreaPinHash(profile, await sha256Hex(pw));
       personalAreaUnlockedFor = profile.id;
       saveState();
       render();
@@ -3563,19 +3669,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const isParent = profile.role === "parent";
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><button class="widget-link hub-back-link" id="hubBack">‹ Alle Bereiche</button><h1 class="view-title">${areaLabel(profile)} von ${escapeHtml(profile.name)}</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
+    header.innerHTML = `<div><button class="widget-link hub-back-link" id="hubBack">‹ Alle Bereiche</button><h1 class="view-title">${areaLabel(profile)}${profile.shared ? "" : " von " + escapeHtml(profile.name)}</h1><p class="view-sub">Entsperrt — hier entstehen künftig weitere Funktionen.</p></div>
       <button class="btn btn-sm" id="ap-lock">🔒 Sperren</button>`;
     container.appendChild(header);
     header.querySelector("#hubBack").onclick = () => { personalAreaViewingProfileId = null; render(); };
 
-    if (isParent) {
+    if (profile.shared && isParent) {
       const info = document.createElement("div");
       info.className = "build-info-card";
       info.innerHTML = `
         <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
         <div style="font-size:12px;color:var(--text-muted);text-align:right;">
           ${state.profiles.length} Profile · ${state.items.length} Einträge in DApp<br>
-          ${state.custodySchedules.length} Wechselmodell(e) · ${state.tasks.length} Aufgaben
+          ${state.custodySchedules.length} Betreuung(en) · ${state.tasks.length} Aufgaben
         </div>
       `;
       container.appendChild(info);
@@ -3583,9 +3689,23 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const future = document.createElement("div");
       future.className = "empty-state";
       future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
-      future.innerHTML = `<span class="empty-icon">🛠️</span>Hier ist Platz für weitere Funktionen, die nur für Eltern gedacht sind — dieser Bereich wächst mit.`;
+      future.innerHTML = `<span class="empty-icon">🛠️</span>Hier ist Platz für gemeinsame Funktionen, die nur für Eltern gedacht sind — dieser Bereich wächst mit.`;
       container.appendChild(future);
-    } else {
+    } else if (profile.shared && !isParent) {
+      const kids = state.profiles.filter(p => p.role === "child");
+      const info = document.createElement("div");
+      info.className = "build-info-card";
+      info.innerHTML = kids.length
+        ? kids.map(k => `<div class="widget-row"><span class="mini-avatar" style="background:${k.color};">${k.emoji || k.name.charAt(0)}</span><span class="wr-title">${escapeHtml(k.name)}</span><span class="wr-meta">${pointsBalance(k.id)} ⭐</span></div>`).join("")
+        : `<div class="widget-empty">Noch keine Kinderprofile angelegt.</div>`;
+      container.appendChild(info);
+
+      const future = document.createElement("div");
+      future.className = "empty-state";
+      future.style.cssText = "padding:40px 20px;border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:24px;";
+      future.innerHTML = `<span class="empty-icon">🎈</span>Ein gemeinsamer Bereich für alle Kinder — hier entstehen bald tolle Funktionen für euch alle zusammen.`;
+      container.appendChild(future);
+    } else if (!isParent) {
       const stat = document.createElement("div");
       stat.className = "build-info-card";
       stat.innerHTML = `
@@ -3601,7 +3721,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       container.appendChild(future);
     }
 
-    renderWishlistSection(container, profile);
+    if (!profile.shared) renderWishlistSection(container, profile);
 
     const pwSection = document.createElement("div");
     pwSection.className = "settings-section";
@@ -3626,7 +3746,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (curHash !== profile.pinHash) { err.textContent = "Aktuelle PIN ist falsch."; return; }
       if (next.length < 4) { err.textContent = "Neue PIN: mindestens 4 Zeichen."; return; }
       if (next !== next2) { err.textContent = "Neue PINs stimmen nicht überein."; return; }
-      profile.pinHash = await sha256Hex(next);
+      setAreaPinHash(profile, await sha256Hex(next));
       saveState();
       err.style.color = "var(--accent)"; err.textContent = "PIN geändert.";
       pwSection.querySelectorAll("input").forEach(i => i.value = "");
@@ -3774,12 +3894,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       }
       const keepNetworkConfig = state.connectors.network;
       const keepAdminHash = state.adminPasswordHash;
+      const keepSharedAreas = state.sharedAreas;
       const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
       state = { ...defaultState(), ...remote,
         connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig },
-        adminPasswordHash: keepAdminHash };
+        adminPasswordHash: keepAdminHash,
+        sharedAreas: keepSharedAreas };
       state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: localPins.get(p.id) || p.pinHash || "" }));
-      personalAreaUnlockedFor = null;
+      personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
       state.connectors.network.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
       applyTheme(state.theme || "papier");
