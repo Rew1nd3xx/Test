@@ -843,7 +843,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 16;
+  const APP_BUILD_NUMBER = 17;
   const APP_BUILD_DATE = "2026-07-24";
 
   const THEMES = [
@@ -2618,9 +2618,45 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       </div>
       <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
       <button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>
+      <button class="btn btn-sm" id="calShare" title="Termine teilen/exportieren">🔗 Teilen</button>
+      <button class="btn btn-sm" id="calImport" title="Termine hinzufügen (JSON oder ICS)">⊕ Hinzufügen</button>
+      <input type="file" id="calImportFile" accept=".json,.ics" style="display:none">
       <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
     `;
     container.appendChild(toolbar);
+
+    toolbar.querySelector("#calShare").onclick = () => {
+      const visibleEvents = state.events.filter(canSeeEventDetails);
+      shareOrDownloadJson({ events: visibleEvents }, `dapp-termine-${Date.now()}.json`, "DApp Termine");
+    };
+    const calImportFile = toolbar.querySelector("#calImportFile");
+    toolbar.querySelector("#calImport").onclick = () => calImportFile.click();
+    calImportFile.onchange = () => {
+      const file = calImportFile.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          let incoming = [];
+          if (file.name.toLowerCase().endsWith(".ics")) {
+            incoming = parseICS(e.target.result).map(ev => ({
+              id: "ics-" + (ev.uid || (ev.title + ev.date)).replace(/[^a-z0-9]/gi, "").slice(0, 60),
+              title: ev.title, date: ev.date, time: ev.time || "", profileIds: [], private: false, createdBy: state.activeProfileId || null
+            }));
+          } else {
+            const data = JSON.parse(e.target.result);
+            incoming = data.events || (Array.isArray(data) ? data : []);
+          }
+          const before = state.events.length;
+          state.events = unionById(state.events, incoming);
+          const added = state.events.length - before;
+          saveState(); render();
+          showToast(added > 0 ? `${added} Termin(e) hinzugefügt.` : "Keine neuen Termine (schon vorhanden).");
+        } catch (err) { showToast("Import fehlgeschlagen — Datei prüfen."); }
+      };
+      reader.readAsText(file);
+      calImportFile.value = "";
+    };
 
     const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -2950,8 +2986,37 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function renderShoppingView(container) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie.</p></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" id="shopShareBtn">🔗 Teilen</button>
+        <button class="btn btn-sm" id="shopMergeBtn">⊕ Hinzufügen</button>
+        <input type="file" id="shopMergeFile" accept=".json" style="display:none">
+      </div>`;
     container.appendChild(header);
+
+    header.querySelector("#shopShareBtn").onclick = () => {
+      shareOrDownloadJson({ shoppingList: state.shoppingList }, `dapp-einkaufsliste-${Date.now()}.json`, "DApp Einkaufsliste");
+    };
+    const shopMergeFile = header.querySelector("#shopMergeFile");
+    header.querySelector("#shopMergeBtn").onclick = () => shopMergeFile.click();
+    shopMergeFile.onchange = () => {
+      const file = shopMergeFile.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          const incoming = data.shoppingList || (Array.isArray(data) ? data : []);
+          const before = state.shoppingList.length;
+          state.shoppingList = unionById(state.shoppingList, incoming);
+          const added = state.shoppingList.length - before;
+          saveState(); render();
+          showToast(added > 0 ? `${added} Eintrag/Einträge hinzugefügt.` : "Nichts Neues (schon vorhanden).");
+        } catch (err) { showToast("Import fehlgeschlagen — Datei prüfen."); }
+      };
+      reader.readAsText(file);
+      shopMergeFile.value = "";
+    };
 
     const addRow = document.createElement("div");
     addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;";
@@ -3098,6 +3163,51 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
     showToast(`${filename} wird heruntergeladen.`);
+  }
+
+  async function shareOrDownloadJson(dataObj, filename, shareTitle) {
+    const json = JSON.stringify(dataObj, null, 2);
+    if (navigator.share && navigator.canShare) {
+      try {
+        const file = new File([json], filename, { type: "application/json" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: shareTitle || filename });
+          return;
+        }
+      } catch (err) { /* Nutzer hat abgebrochen oder Teilen nicht möglich — Fallback unten */ }
+    }
+    downloadBlob(json, filename, "application/json");
+  }
+
+  function unionById(local, incoming) {
+    local = local || []; incoming = incoming || [];
+    const extra = incoming.filter(r => r && r.id && !local.some(l => l.id === r.id));
+    return [...local, ...extra];
+  }
+
+  function parseICS(text) {
+    // Zeilen entfalten (RFC 5545: fortgesetzte Zeilen beginnen mit Leerzeichen/Tab)
+    const unfolded = text.replace(/\r\n/g, "\n").replace(/\n[ \t]/g, "");
+    const lines = unfolded.split("\n");
+    const events = [];
+    let cur = null;
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (line === "BEGIN:VEVENT") { cur = {}; continue; }
+      if (line === "END:VEVENT") { if (cur) events.push(cur); cur = null; continue; }
+      if (!cur) continue;
+      const idx = line.indexOf(":");
+      if (idx < 0) continue;
+      const keyPart = line.slice(0, idx).split(";")[0];
+      const value = line.slice(idx + 1);
+      if (keyPart === "SUMMARY") cur.title = value.replace(/\\,/g, ",").replace(/\\n/gi, " ");
+      else if (keyPart === "UID") cur.uid = value;
+      else if (keyPart === "DTSTART") {
+        const m = value.match(/^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2}))?/);
+        if (m) { cur.date = `${m[1]}-${m[2]}-${m[3]}`; cur.time = m[5] ? `${m[5]}:${m[6]}` : ""; }
+      }
+    }
+    return events.filter(e => e.title && e.date);
   }
 
   function exportJson() {
@@ -3364,11 +3474,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     wireNetworkSyncControls(connSection);
 
   function mergeStateFrom(remote) {
-    function unionById(local, incoming) {
-      local = local || []; incoming = incoming || [];
-      const extra = incoming.filter(r => r && r.id && !local.some(l => l.id === r.id));
-      return [...local, ...extra];
-    }
     state.items = unionById(state.items, remote.items).map(it => {
       const local = state.items.find(l => l.id === it.id);
       const remoteMatch = (remote.items || []).find(r => r.id === it.id);
@@ -3407,20 +3512,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     `;
   container.appendChild(backupSection);
 
-  backupSection.querySelector("#backupShareBtn").onclick = async () => {
-    const data = sanitizedStateSnapshot();
-    const json = JSON.stringify(data, null, 2);
-    const filename = `dapp-alle-${Date.now()}.json`;
-    if (navigator.share && navigator.canShare) {
-      try {
-        const file = new File([json], filename, { type: "application/json" });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: "DApp Backup" });
-          return;
-        }
-      } catch (err) { /* Nutzer hat abgebrochen oder Teilen nicht möglich — Fallback unten */ }
-    }
-    downloadBlob(json, filename, "application/json");
+  backupSection.querySelector("#backupShareBtn").onclick = () => {
+    shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-alle-${Date.now()}.json`, "DApp Backup");
   };
 
   const mergeFileInput = backupSection.querySelector("#backupMergeFileInput");
@@ -3759,11 +3852,40 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const items = state.wishlist.filter(w => w.ownerId === profile.id).sort((a, b) => a.done - b.done);
     section.innerHTML = `
       <h3>🎁 Wunschliste von ${escapeHtml(profile.name)}</h3>
-      <p class="hint">Nur du siehst das hier — perfekt zum Sammeln von Ideen für Geburtstag &amp; Co.</p>
+      <p class="hint">Nur du siehst das hier — perfekt zum Sammeln von Ideen für Geburtstag &amp; Co. Zum Teilen mit anderen (z. B. für Geschenkideen) exportieren und weitergeben.</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn btn-sm" id="wishShareBtn">🔗 Teilen</button>
+        <button class="btn btn-sm" id="wishMergeBtn">⊕ Hinzufügen</button>
+        <input type="file" id="wishMergeFile" accept=".json" style="display:none">
+      </div>
       <div class="grid" id="wishlistGrid"></div>
       <button class="btn btn-accent btn-sm add-row-btn" id="addWishBtn">+ Wunsch hinzufügen</button>
     `;
     container.appendChild(section);
+
+    section.querySelector("#wishShareBtn").onclick = () => {
+      shareOrDownloadJson({ wishlist: items }, `dapp-wunschliste-${profile.name.toLowerCase()}-${Date.now()}.json`, `Wunschliste ${profile.name}`);
+    };
+    const wishMergeFile = section.querySelector("#wishMergeFile");
+    section.querySelector("#wishMergeBtn").onclick = () => wishMergeFile.click();
+    wishMergeFile.onchange = () => {
+      const file = wishMergeFile.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          const incoming = (data.wishlist || (Array.isArray(data) ? data : [])).map(w => ({ ...w, ownerId: profile.id }));
+          const before = state.wishlist.length;
+          state.wishlist = unionById(state.wishlist, incoming);
+          const added = state.wishlist.length - before;
+          saveState(); render();
+          showToast(added > 0 ? `${added} Wunsch/Wünsche hinzugefügt.` : "Nichts Neues (schon vorhanden).");
+        } catch (err) { showToast("Import fehlgeschlagen — Datei prüfen."); }
+      };
+      reader.readAsText(file);
+      wishMergeFile.value = "";
+    };
 
     const grid = section.querySelector("#wishlistGrid");
     if (!items.length) {
