@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Black+Ops+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Archivo+Black&family=Work+Sans:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&family=VT323&family=IBM+Plex+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Cinzel:wght@500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
@@ -423,6 +423,48 @@ body.theme-militaer {
 .theme-militaer .mm-node.root { background: var(--accent2); color: #fff; border: 2px solid var(--border); }
 .theme-militaer ::selection { background: var(--accent2); color: #fff; }
 
+/* 17. Vault-Terminal — retro CRT-Röhrenbildschirm, Phosphor-Grün */
+.theme-vaultterm {
+  --bg: #060A06; --surface: #0C170C; --surface2: #142414;
+  --text: #6EFF6E; --text-muted: #3F9A3F;
+  --accent: #4CFF4C; --accent2: #FFB000;
+  --border: #1F3D1F; --shadow: 0 0 0 1px #1F3D1F, 0 0 26px rgba(76,255,76,.15);
+  --font-display: 'Share Tech Mono', monospace; --font-body: 'Share Tech Mono', monospace;
+  --radius: 4px; --pattern: none;
+}
+.theme-vaultterm #app { position: relative; z-index: 0; }
+.theme-vaultterm #app::before {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  background: repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 3px 4px);
+  mix-blend-mode: multiply; animation: vaultFlicker 6s steps(1) infinite;
+}
+.theme-vaultterm #app::after {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  box-shadow: inset 0 0 140px rgba(0,0,0,.75), inset 0 0 40px rgba(0,0,0,.5);
+}
+@keyframes vaultFlicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: .82; }
+  98% { opacity: 1; }
+  99% { opacity: .9; }
+}
+.theme-vaultterm .sidebar, .theme-vaultterm .topbar { background-color: var(--surface); border-color: var(--border); }
+.theme-vaultterm .brand-text, .theme-vaultterm .view-title { text-shadow: 0 0 6px var(--accent), 0 0 16px rgba(76,255,76,.5); text-transform: uppercase; letter-spacing: .04em; }
+.theme-vaultterm .btn { border-radius: 2px; text-transform: uppercase; letter-spacing: .04em; border-color: var(--border); }
+.theme-vaultterm .btn-accent { background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(76,255,76,.4), inset 0 0 10px rgba(76,255,76,.08); }
+.theme-vaultterm .btn-accent:hover { background: rgba(76,255,76,.12); box-shadow: 0 0 18px rgba(76,255,76,.65), inset 0 0 14px rgba(76,255,76,.15); }
+.theme-vaultterm .card, .theme-vaultterm .widget-card { border-color: var(--border); background: var(--surface); }
+.theme-vaultterm .card:hover, .theme-vaultterm .widget-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(76,255,76,.3); transform: none; }
+.theme-vaultterm .nav-item.active { background: rgba(76,255,76,.14); color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 12px rgba(76,255,76,.35); }
+.theme-vaultterm .avatar { border-radius: 50%; box-shadow: 0 0 0 2px var(--border); }
+.theme-vaultterm .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent), 0 0 14px rgba(76,255,76,.6); }
+.theme-vaultterm .mm-node { border-color: var(--border); background: var(--surface); }
+.theme-vaultterm .mm-node.root { background: var(--surface2); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 0 22px rgba(76,255,76,.5); }
+.theme-vaultterm .mindmap-svg path.mm-edge { filter: drop-shadow(0 0 3px rgba(76,255,76,.5)); }
+.theme-vaultterm ::selection { background: var(--accent); color: #060A06; }
+.theme-vaultterm input, .theme-vaultterm select, .theme-vaultterm textarea { background: #0A140A !important; border-color: var(--border) !important; color: var(--text) !important; }
+.theme-vaultterm input:focus, .theme-vaultterm select:focus, .theme-vaultterm textarea:focus { outline: none; border-color: var(--accent) !important; box-shadow: 0 0 8px rgba(76,255,76,.4); }
+
 
 /* ============ LAYOUT ============ */
 #app { display: flex; min-height: 100vh; }
@@ -515,6 +557,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
 /* ============ CALENDAR EXTRAS ============ */
 .custody-summary-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.ferien-status-banner {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
+}
+.ferien-status-warn { border-color: #C9A24B; background: color-mix(in srgb, #C9A24B 15%, var(--surface)); }
 .custody-summary-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 12.5px; }
 .custody-summary-chip .arrow { color: var(--text-muted); }
 .child-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -723,6 +771,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
 /* ============ MIND-MAP ============ */
 .mindmap-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.mindmap-toolbar select { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; }
 .mindmap-hint { font-size: 12px; color: var(--text-muted); margin-left: auto; }
 .mindmap-wrap {
   position: relative; width: 100%; height: 70vh; min-height: 460px; overflow: hidden;
@@ -936,7 +985,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 21;
+  const APP_BUILD_NUMBER = 23;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -956,6 +1005,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
     { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
     { id: "militaer",   name: "Militär",         sub: "Camouflage & Stencil 🎖️", dots: ["#B8A369", "#A63A2C", "#2B2E1F"] },
+    { id: "vaultterm",  name: "Vault-Terminal",  sub: "Retro-Röhrenbildschirm 📻", dots: ["#4CFF4C", "#FFB000", "#060A06"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -964,7 +1014,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return {
       theme: "papier",
       items: [],
-      mindmap: { nodes: [], edges: [], private: false },
+      mindmaps: [],
+      activeMindmapId: null,
       meta: { lastModified: Date.now() },
       profiles: [],
       activeProfileId: null,
@@ -998,9 +1049,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return {
+        const result = {
           ...base, ...parsed,
-          mindmap: { ...base.mindmap, ...(parsed.mindmap || {}) },
           meta: { ...base.meta, ...(parsed.meta || {}) },
           connectors: {
             sharepoint: { ...base.connectors.sharepoint, ...((parsed.connectors || {}).sharepoint || {}) },
@@ -1008,6 +1058,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             network: { ...base.connectors.network, ...((parsed.connectors || {}).network || {}) }
           }
         };
+        // Migration: alte Einzel-Mindmap (state.mindmap) → neue Sammlung state.mindmaps
+        if (parsed.mindmap && parsed.mindmap.nodes && parsed.mindmap.nodes.length && (!parsed.mindmaps || !parsed.mindmaps.length)) {
+          const migrated = {
+            id: uid(), name: "Ideen", nodes: parsed.mindmap.nodes, private: !!parsed.mindmap.private,
+            createdAt: Date.now(), updatedAt: Date.now()
+          };
+          result.mindmaps = [migrated];
+          result.activeMindmapId = migrated.id;
+        }
+        if (!result.mindmaps) result.mindmaps = [];
+        return result;
       }
     } catch (e) { console.warn("Konnte gespeicherten Zustand nicht laden:", e); }
     return base;
@@ -1467,7 +1528,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         tasks: state.tasks,
         pointsLedger: state.pointsLedger,
         items: state.items.filter(canSeeItemDetails),
-        mindmap: state.mindmap.private ? { nodes: [] } : { nodes: state.mindmap.nodes }
+        mindmaps: state.mindmaps.filter(canSeeMindmap).map(m => ({ id: m.id, name: m.name, nodes: m.nodes, createdBy: m.createdBy }))
       };
       shareOrDownloadJson(bundle, `dapp-familien-update-${Date.now()}.json`, "DApp Familien-Update");
     };
@@ -1493,9 +1554,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             if (remoteMatch && localMatch && remoteMatch.updatedAt > localMatch.updatedAt) return remoteMatch;
             return it;
           });
-          if (data.mindmap && data.mindmap.nodes && data.mindmap.nodes.length) {
-            state.mindmap.nodes = unionById(state.mindmap.nodes, data.mindmap.nodes);
-          }
+          const incomingMindmaps = data.mindmaps || (data.mindmap ? [data.mindmap] : []);
+          mergeMindmapsFrom(incomingMindmaps);
           const after = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length + state.items.length;
           saveState(); renderProfileBar(); render();
           showToast(after > before ? `${after - before} neue Einträge übernommen.` : "Nichts Neues (schon vorhanden).");
@@ -1878,8 +1938,27 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   /* ============ MIND-MAP ============ */
   const MM_BRANCH_COLORS = ["#C0453B", "#3A5A9B", "#86B35A", "#C9A24B", "#B15CDE", "#FF9270", "#4A6572", "#35D0BA", "#E8590C", "#5F7038"];
 
-  function mmRoot() { return state.mindmap.nodes.find(n => n.root) || state.mindmap.nodes[0]; }
-  function mmChildren(id) { return state.mindmap.nodes.filter(n => n.parentId === id); }
+  function currentMindmap() {
+    if (!state.mindmaps.length) {
+      state.mindmaps.push({ id: uid(), name: "Ideen", nodes: [], private: false, createdBy: state.activeProfileId || null, createdAt: Date.now(), updatedAt: Date.now() });
+      state.activeMindmapId = state.mindmaps[0].id;
+    }
+    if (!state.activeMindmapId || !state.mindmaps.some(m => m.id === state.activeMindmapId)) {
+      state.activeMindmapId = state.mindmaps[0].id;
+    }
+    return state.mindmaps.find(m => m.id === state.activeMindmapId);
+  }
+
+  function canSeeMindmap(m) {
+    if (!m.private) return true;
+    const activeId = state.activeProfileId;
+    if (!activeId) return false;
+    if (!m.createdBy) return true;
+    return m.createdBy === activeId;
+  }
+
+  function mmRoot() { return currentMindmap().nodes.find(n => n.root) || currentMindmap().nodes[0]; }
+  function mmChildren(id) { return currentMindmap().nodes.filter(n => n.parentId === id); }
   function mmBranchColorFor(node) {
     // walk up to the top-level branch (direct child of root) to pick a stable color
     const root = mmRoot();
@@ -1888,7 +1967,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const guard = new Set();
     while (cur.parentId && cur.parentId !== root.id && !guard.has(cur.id)) {
       guard.add(cur.id);
-      const parent = state.mindmap.nodes.find(n => n.id === cur.parentId);
+      const parent = currentMindmap().nodes.find(n => n.id === cur.parentId);
       if (!parent) break;
       cur = parent;
     }
@@ -1898,7 +1977,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   function migrateMindmapIfNeeded() {
-    const mm = state.mindmap;
+    const mm = currentMindmap();
     if (!mm.nodes.length) {
       mm.nodes.push({ id: uid(), parentId: null, root: true, x: 1040, y: 680, text: "Zentrale Idee" });
       return;
@@ -1945,26 +2024,61 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function renderMindmapView(container) {
     migrateMindmapIfNeeded();
-    const root = mmRoot();
+    const mmList = state.mindmaps;
     const header = document.createElement("div");
     header.className = "view-header";
     header.innerHTML = `<div><h1 class="view-title">Mind-Map</h1><p class="view-sub">Klicken &amp; direkt tippen · <b>Enter</b> = neuer Punkt daneben · <b>Tab</b> = neuer Unterpunkt · <b>Esc</b>, dann <b>Entf</b> = löschen · Knoten auf einen anderen ziehen = neu einordnen · ▾ = ein-/ausklappen</p></div>`;
     container.appendChild(header);
 
+    const switcher = document.createElement("div");
+    switcher.className = "mindmap-toolbar";
+    switcher.innerHTML = `
+      <select id="mmSelect" style="min-width:180px;">
+        ${mmList.map(m => `<option value="${m.id}" ${m.id === state.activeMindmapId ? "selected" : ""}>${m.private ? "🔒 " : ""}${escapeHtml(m.name)}</option>`).join("")}
+      </select>
+      <button class="btn btn-sm btn-accent" id="mmNewBtn">+ Neue Mind-Map</button>
+      <button class="btn btn-sm" id="mmRenameBtn">✎ Umbenennen</button>
+      <button class="btn btn-sm btn-danger" id="mmDeleteMapBtn">Mind-Map löschen</button>
+    `;
+    container.appendChild(switcher);
+    switcher.querySelector("#mmSelect").addEventListener("change", (e) => {
+      state.activeMindmapId = e.target.value;
+      saveState({ skipTouch: true }); render();
+    });
+    switcher.querySelector("#mmNewBtn").onclick = () => {
+      const nm = { id: uid(), name: "Neue Mind-Map " + (state.mindmaps.length + 1), nodes: [], private: false, createdBy: state.activeProfileId || null, createdAt: Date.now(), updatedAt: Date.now() };
+      state.mindmaps.push(nm);
+      state.activeMindmapId = nm.id;
+      saveState(); render();
+    };
+    switcher.querySelector("#mmRenameBtn").onclick = () => {
+      const mm = currentMindmap();
+      const name = prompt("Name der Mind-Map:", mm.name);
+      if (name && name.trim()) { mm.name = name.trim(); saveState(); render(); }
+    };
+    switcher.querySelector("#mmDeleteMapBtn").onclick = () => {
+      if (state.mindmaps.length <= 1) { showToast("Das ist eure einzige Mind-Map — leg zuerst eine neue an, bevor du diese löschst."); return; }
+      if (!confirm(`„${currentMindmap().name}" wirklich komplett löschen?`)) return;
+      state.mindmaps = state.mindmaps.filter(m => m.id !== state.activeMindmapId);
+      state.activeMindmapId = state.mindmaps[0].id;
+      saveState(); render();
+    };
+
+    const root = mmRoot();
     const toolbar = document.createElement("div");
     toolbar.className = "mindmap-toolbar";
     toolbar.innerHTML = `
       <button class="btn btn-sm btn-accent" id="mmAddBranch">+ Hauptast</button>
       <button class="btn btn-sm" id="mmAddChild">+ Unterpunkt</button>
       <button class="btn btn-sm btn-danger" id="mmDeleteNode">Löschen</button>
-      <button class="btn btn-sm" id="mmPrivateToggle">${state.mindmap.private ? "🔒 Privat" : "🔓 Privat machen"}</button>
+      <button class="btn btn-sm" id="mmPrivateToggle">${currentMindmap().private ? "🔒 Privat" : "🔓 Privat machen"}</button>
       <span class="mindmap-hint">Knoten anklicken = auswählen &amp; sofort tippen.</span>
     `;
     container.appendChild(toolbar);
     toolbar.querySelector("#mmPrivateToggle").onclick = () => {
-      state.mindmap.private = !state.mindmap.private;
+      currentMindmap().private = !currentMindmap().private;
       saveState(); render();
-      showToast(state.mindmap.private ? "Mind-Map ist jetzt privat." : "Mind-Map wird wieder mitgeteilt.");
+      showToast(currentMindmap().private ? "Mind-Map ist jetzt privat." : "Mind-Map wird wieder mitgeteilt.");
     };
 
     const wrap = document.createElement("div");
@@ -1986,28 +2100,28 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const mmView = { tx: 0, ty: 0, scale: 1 };
 
     function isDescendantOf(candidateId, ancestorId) {
-      let cur = state.mindmap.nodes.find(n => n.id === candidateId);
+      let cur = currentMindmap().nodes.find(n => n.id === candidateId);
       const guard = new Set();
       while (cur && cur.parentId && !guard.has(cur.id)) {
         if (cur.parentId === ancestorId) return true;
         guard.add(cur.id);
-        cur = state.mindmap.nodes.find(n => n.id === cur.parentId);
+        cur = currentMindmap().nodes.find(n => n.id === cur.parentId);
       }
       return false;
     }
 
     function collapsedAncestorIds() {
-      return new Set(state.mindmap.nodes.filter(n => n.collapsed).map(n => n.id));
+      return new Set(currentMindmap().nodes.filter(n => n.collapsed).map(n => n.id));
     }
     function visibleNodes() {
       const collapsed = collapsedAncestorIds();
-      return state.mindmap.nodes.filter(n => {
+      return currentMindmap().nodes.filter(n => {
         let cur = n;
         const guard = new Set();
         while (cur && cur.parentId && !guard.has(cur.id)) {
           if (collapsed.has(cur.parentId) && cur.parentId !== n.id) return false;
           guard.add(cur.id);
-          cur = state.mindmap.nodes.find(x => x.id === cur.parentId);
+          cur = currentMindmap().nodes.find(x => x.id === cur.parentId);
         }
         return true;
       });
@@ -2084,7 +2198,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       selectedId = id;
       renderNodes();
       drawEdges();
-      const node = state.mindmap.nodes.find(n => n.id === id);
+      const node = currentMindmap().nodes.find(n => n.id === id);
       if (node) ensureVisible(node);
       const el = document.querySelector(`.mm-node[data-id="${id}"] .mm-text`);
       if (el) {
@@ -2094,18 +2208,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     }
 
     function addChildTo(parentId) {
-      const parent = state.mindmap.nodes.find(n => n.id === parentId);
+      const parent = currentMindmap().nodes.find(n => n.id === parentId);
       if (!parent) return;
       parent.collapsed = false;
       const pos = computeChildPosition(parent);
       const node = { id: uid(), parentId: parent.id, x: pos.x, y: pos.y, text: "Neuer Punkt" };
-      state.mindmap.nodes.push(node);
+      currentMindmap().nodes.push(node);
       saveState();
       focusNode(node.id, true);
     }
 
     function addSiblingTo(nodeId) {
-      const node = state.mindmap.nodes.find(n => n.id === nodeId);
+      const node = currentMindmap().nodes.find(n => n.id === nodeId);
       if (!node || !node.parentId) { addChildTo(mmRoot().id); return; }
       addChildTo(node.parentId);
     }
@@ -2117,11 +2231,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       let changed = true;
       while (changed) {
         changed = false;
-        state.mindmap.nodes.forEach(n => {
+        currentMindmap().nodes.forEach(n => {
           if (n.parentId && toDelete.has(n.parentId) && !toDelete.has(n.id)) { toDelete.add(n.id); changed = true; }
         });
       }
-      state.mindmap.nodes = state.mindmap.nodes.filter(n => !toDelete.has(n.id));
+      currentMindmap().nodes = currentMindmap().nodes.filter(n => !toDelete.has(n.id));
       selectedId = rootNode.id;
       saveState(); renderNodes(); drawEdges();
     }
@@ -2131,9 +2245,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (!svg) return;
       svg.innerHTML = "";
       const visibleIds = new Set(visibleNodes().map(n => n.id));
-      state.mindmap.nodes.forEach(node => {
+      currentMindmap().nodes.forEach(node => {
         if (!node.parentId || !visibleIds.has(node.id)) return;
-        const a = state.mindmap.nodes.find(n => n.id === node.parentId);
+        const a = currentMindmap().nodes.find(n => n.id === node.parentId);
         if (!a) return;
         const aEl = wrap.querySelector(`.mm-node[data-id="${a.id}"]`);
         const bEl = wrap.querySelector(`.mm-node[data-id="${node.id}"]`);
@@ -2909,6 +3023,26 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     header.innerHTML = `<div><h1 class="view-title">Familienkalender</h1><p class="view-sub">Termine für die ganze Familie${state.custodySchedules.length ? " · farbiger Punkt = Betreuung, ⇄ = Wechseltag" : ""} · 🎉 = Feiertag${state.federalState ? ", 🏖️ = Schulferien" : ""}.</p></div>`;
     container.appendChild(header);
 
+    const ferienCount = state.federalState ? (state.schoolHolidays[state.federalState] || []).length : 0;
+    if (!state.federalState) {
+      const hint = document.createElement("div");
+      hint.className = "ferien-status-banner";
+      hint.innerHTML = `🏖️ Noch kein Bundesland für Schulferien eingestellt. <button class="btn btn-sm" id="ferienGoSettings">Jetzt einstellen</button>`;
+      container.appendChild(hint);
+      hint.querySelector("#ferienGoSettings").onclick = () => setView("settings");
+    } else if (!ferienCount) {
+      const warn = document.createElement("div");
+      warn.className = "ferien-status-banner ferien-status-warn";
+      warn.innerHTML = `⚠️ Schulferien für ${escapeHtml((GERMAN_STATES.find(s => s.code === state.federalState) || {}).name || state.federalState)} sind (noch) nicht geladen${lastFerienError ? " — " + escapeHtml(lastFerienError) : ""}. <button class="btn btn-sm" id="ferienRetryBtn">↻ Erneut versuchen</button>`;
+      container.appendChild(warn);
+      warn.querySelector("#ferienRetryBtn").onclick = async () => {
+        warn.querySelector("#ferienRetryBtn").textContent = "Lädt …";
+        const ok = await fetchSchoolHolidays(state.federalState);
+        showToast(ok ? "Schulferien geladen." : `Fehlgeschlagen: ${lastFerienError || "unbekannter Fehler"}`);
+        render();
+      };
+    }
+
     // --- "Wer ist heute da" Übersicht ---
     if (state.custodySchedules.length) {
       const todayStr0 = new Date().toISOString().slice(0, 10);
@@ -3028,7 +3162,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const cell = document.createElement("div");
         const isHoliday = !!getHolidayName(dateStr);
         const isFerien = !!getSchoolHolidayName(dateStr);
-        const bg = isHoliday ? "rgba(192,69,59,.08)" : isFerien ? "rgba(242,214,162,.35)" : "var(--surface)";
+        const bg = isHoliday ? "color-mix(in srgb, #C0453B 22%, var(--surface))" : isFerien ? "color-mix(in srgb, #D9A441 32%, var(--surface))" : "var(--surface)";
         cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:${bg};cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
         cell.innerHTML = buildDayCellInner(dateStr, day, 3, true);
         wireDayCell(cell, dateStr);
@@ -3049,8 +3183,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         cell.className = "week-day-cell";
         const isHoliday = !!getHolidayName(dateStr);
         const isFerien = !!getSchoolHolidayName(dateStr);
-        if (isHoliday) cell.style.background = "rgba(192,69,59,.08)";
-        else if (isFerien) cell.style.background = "rgba(242,214,162,.35)";
+        if (isHoliday) cell.style.background = "color-mix(in srgb, #C0453B 22%, var(--surface))";
+        else if (isFerien) cell.style.background = "color-mix(in srgb, #D9A441 32%, var(--surface))";
         if (dateStr === todayStr) cell.style.outline = "2px solid var(--accent)";
         cell.innerHTML = `<div><div class="wd-label">${labels[i]}</div><div class="wd-num">${parseInt(dNum, 10)}</div></div>` +
           buildDayCellInner(dateStr, "", 6, false);
@@ -3399,13 +3533,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     setTimeout(() => { const el = document.getElementById("shopInput"); if (el) el.focus(); }, 20);
   }
 
-  function mmOutlineLines() {
-    const root = state.mindmap.nodes.find(n => n.root);
+  function mmOutlineLinesFor(mm) {
+    if (!mm || !mm.nodes.length) return [];
+    const root = mm.nodes.find(n => n.root);
     if (!root) return [];
     const lines = [];
     function walk(node, depth) {
       lines.push({ depth, text: node.text });
-      mmChildren(node.id).forEach(child => walk(child, depth + 1));
+      mm.nodes.filter(n => n.parentId === node.id).forEach(child => walk(child, depth + 1));
     }
     walk(root, 0);
     return lines;
@@ -3504,6 +3639,27 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return [...local, ...extra];
   }
 
+  function mergeMindmapsFrom(incoming) {
+    if (!incoming || !incoming.length) return 0;
+    let changed = 0;
+    incoming.forEach(inc => {
+      if (!inc || !inc.id) return;
+      const local = state.mindmaps.find(m => m.id === inc.id);
+      if (!local) {
+        state.mindmaps.push({
+          id: inc.id, name: inc.name || "Geteilte Mind-Map", nodes: inc.nodes || [],
+          private: false, createdBy: inc.createdBy || null, createdAt: Date.now(), updatedAt: Date.now()
+        });
+        changed++;
+      } else {
+        const before = local.nodes.length;
+        local.nodes = unionById(local.nodes, inc.nodes);
+        if (local.nodes.length > before) { local.updatedAt = Date.now(); changed++; }
+      }
+    });
+    return changed;
+  }
+
   function parseICS(text) {
     // Zeilen entfalten (RFC 5545: fortgesetzte Zeilen beginnen mit Leerzeichen/Tab)
     const unfolded = text.replace(/\r\n/g, "\n").replace(/\n[ \t]/g, "");
@@ -3553,9 +3709,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         if (type === "image") md += `${it.caption ? it.caption + "\n\n" : ""}_(Bild eingebettet im JSON- oder PDF-Export)_\n\n`;
       });
     });
-    if (exportScope === "all" && state.mindmap.nodes.length) {
-      md += "\n## 🕸️ Mind-Map\n\n";
-      mmOutlineLines().forEach(l => { md += `${"  ".repeat(l.depth)}- ${l.depth === 0 ? "**" + l.text + "**" : l.text}\n`; });
+    if (exportScope === "all" && state.mindmaps.some(m => m.nodes.length)) {
+      state.mindmaps.forEach(mm => {
+        const lines = mmOutlineLinesFor(mm);
+        if (!lines.length) return;
+        md += `\n## 🕸️ Mind-Map: ${mm.name}\n\n`;
+        lines.forEach(l => { md += `${"  ".repeat(l.depth)}- ${l.depth === 0 ? "**" + l.text + "**" : l.text}\n`; });
+      });
     }
     downloadBlob(md, `dapp-${exportScope}-${Date.now()}.md`, "text/markdown");
   }
@@ -3614,9 +3774,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       });
     });
 
-    if (exportScope === "all" && state.mindmap.nodes.length) {
-      heading("Mind-Map", 15);
-      mmOutlineLines().forEach(l => paragraph("  ".repeat(l.depth) + (l.depth === 0 ? "★ " : "– ") + l.text));
+    if (exportScope === "all" && state.mindmaps.some(m => m.nodes.length)) {
+      state.mindmaps.forEach(mm => {
+        const lines = mmOutlineLinesFor(mm);
+        if (!lines.length) return;
+        heading("Mind-Map: " + mm.name, 15);
+        lines.forEach(l => paragraph("  ".repeat(l.depth) + (l.depth === 0 ? "★ " : "– ") + l.text));
+      });
     }
 
     doc.save(`dapp-${exportScope}-${Date.now()}.pdf`);
@@ -3837,9 +4001,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
     state.wishlist = unionById(state.wishlist, remote.wishlist);
     state.mealPlan = { ...(remote.mealPlan || {}), ...state.mealPlan };
-    if (state.mindmap.nodes.length <= 1 && remote.mindmap && remote.mindmap.nodes && remote.mindmap.nodes.length > 1) {
-      state.mindmap = remote.mindmap;
-    }
+    mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
 
@@ -3912,9 +4074,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       fileInput.value = "";
   };
   backupSection.querySelector("#resetBtn").onclick = () => {
-      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Betreuungen, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
+      if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Maps, Profile, Aufgaben, Belohnungen, Kalender, Betreuungen, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
         state = {
-          theme: state.theme, items: [], mindmap: { nodes: [], edges: [], private: false }, meta: { lastModified: Date.now() },
+          theme: state.theme, items: [], mindmaps: [], activeMindmapId: null, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
           adminPasswordHash: state.adminPasswordHash, mealPlan: {}, wishlist: [],
           schoolHolidays: state.schoolHolidays, federalState: state.federalState, weatherLocation: state.weatherLocation,
