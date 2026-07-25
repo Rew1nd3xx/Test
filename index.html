@@ -527,7 +527,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .global-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
 @keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .global-ticker-text { transition: opacity .25s ease; }
-.widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+.widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
 .family-share-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
   background: var(--surface); border: 1px solid var(--border);
@@ -535,7 +535,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 .family-share-text { font-size: 11.5px; color: var(--text-muted); line-height: 1.3; }
 .family-share-text strong { color: var(--text); font-family: var(--font-body); font-weight: 700; }
-.family-share-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.family-share-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.family-share-divider { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
 .widget-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
   padding: 18px 20px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.05);
@@ -552,6 +553,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .widget-row .wr-meta { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 .widget-empty { font-size: 12.5px; color: var(--text-muted); font-style: italic; padding: 4px 0; }
 .widget-big-stat { font-family: var(--font-display); font-size: 26px; }
+.today-sub-stat { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
 .custody-today-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 .custody-today-row .arrow { color: var(--text-muted); font-size: 13px; }
 
@@ -724,6 +726,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .md-preview h4 { margin: 4px 0; font-family: var(--font-display); font-size: 14px; }
 .md-preview ul, .md-preview ol { margin: 2px 0 4px 18px; padding: 0; }
 .md-preview code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.md-preview mark, .mm-text mark { background: color-mix(in srgb, var(--accent) 45%, transparent); color: inherit; padding: 0 2px; border-radius: 2px; }
+.md-preview del, .mm-text del { opacity: .65; }
 .mm-text p { margin: 0; display: inline; }
 .mm-text h4 { margin: 0; font-size: inherit; font-family: inherit; display: inline; }
 .mm-text ul, .mm-text ol { margin: 2px 0 0 16px; padding: 0; text-align: left; }
@@ -833,6 +837,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.15);
 }
 .mm-node.drop-target { outline: 3px dashed var(--accent2); outline-offset: 3px; transform: scale(1.03); }
+.mm-node .mm-color {
+  position: absolute; top: -9px; left: -9px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 50%; width: 22px; height: 22px; font-size: 11px; line-height: 1; display: flex;
+  align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity .15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+.mm-node:hover .mm-color, .mm-node.selected .mm-color { opacity: 1; }
+.mm-color-picker {
+  position: fixed; z-index: 80; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px; box-shadow: var(--shadow); display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+}
+.mm-swatch { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); cursor: pointer; padding: 0; }
+.mm-swatch-reset { background: var(--surface2); color: var(--text-muted); font-size: 11px; display: flex; align-items: center; justify-content: center; }
 .mm-node:hover .mm-del, .mm-node:hover .mm-add-child, .mm-node.selected .mm-del, .mm-node.selected .mm-add-child { opacity: 1; }
 .theme-bauhaus .mm-node .mm-add-child { color: #fff; }
 
@@ -965,9 +982,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <button class="nav-item" id="installBtn" style="display:none;">
         <span class="nav-icon">⬇️</span><span class="nav-label">App installieren</span>
       </button>
-      <button class="nav-item" data-view="export">
-        <span class="nav-icon">⇩</span><span class="nav-label">Export</span>
-      </button>
       <button class="nav-item" data-view="settings">
         <span class="nav-icon">⚙️</span><span class="nav-label">Einstellungen</span>
       </button>
@@ -1008,7 +1022,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 33;
+  const APP_BUILD_NUMBER = 34;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1154,6 +1168,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const numbered = line.match(/^\d+\.\s+(.*)/);
       let inline = (s) => s
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/==(.+?)==/g, "<mark>$1</mark>")
+        .replace(/~~(.+?)~~/g, "<del>$1</del>")
         .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>")
         .replace(/`(.+?)`/g, "<code>$1</code>");
       if (heading) { closeLists(); html += `<h4>${inline(heading[1])}</h4>`; }
@@ -1171,26 +1187,60 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (!SR) { btn.style.display = "none"; return; }
     let recognizing = false;
     let recognition;
+    let insertPos = 0;
+    let interimLen = 0;
     btn.onclick = () => {
       if (recognizing) { recognition.stop(); return; }
+      const el = typeof target === "function" ? target() : target;
+      if (!el) return;
+      insertPos = el.selectionStart ?? el.value.length;
+      interimLen = 0;
       recognition = new SR();
       recognition.lang = "de-DE";
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
       recognition.onstart = () => { recognizing = true; btn.classList.add("listening"); btn.textContent = "🔴"; };
       recognition.onend = () => { recognizing = false; btn.classList.remove("listening"); btn.textContent = "🎤"; };
-      recognition.onerror = () => { showToast("Spracherkennung fehlgeschlagen — Mikrofonzugriff erlaubt?"); };
+      recognition.onerror = (e) => {
+        const messages = {
+          "not-allowed": "Mikrofonzugriff wurde nicht erlaubt.",
+          "no-speech": "Nichts gehört — nochmal versuchen.",
+          "network": "Spracherkennung braucht eine Internetverbindung.",
+          "audio-capture": "Kein Mikrofon gefunden."
+        };
+        if (e.error !== "no-speech" && e.error !== "aborted") {
+          showToast(messages[e.error] || "Spracherkennung fehlgeschlagen.");
+        }
+      };
       recognition.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
-        const el = typeof target === "function" ? target() : target;
-        if (!el) return;
-        const s = el.selectionStart ?? el.value.length, en = el.selectionEnd ?? el.value.length;
-        const needsSpace = s > 0 && el.value[s - 1] && !/\s$/.test(el.value.slice(0, s));
-        const insert = (needsSpace ? " " : "") + transcript;
-        el.value = el.value.slice(0, s) + insert + el.value.slice(en);
+        let finalText = "", interimText = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+          else interimText += e.results[i][0].transcript;
+        }
+        const cur = el.value;
+        const before = cur.slice(0, insertPos);
+        const needsSpace = insertPos > 0 && before && !/\s$/.test(before);
+        const prefix = needsSpace ? " " : "";
+        if (finalText) {
+          const insert = prefix + finalText;
+          el.value = before + insert + cur.slice(insertPos + interimLen);
+          insertPos = insertPos + insert.length;
+          interimLen = 0;
+        }
+        if (interimText) {
+          const curNow = el.value;
+          const beforeNow = curNow.slice(0, insertPos);
+          const needsSpace2 = insertPos > 0 && beforeNow && !/\s$/.test(beforeNow);
+          const interimInsert = (needsSpace2 ? " " : "") + interimText;
+          el.value = beforeNow + interimInsert + curNow.slice(insertPos + interimLen);
+          interimLen = interimInsert.length;
+        }
         el.dispatchEvent(new Event("input", { bubbles: true }));
         el.focus();
-        el.selectionStart = el.selectionEnd = s + insert.length;
+        const caret = insertPos + interimLen;
+        el.selectionStart = el.selectionEnd = caret;
       };
       recognition.start();
     };
@@ -1380,7 +1430,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (currentView === "tasks") return renderTasksView(c);
     if (currentView === "calendar") return renderCalendarView(c);
     if (currentView === "shopping") return renderShoppingView(c);
-    if (currentView === "export") return renderExportView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -1455,24 +1504,21 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       return card;
     }
 
-    // --- Wetter ---
-    widget("🌤️", "Wetter", "#0057A6",
-      state.weatherLocation.lat
-        ? `<div id="weatherWidgetBody">${weatherCache.data ? "" : `<div class="widget-empty">Lade Wetter …</div>`}</div>`
-        : `<div class="widget-empty">Kein Ort eingestellt.</div>`,
-      "settings", "Einstellungen ›");
-    if (state.weatherLocation.lat) updateWeatherWidget();
-
-    // --- Feriencountdown ---
+    // --- Wetter & Ferien (kombiniert) ---
     const ferienStatus = getFerienStatus();
-    if (state.federalState) {
-      widget("🏖️", "Ferien-Countdown", "#F2D6A2",
-        ferienStatus
-          ? (ferienStatus.type === "current"
-              ? `<div class="widget-big-stat">🎉 Ferien!</div><div style="font-size:12.5px;color:var(--text-muted);">${escapeHtml(ferienStatus.name)} — noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"}</div>`
-              : `<div class="widget-big-stat">${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"}</div><div style="font-size:12.5px;color:var(--text-muted);">bis ${escapeHtml(ferienStatus.name)}</div>`)
-          : `<div class="widget-empty">Noch keine Ferientermine geladen.</div>`,
-        "calendar", "Kalender ›");
+    if (state.weatherLocation.lat || state.federalState) {
+      const weatherPart = state.weatherLocation.lat
+        ? `<div id="weatherWidgetBody">${weatherCache.data ? "" : `<div class="widget-empty">Lade Wetter …</div>`}</div>`
+        : "";
+      const ferienPart = state.federalState
+        ? (ferienStatus
+            ? `<div class="today-sub-stat">${ferienStatus.type === "current"
+                ? `🎉 Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} (${escapeHtml(ferienStatus.name)})`
+                : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)}`}</div>`
+            : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
+        : "";
+      widget("🌤️", "Heute", "#0057A6", weatherPart + ferienPart, "settings", "Einstellungen ›");
+      if (state.weatherLocation.lat) updateWeatherWidget();
     }
 
     // --- Betreuung heute ---
@@ -1580,17 +1626,36 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       row.onclick = () => openEditor(row.dataset.type, row.dataset.item);
     });
 
+    const net = state.connectors.network;
     const shareBar = document.createElement("div");
     shareBar.className = "family-share-bar";
     shareBar.innerHTML = `
-      <span class="family-share-text">🔗 <strong>Familien-Update</strong> — alles, was nicht privat markiert ist, manuell verteilen (z. B. per Teams-Chat)</span>
+      <span class="family-share-text">${net.url ? `🔄 <strong>Sync</strong> — ${net.lastSyncAt ? "zuletzt " + fmtDate(net.lastSyncAt) : "noch nie synchronisiert"}` : `🔗 <strong>Familien-Update</strong> — manuell verteilen, z. B. per Teams-Chat`}</span>
       <div class="family-share-actions">
+        ${net.url ? `
+          <button class="btn btn-sm" id="homeSyncPullBtn">⇩ Aktualisieren</button>
+          <button class="btn btn-sm btn-accent" id="homeSyncPushBtn">⇧ Hochladen</button>
+          <span class="family-share-divider"></span>
+        ` : ""}
         <button class="btn btn-sm" id="homeShareBtn">🔗 Teilen</button>
         <button class="btn btn-sm" id="homeMergeBtn">⊕ Einfügen</button>
         <input type="file" id="homeMergeFile" accept=".json" style="display:none">
       </div>
     `;
     container.appendChild(shareBar);
+
+    if (net.url) {
+      shareBar.querySelector("#homeSyncPullBtn").onclick = async () => {
+        shareBar.querySelector("#homeSyncPullBtn").textContent = "Lädt …";
+        await pullFromNetwork(false);
+        renderProfileBar(); render();
+      };
+      shareBar.querySelector("#homeSyncPushBtn").onclick = async () => {
+        shareBar.querySelector("#homeSyncPushBtn").textContent = "Lädt hoch …";
+        await pushToNetwork(false);
+        render();
+      };
+    }
 
     shareBar.querySelector("#homeShareBtn").onclick = () => {
       const bundle = {
@@ -1637,33 +1702,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       reader.readAsText(file);
       homeMergeFile.value = "";
     };
-
-    // --- Server-Synchronisierung: Schnellzugriff ---
-    if (state.connectors.network.url) {
-      const syncBar = document.createElement("div");
-      syncBar.className = "family-share-bar";
-      const net = state.connectors.network;
-      syncBar.innerHTML = `
-        <span class="family-share-text">🔄 <strong>Server-Sync</strong> — ${net.lastSyncAt ? "zuletzt " + fmtDate(net.lastSyncAt) : "noch nie synchronisiert"}</span>
-        <div class="family-share-actions">
-          <button class="btn btn-sm" id="homeSyncPullBtn">⇩ Aktualisieren</button>
-          <button class="btn btn-sm btn-accent" id="homeSyncPushBtn">⇧ Hochladen</button>
-        </div>
-      `;
-      container.appendChild(syncBar);
-      syncBar.querySelector("#homeSyncPullBtn").onclick = async () => {
-        const btn = syncBar.querySelector("#homeSyncPullBtn");
-        btn.textContent = "Lädt …";
-        await pullFromNetwork(false);
-        renderProfileBar(); render();
-      };
-      syncBar.querySelector("#homeSyncPushBtn").onclick = async () => {
-        const btn = syncBar.querySelector("#homeSyncPushBtn");
-        btn.textContent = "Lädt hoch …";
-        await pushToNetwork(false);
-        render();
-      };
-    }
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -1794,6 +1832,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
             <button type="button" class="md-btn" data-md="bullet" title="Liste">• Liste</button>
             <button type="button" class="md-btn" data-md="numbered" title="Nummerierte Liste">1. Liste</button>
             <button type="button" class="md-btn" data-md="code" title="Code">&lt;/&gt;</button>
+            <button type="button" class="md-btn" data-md="highlight" title="Hervorheben">🖍️</button>
+            <button type="button" class="md-btn" data-md="strike" title="Durchstreichen"><s>S</s></button>
             <button type="button" class="md-btn mic-btn" id="micBodyBtn" title="Diktieren">🎤</button>
           </div>
           <textarea id="f-body" placeholder="Worum geht's bei der Idee? (**fett**, *kursiv*, ## Überschrift, - Liste)">${escapeHtml(draft.body)}</textarea>
@@ -1896,6 +1936,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           if (action === "bold") wrapSelection(bodyTextarea, "**");
           else if (action === "italic") wrapSelection(bodyTextarea, "*");
           else if (action === "code") wrapSelection(bodyTextarea, "`");
+          else if (action === "highlight") wrapSelection(bodyTextarea, "==");
+          else if (action === "strike") wrapSelection(bodyTextarea, "~~");
           else if (action === "heading") prefixLines(bodyTextarea, "## ");
           else if (action === "bullet") prefixLines(bodyTextarea, "- ");
           else if (action === "numbered") prefixLines(bodyTextarea, "1. ");
@@ -2448,7 +2490,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("class", "mm-edge");
         path.setAttribute("d", `M ${ax} ${ay} C ${mx} ${ay}, ${mx} ${by}, ${bx} ${by}`);
-        const color = mmBranchColorFor(node) || "var(--accent2)";
+        const color = node.color || mmBranchColorFor(node) || "var(--accent2)";
         path.setAttribute("stroke", color);
         path.setAttribute("stroke-width", node.parentId === mmRoot().id ? "3.5" : "2.25");
         svg.appendChild(path);
@@ -2461,13 +2503,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const visible = visibleNodes();
       visible.forEach(node => {
         const el = document.createElement("div");
-        const branchColor = mmBranchColorFor(node);
+        const branchColor = node.color || mmBranchColorFor(node);
         el.className = "mm-node" + (node.root ? " root" : "") + (selectedId === node.id ? " selected" : "");
         el.style.left = node.x + "px";
         el.style.top = node.y + "px";
         if (branchColor && !node.root) {
           el.style.borderColor = branchColor;
-          el.style.background = `color-mix(in srgb, ${branchColor} 10%, var(--surface))`;
+          el.style.background = `color-mix(in srgb, ${branchColor} ${node.color ? 22 : 10}%, var(--surface))`;
         }
         el.dataset.id = node.id;
 
@@ -2500,6 +2542,39 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         addChildBtn.title = "Unterpunkt hinzufügen";
         addChildBtn.textContent = "+";
         el.appendChild(addChildBtn);
+
+        if (!node.root) {
+          const colorBtn = document.createElement("button");
+          colorBtn.className = "mm-color";
+          colorBtn.title = "Farbe wählen";
+          colorBtn.textContent = "🎨";
+          colorBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll(".mm-color-picker").forEach(p => p.remove());
+            const picker = document.createElement("div");
+            picker.className = "mm-color-picker";
+            const swatches = ["", ...MM_BRANCH_COLORS, "#C0453B", "#2B7A21", "#7A4A20"];
+            picker.innerHTML = swatches.map(c => c
+              ? `<button type="button" class="mm-swatch" style="background:${c};" data-c="${c}"></button>`
+              : `<button type="button" class="mm-swatch mm-swatch-reset" data-c="" title="Automatisch">✕</button>`
+            ).join("");
+            document.body.appendChild(picker);
+            const rect = colorBtn.getBoundingClientRect();
+            picker.style.left = rect.left + "px";
+            picker.style.top = (rect.bottom + 4) + "px";
+            picker.querySelectorAll(".mm-swatch").forEach(sw => {
+              sw.onclick = (ev) => {
+                ev.stopPropagation();
+                node.color = sw.dataset.c || null;
+                saveState(); renderNodes(); drawEdges();
+                picker.remove();
+              };
+            });
+            const closePicker = (ev) => { if (!picker.contains(ev.target)) { picker.remove(); document.removeEventListener("pointerdown", closePicker); } };
+            setTimeout(() => document.addEventListener("pointerdown", closePicker), 0);
+          };
+          el.appendChild(colorBtn);
+        }
 
         delBtn.onclick = (e) => { e.stopPropagation(); deleteSubtree(node.id); };
         addChildBtn.onclick = (e) => { e.stopPropagation(); addChildTo(node.id); };
@@ -3874,54 +3949,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return snap;
   }
 
-  function renderExportView(container) {
-    const header = document.createElement("div");
-    header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Export</h1><p class="view-sub">Nimm dein DApp mit — als PDF, Markdown oder JSON-Backup.</p></div>`;
-    container.appendChild(header);
-
-    const scopeOptions = [
-      { id: "all", label: "Alles" },
-      { id: "note", label: "Nur Notizen" },
-      { id: "checklist", label: "Nur Checklisten" },
-      { id: "image", label: "Nur Bilder" },
-    ];
-    const scopeRow = document.createElement("div");
-    scopeRow.className = "scope-row";
-    scopeRow.innerHTML = scopeOptions.map(o =>
-      `<button class="scope-chip ${exportScope === o.id ? "active" : ""}" data-scope="${o.id}">${o.label}</button>`
-    ).join("");
-    container.appendChild(scopeRow);
-    scopeRow.querySelectorAll(".scope-chip").forEach(chip => {
-      chip.onclick = () => { exportScope = chip.dataset.scope; render(); };
-    });
-
-    const grid = document.createElement("div");
-    grid.className = "export-grid";
-    grid.innerHTML = `
-      <div class="export-card">
-        <h3>📄 PDF</h3>
-        <p>Sauber formatiertes Dokument zum Ausdrucken oder Teilen.</p>
-        <button class="btn btn-accent" id="exportPdfBtn">Als PDF exportieren</button>
-      </div>
-      <div class="export-card">
-        <h3>✎ Markdown</h3>
-        <p>Reiner Text mit Formatierung — für Notion, Obsidian &amp; Co.</p>
-        <button class="btn btn-accent" id="exportMdBtn">Als Markdown exportieren</button>
-      </div>
-      <div class="export-card">
-        <h3>{ } JSON</h3>
-        <p>Vollständiges Backup inkl. Mind-Map — zum Re-Import.</p>
-        <button class="btn btn-accent" id="exportJsonBtn">Als JSON exportieren</button>
-      </div>
-    `;
-    container.appendChild(grid);
-
-    document.getElementById("exportPdfBtn").onclick = exportPdf;
-    document.getElementById("exportMdBtn").onclick = exportMarkdown;
-    document.getElementById("exportJsonBtn").onclick = exportJson;
-  }
-
   function downloadBlob(content, filename, mime) {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -4349,6 +4376,45 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
+
+  // --- Export ---
+  const exportSection = document.createElement("div");
+  exportSection.className = "settings-section";
+  const scopeOptions = [
+    { id: "all", label: "Alles" },
+    { id: "note", label: "Nur Notizen" },
+    { id: "checklist", label: "Nur Checklisten" },
+    { id: "image", label: "Nur Bilder" },
+  ];
+  exportSection.innerHTML = `
+    <h3>Export</h3>
+    <p class="hint">Als PDF, Markdown oder JSON — zum Ausdrucken, Weiterverarbeiten oder als vollständiges Backup.</p>
+    <div class="scope-row">${scopeOptions.map(o => `<button class="scope-chip ${exportScope === o.id ? "active" : ""}" data-scope="${o.id}">${o.label}</button>`).join("")}</div>
+    <div class="export-grid">
+      <div class="export-card">
+        <h3>📄 PDF</h3>
+        <p>Sauber formatiertes Dokument zum Ausdrucken oder Teilen.</p>
+        <button class="btn btn-accent" id="exportPdfBtn">Als PDF exportieren</button>
+      </div>
+      <div class="export-card">
+        <h3>✎ Markdown</h3>
+        <p>Reiner Text mit Formatierung — für Notion, Obsidian &amp; Co.</p>
+        <button class="btn btn-accent" id="exportMdBtn">Als Markdown exportieren</button>
+      </div>
+      <div class="export-card">
+        <h3>{ } JSON</h3>
+        <p>Vollständiges Backup inkl. Mind-Maps — zum Re-Import.</p>
+        <button class="btn btn-accent" id="exportJsonBtn">Als JSON exportieren</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(exportSection);
+  exportSection.querySelectorAll(".scope-chip").forEach(chip => {
+    chip.onclick = () => { exportScope = chip.dataset.scope; render(); };
+  });
+  exportSection.querySelector("#exportPdfBtn").onclick = exportPdf;
+  exportSection.querySelector("#exportMdBtn").onclick = exportMarkdown;
+  exportSection.querySelector("#exportJsonBtn").onclick = exportJson;
 
   // --- Backup / local import-export ---
   const backupSection = document.createElement("div");
