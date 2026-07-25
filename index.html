@@ -796,7 +796,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 @keyframes mmPop { from { transform: scale(.75); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .mm-node:hover { box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 10px 22px rgba(0,0,0,.12); }
-.mm-node.selected { border-width: 2px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent2) 30%, transparent), 0 8px 20px rgba(0,0,0,.12); }
+.mm-node.selected { border-width: 2px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent2) 30%, transparent), 0 8px 20px rgba(0,0,0,.12); z-index: 5; }
 .mm-node.root {
   background: linear-gradient(155deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #000 10%));
   color: var(--surface); font-family: var(--font-display); font-size: 17px; font-weight: 600;
@@ -990,7 +990,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 27;
+  const APP_BUILD_NUMBER = 30;
   const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
@@ -1080,7 +1080,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   function saveState(opts) {
-    if (!opts || !opts.skipTouch) {
+    const isRealChange = !opts || !opts.skipTouch;
+    if (isRealChange) {
       state.meta = state.meta || {};
       state.meta.lastModified = Date.now();
     }
@@ -1088,6 +1089,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       showToast("Speichern fehlgeschlagen — evtl. ist der Speicher voll (große Bilder?)");
+    }
+    if (isRealChange && state.connectors && state.connectors.network.autoSync && state.connectors.network.url) {
+      clearTimeout(autoPushDebounce);
+      autoPushDebounce = setTimeout(() => { pushToNetwork(true); }, 4000);
     }
   }
 
@@ -1098,6 +1103,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let personalAreaViewingProfileId = null;
   let weatherCache = { data: null, fetchedAt: 0 };
   let tickerInterval = null;
+  let autoPushDebounce = null;
   let activeTagFilter = null;
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -1535,6 +1541,33 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       reader.readAsText(file);
       homeMergeFile.value = "";
     };
+
+    // --- Server-Synchronisierung: Schnellzugriff ---
+    if (state.connectors.network.url) {
+      const syncBar = document.createElement("div");
+      syncBar.className = "family-share-bar";
+      const net = state.connectors.network;
+      syncBar.innerHTML = `
+        <span class="family-share-text">🔄 <strong>Server-Sync</strong> — ${net.lastSyncAt ? "zuletzt " + fmtDate(net.lastSyncAt) : "noch nie synchronisiert"}</span>
+        <div class="family-share-actions">
+          <button class="btn btn-sm" id="homeSyncPullBtn">⇩ Aktualisieren</button>
+          <button class="btn btn-sm btn-accent" id="homeSyncPushBtn">⇧ Hochladen</button>
+        </div>
+      `;
+      container.appendChild(syncBar);
+      syncBar.querySelector("#homeSyncPullBtn").onclick = async () => {
+        const btn = syncBar.querySelector("#homeSyncPullBtn");
+        btn.textContent = "Lädt …";
+        await pullFromNetwork(false);
+        renderProfileBar(); render();
+      };
+      syncBar.querySelector("#homeSyncPushBtn").onclick = async () => {
+        const btn = syncBar.querySelector("#homeSyncPushBtn");
+        btn.textContent = "Lädt hoch …";
+        await pushToNetwork(false);
+        render();
+      };
+    }
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -2300,6 +2333,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         el.addEventListener("click", (e) => {
           if (e.target === delBtn || e.target === addChildBtn || e.target.classList.contains("mm-toggle")) return;
           if (selectedId !== node.id) { selectedId = node.id; renderNodes(); }
+          ensureVisible(node);
           if (e.target !== textEl) { textEl.focus(); selectAllText(textEl); }
         });
 
@@ -2323,6 +2357,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           dragging = true; moved = false; sx = e.clientX; sy = e.clientY; ox = node.x; oy = node.y;
           el.setPointerCapture(e.pointerId);
           el.style.cursor = "grabbing";
+          el.style.zIndex = 10;
         });
         el.addEventListener("pointermove", (e) => {
           if (!dragging) return;
@@ -2344,7 +2379,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         });
         el.addEventListener("pointerup", (e) => {
           if (!dragging) return;
-          e.stopPropagation(); dragging = false; el.style.cursor = "grab";
+          e.stopPropagation(); dragging = false; el.style.cursor = "grab"; el.style.zIndex = "";
           if (dropTarget) {
             const newParentId = dropTarget.dataset.id;
             dropTarget.classList.remove("drop-target");
@@ -2532,7 +2567,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
               <input type="checkbox" ${t.done ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--accent);" class="task-check">
               <h3 class="card-title" style="${t.done ? "text-decoration:line-through;color:var(--text-muted);" : ""}">${escapeHtml(t.title)}</h3>
             </div>
-            <button class="card-pin del-task" title="Löschen">🗑️</button>
+            <div style="display:flex;gap:4px;">
+              <button class="card-pin edit-task" title="Bearbeiten">✎</button>
+              <button class="card-pin del-task" title="Löschen">🗑️</button>
+            </div>
           </div>
           <div class="card-tags">
             ${t.subject ? `<span class="tag-chip">📖 ${escapeHtml(t.subject)}</span>` : ""}
@@ -2545,6 +2583,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           else { t.done = false; if (t.lastEntryId) { ledgerRemove(t.lastEntryId); t.lastEntryId = null; } }
           saveState(); renderProfileBar(); render();
         };
+        card.querySelector(".edit-task").onclick = () => openTaskEditor(t);
         card.querySelector(".del-task").onclick = () => {
           if (confirm("Hausaufgabe wirklich löschen?")) {
             if (t.lastEntryId) ledgerRemove(t.lastEntryId);
@@ -2579,7 +2618,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
               <input type="checkbox" ${t.done ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--accent);" class="task-check">
               <h3 class="card-title" style="${t.done ? "text-decoration:line-through;color:var(--text-muted);" : ""}">${escapeHtml(t.title)}</h3>
             </div>
-            <button class="card-pin del-task" title="Löschen">🗑️</button>
+            <div style="display:flex;gap:4px;">
+              <button class="card-pin edit-task" title="Bearbeiten">✎</button>
+              <button class="card-pin del-task" title="Löschen">🗑️</button>
+            </div>
           </div>
           <div class="card-tags">
             ${owner ? `<span class="tag-chip"><span class="mini-avatar" style="background:${owner.color};display:inline-flex;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-size:10px;">${owner.emoji || owner.name.charAt(0)}</span> ${escapeHtml(owner.name)}</span>` : `<span class="tag-chip">Alle</span>`}
@@ -2596,6 +2638,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           }
           saveState(); renderProfileBar(); render();
         };
+        card.querySelector(".edit-task").onclick = () => openTaskEditor(t);
         card.querySelector(".del-task").onclick = () => {
           if (confirm("Aufgabe wirklich löschen?")) {
             if (t.lastEntryId) ledgerRemove(t.lastEntryId);
@@ -2628,13 +2671,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         card.innerHTML = `
           <div class="card-top">
             <h3 class="card-title">🎁 ${escapeHtml(r.title)}</h3>
-            <button class="card-pin del-reward" title="Löschen">🗑️</button>
+            <div style="display:flex;gap:4px;">
+              <button class="card-pin edit-reward" title="Bearbeiten">✎</button>
+              <button class="card-pin del-reward" title="Löschen">🗑️</button>
+            </div>
           </div>
           <div class="card-tags"><span class="tag-chip">⭐ ${r.cost} Punkte</span></div>
           <div style="display:flex;gap:6px;margin-top:8px;">
             <select class="redeem-profile" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);">${profileOptions}</select>
             <button class="btn btn-sm btn-accent redeem-btn">Einlösen</button>
           </div>`;
+        card.querySelector(".edit-reward").onclick = () => openRewardEditor(r);
         card.querySelector(".del-reward").onclick = () => {
           if (confirm("Belohnung wirklich löschen?")) { state.rewards = state.rewards.filter(x => x.id !== r.id); saveState(); render(); }
         };
@@ -2722,43 +2769,55 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     header.querySelector("#addRewardBtn").onclick = () => openRewardEditor();
   }
 
-  function openTaskEditor() {
-    const draft = { id: uid(), title: "", assignedTo: state.profiles[0] ? state.profiles[0].id : "", points: 5, recurring: "", done: false, lastEntryId: null, category: "chore", dueDate: "", subject: "" };
+  function openTaskEditor(existing) {
+    const draft = existing ? { ...existing } : { id: uid(), title: "", assignedTo: state.profiles[0] ? state.profiles[0].id : "", points: 5, recurring: "", done: false, lastEntryId: null, category: "chore", dueDate: "", subject: "" };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = `
       <div class="modal" style="max-width:420px;">
-        <div class="modal-header"><h2>Neue Aufgabe</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="modal-header"><h2>${existing ? "Aufgabe bearbeiten" : "Neue Aufgabe"}</h2><button class="close-btn" id="closeModal">✕</button></div>
         <div class="field"><label>Art</label>
           <select id="t-category">
-            <option value="chore">🧹 Haushalt</option>
-            <option value="homework">📚 Hausaufgabe</option>
+            <option value="chore" ${draft.category === "chore" ? "selected" : ""}>🧹 Haushalt</option>
+            <option value="homework" ${draft.category === "homework" ? "selected" : ""}>📚 Hausaufgabe</option>
           </select>
         </div>
-        <div class="field"><label>Titel</label><input type="text" id="t-title" placeholder="z. B. Zimmer aufräumen oder Matheheft S. 12"></div>
-        <div class="field" id="t-subject-field" style="display:none;"><label>Fach (optional)</label><input type="text" id="t-subject" placeholder="z. B. Mathe"></div>
-        <div class="field"><label>Zugewiesen an</label>
-          <select id="t-assignee">${state.profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")}</select>
+        <div class="field"><label>Titel</label><input type="text" id="t-title" value="${escapeHtml(draft.title)}" placeholder="z. B. Zimmer aufräumen oder Matheheft S. 12"></div>
+        <div class="field" id="t-subject-field" style="display:none;"><label>Fach (optional)</label><input type="text" id="t-subject" value="${escapeHtml(draft.subject || "")}" placeholder="z. B. Mathe"></div>
+        <div class="field"><label>Zuständig / zugewiesen an</label>
+          <select id="t-assignee">${state.profiles.map(p => `<option value="${p.id}" ${draft.assignedTo === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}</select>
         </div>
-        <div class="field" id="t-due-field" style="display:none;"><label>Fällig am</label><input type="text" id="t-due" placeholder="JJJJ-MM-TT"></div>
-        <div class="field"><label>Punkte</label><input type="text" id="t-points" value="5" inputmode="numeric"></div>
+        <div class="field" id="t-due-field" style="display:none;"><label>Fällig am</label><input type="text" id="t-due" value="${escapeHtml(draft.dueDate || "")}" placeholder="JJJJ-MM-TT"></div>
+        <div class="field"><label>Punkte</label><input type="text" id="t-points" value="${draft.points}" inputmode="numeric"></div>
         <div class="field" id="t-recurring-field"><label>Wiederholung</label>
           <select id="t-recurring">
-            <option value="">Einmalig</option>
-            <option value="daily">Täglich</option>
-            <option value="weekly">Wöchentlich</option>
+            <option value="" ${!draft.recurring ? "selected" : ""}>Einmalig</option>
+            <option value="daily" ${draft.recurring === "daily" ? "selected" : ""}>Täglich</option>
+            <option value="weekly" ${draft.recurring === "weekly" ? "selected" : ""}>Wöchentlich</option>
           </select>
         </div>
-        <div class="modal-footer"><div></div><div class="modal-footer-right">
-          <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
-          <button class="btn btn-accent" id="saveBtn">Speichern</button>
-        </div></div>
+        <div class="modal-footer">
+          <div>${existing ? `<button class="btn btn-danger" id="deleteTaskBtn">Löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveBtn">Speichern</button>
+          </div>
+        </div>
       </div>`;
     document.body.appendChild(overlay);
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
     overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    if (existing) {
+      overlay.querySelector("#deleteTaskBtn").onclick = () => {
+        if (confirm("Diese Aufgabe wirklich löschen?")) {
+          if (existing.lastEntryId) ledgerRemove(existing.lastEntryId);
+          state.tasks = state.tasks.filter(x => x.id !== existing.id);
+          saveState(); close(); renderProfileBar(); render();
+        }
+      };
+    }
 
     function syncCategoryFields() {
       const isHomework = overlay.querySelector("#t-category").value === "homework";
@@ -2768,6 +2827,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (isHomework && !overlay.querySelector("#t-due").value) overlay.querySelector("#t-due").value = new Date().toISOString().slice(0, 10);
     }
     overlay.querySelector("#t-category").addEventListener("change", syncCategoryFields);
+    syncCategoryFields();
 
     overlay.querySelector("#saveBtn").onclick = () => {
       draft.category = overlay.querySelector("#t-category").value;
@@ -2777,46 +2837,65 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       draft.dueDate = draft.category === "homework" ? overlay.querySelector("#t-due").value.trim() : "";
       draft.points = Math.max(0, parseInt(overlay.querySelector("#t-points").value, 10) || 0);
       draft.recurring = draft.category === "homework" ? "" : overlay.querySelector("#t-recurring").value;
-      const creator = getActiveProfile();
-      draft.createdBy = state.activeProfileId || null;
-      draft.approved = !creator || creator.role !== "child";
-      state.tasks.push(draft);
+      if (!existing) {
+        const creator = getActiveProfile();
+        draft.createdBy = state.activeProfileId || null;
+        draft.approved = !creator || creator.role !== "child";
+      }
+      const idx = state.tasks.findIndex(t => t.id === draft.id);
+      if (idx >= 0) state.tasks[idx] = draft; else state.tasks.push(draft);
       saveState(); close(); render();
-      showToast(draft.approved
-        ? (draft.category === "homework" ? "Hausaufgabe angelegt." : "Aufgabe angelegt.")
-        : "Aufgabe angelegt — wartet auf Freigabe durch ein Elternteil.");
+      showToast(existing
+        ? "Aufgabe aktualisiert."
+        : (draft.approved
+            ? (draft.category === "homework" ? "Hausaufgabe angelegt." : "Aufgabe angelegt.")
+            : "Aufgabe angelegt — wartet auf Freigabe durch ein Elternteil."));
     };
     setTimeout(() => overlay.querySelector("#t-title").focus(), 30);
   }
 
-  function openRewardEditor() {
-    const draft = { id: uid(), title: "", cost: 10 };
+  function openRewardEditor(existing) {
+    const draft = existing ? { ...existing } : { id: uid(), title: "", cost: 10 };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = `
       <div class="modal" style="max-width:420px;">
-        <div class="modal-header"><h2>Neue Belohnung</h2><button class="close-btn" id="closeModal">✕</button></div>
-        <div class="field"><label>Titel</label><input type="text" id="r-title" placeholder="z. B. Filmabend aussuchen"></div>
-        <div class="field"><label>Kosten in Punkten</label><input type="text" id="r-cost" value="10" inputmode="numeric"></div>
-        <div class="modal-footer"><div></div><div class="modal-footer-right">
-          <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
-          <button class="btn btn-accent" id="saveBtn">Speichern</button>
-        </div></div>
+        <div class="modal-header"><h2>${existing ? "Belohnung bearbeiten" : "Neue Belohnung"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="field"><label>Titel</label><input type="text" id="r-title" value="${escapeHtml(draft.title)}" placeholder="z. B. Filmabend aussuchen"></div>
+        <div class="field"><label>Kosten in Punkten</label><input type="text" id="r-cost" value="${draft.cost}" inputmode="numeric"></div>
+        <div class="modal-footer">
+          <div>${existing ? `<button class="btn btn-danger" id="deleteRewardBtn">Löschen</button>` : ""}</div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
+            <button class="btn btn-accent" id="saveBtn">Speichern</button>
+          </div>
+        </div>
       </div>`;
     document.body.appendChild(overlay);
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
     overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    if (existing) {
+      overlay.querySelector("#deleteRewardBtn").onclick = () => {
+        if (confirm("Diese Belohnung wirklich löschen?")) {
+          state.rewards = state.rewards.filter(x => x.id !== existing.id);
+          saveState(); close(); render();
+        }
+      };
+    }
     overlay.querySelector("#saveBtn").onclick = () => {
       draft.title = overlay.querySelector("#r-title").value.trim() || "Belohnung";
       draft.cost = Math.max(0, parseInt(overlay.querySelector("#r-cost").value, 10) || 0);
-      const creator = getActiveProfile();
-      draft.createdBy = state.activeProfileId || null;
-      draft.approved = !creator || creator.role !== "child";
-      state.rewards.push(draft);
+      if (!existing) {
+        const creator = getActiveProfile();
+        draft.createdBy = state.activeProfileId || null;
+        draft.approved = !creator || creator.role !== "child";
+      }
+      const idx = state.rewards.findIndex(r => r.id === draft.id);
+      if (idx >= 0) state.rewards[idx] = draft; else state.rewards.push(draft);
       saveState(); close(); render();
-      showToast(draft.approved ? "Belohnung angelegt." : "Belohnung angelegt — wartet auf Freigabe durch ein Elternteil.");
+      showToast(existing ? "Belohnung aktualisiert." : (draft.approved ? "Belohnung angelegt." : "Belohnung angelegt — wartet auf Freigabe durch ein Elternteil."));
     };
     setTimeout(() => overlay.querySelector("#r-title").focus(), 30);
   }
@@ -3927,6 +4006,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <input type="text" id="weatherCityInput" value="${escapeHtml(state.weatherLocation.name)}" placeholder="z. B. Köln">
           <button class="btn btn-sm" id="weatherSaveBtn">Speichern</button>
         </div>
+        <button class="btn btn-sm" id="weatherGeoBtn" style="margin-top:8px;">📍 Aktuellen Standort verwenden</button>
         <div class="hint" id="weatherStatus" style="margin-top:6px;">${state.weatherLocation.lat ? `Aktuell: ${escapeHtml(state.weatherLocation.name)}` : "Noch kein Ort gespeichert."}</div>
       </div>
     `;
@@ -3980,6 +4060,30 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       } catch (err) { statusEl.textContent = "Suche fehlgeschlagen — Netzwerk prüfen."; }
     };
 
+    calWeatherSection.querySelector("#weatherGeoBtn").onclick = () => {
+      const statusEl = calWeatherSection.querySelector("#weatherStatus");
+      if (!navigator.geolocation) { statusEl.textContent = "Standortabfrage wird von diesem Browser nicht unterstützt."; return; }
+      statusEl.textContent = "Frage Standort ab …";
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        let name = `Standort ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10`);
+          const data = await res.json();
+          const a = data.address || {};
+          name = a.city || a.town || a.village || a.municipality || a.county || name;
+        } catch (err) { /* Fallback bleibt bei Koordinaten */ }
+        state.weatherLocation = { name, lat: latitude, lon: longitude };
+        weatherCache = { data: null, fetchedAt: 0 };
+        saveState();
+        calWeatherSection.querySelector("#weatherCityInput").value = name;
+        statusEl.textContent = `Gespeichert: ${name}`;
+        showToast("Standort für Wetter übernommen.");
+      }, (err) => {
+        statusEl.textContent = err.code === 1 ? "Standortzugriff wurde nicht erlaubt." : "Standort konnte nicht ermittelt werden.";
+      }, { timeout: 10000 });
+    };
+
     // --- Connectors ---
     const connSection = document.createElement("div");
     connSection.className = "settings-section";
@@ -4013,7 +4117,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <input type="checkbox" id="netAutoSync" ${net.autoSync ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
           Automatisch synchronisieren (lädt bei Änderungen hoch, holt beim Start das Neueste ab)
         </label>
-        <p class="hint" style="margin-top:0;margin-bottom:12px;">Läuft zuverlässig, solange die App offen ist, sowie beim Start und wenn du zur App zurückkehrst. Browser pausieren Hintergrund-Timer bei komplett geschlossener/gesperrter App — für den zuverlässigsten Stand hilft „Jetzt hochladen/herunterladen" von Hand.</p>
+        <p class="hint" style="margin-top:0;margin-bottom:12px;">Lädt jetzt wenige Sekunden nach jeder Änderung automatisch hoch (nicht erst nach Ablauf des Intervalls) — solange die App offen ist. Das Intervall oben bestimmt nur, wie oft nach fremden Änderungen gesucht wird. Browser pausieren Hintergrund-Timer bei komplett geschlossener/gesperrter App — dann hilft „Jetzt hochladen" von Hand oder die Buttons auf dem Homescreen.</p>
         <div class="backup-row">
           <button class="btn btn-sm" id="netTestBtn">Verbindung testen</button>
           <button class="btn btn-sm btn-accent" id="netPushBtn">⇧ Jetzt hochladen</button>
