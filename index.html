@@ -858,8 +858,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 19;
-  const APP_BUILD_DATE = "2026-07-24";
+  const APP_BUILD_NUMBER = 20;
+  const APP_BUILD_DATE = "2026-07-25";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -885,7 +885,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return {
       theme: "papier",
       items: [],
-      mindmap: { nodes: [], edges: [] },
+      mindmap: { nodes: [], edges: [], private: false },
       meta: { lastModified: Date.now() },
       profiles: [],
       activeProfileId: null,
@@ -979,7 +979,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function allTags() {
     const map = new Map();
-    state.items.forEach(it => (it.tags || []).forEach(t => map.set(t, (map.get(t) || 0) + 1)));
+    state.items.filter(canSeeItemDetails).forEach(it => (it.tags || []).forEach(t => map.set(t, (map.get(t) || 0) + 1)));
     return map;
   }
 
@@ -1286,7 +1286,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       "calendar", "Planen ›");
 
     // --- Zuletzt bearbeitet ---
-    const recent = state.items.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
+    const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
     widget("🕘", "Zuletzt bearbeitet", "#4A6572",
       recent.length ? recent.map(it => {
         const icon = { note: "📝", checklist: "☑️", image: "🖼️" }[it.type] || "•";
@@ -1300,7 +1300,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const shareBar = document.createElement("div");
     shareBar.className = "family-share-bar";
     shareBar.innerHTML = `
-      <span class="family-share-text">🔗 <strong>Familien-Update</strong> — Termine, Einkaufsliste, Betreuung, Essensplan &amp; Aufgaben manuell verteilen (z. B. per Teams-Chat)</span>
+      <span class="family-share-text">🔗 <strong>Familien-Update</strong> — alles, was nicht privat markiert ist, manuell verteilen (z. B. per Teams-Chat)</span>
       <div class="family-share-actions">
         <button class="btn btn-sm" id="homeShareBtn">🔗 Teilen</button>
         <button class="btn btn-sm" id="homeMergeBtn">⊕ Einfügen</button>
@@ -1316,7 +1316,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         custodySchedules: state.custodySchedules,
         mealPlan: state.mealPlan,
         tasks: state.tasks,
-        pointsLedger: state.pointsLedger
+        pointsLedger: state.pointsLedger,
+        items: state.items.filter(canSeeItemDetails),
+        mindmap: state.mindmap.private ? { nodes: [] } : { nodes: state.mindmap.nodes }
       };
       shareOrDownloadJson(bundle, `dapp-familien-update-${Date.now()}.json`, "DApp Familien-Update");
     };
@@ -1329,14 +1331,23 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          const before = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length;
+          const before = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length + state.items.length;
           state.events = unionById(state.events, data.events);
           state.shoppingList = unionById(state.shoppingList, data.shoppingList);
           state.custodySchedules = unionById(state.custodySchedules, data.custodySchedules);
           state.tasks = unionById(state.tasks, data.tasks);
           state.pointsLedger = unionById(state.pointsLedger, data.pointsLedger);
           state.mealPlan = { ...(data.mealPlan || {}), ...state.mealPlan };
-          const after = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length;
+          state.items = unionById(state.items, data.items).map(it => {
+            const remoteMatch = (data.items || []).find(r => r.id === it.id);
+            const localMatch = state.items.find(l => l.id === it.id);
+            if (remoteMatch && localMatch && remoteMatch.updatedAt > localMatch.updatedAt) return remoteMatch;
+            return it;
+          });
+          if (data.mindmap && data.mindmap.nodes && data.mindmap.nodes.length) {
+            state.mindmap.nodes = unionById(state.mindmap.nodes, data.mindmap.nodes);
+          }
+          const after = state.events.length + state.shoppingList.length + state.custodySchedules.length + state.tasks.length + state.items.length;
           saveState(); renderProfileBar(); render();
           showToast(after > before ? `${after - before} neue Einträge übernommen.` : "Nichts Neues (schon vorhanden).");
         } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige DApp-Datei?"); }
@@ -1348,7 +1359,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function renderListView(container, type, title, subtitle, icon) {
     const items = state.items
-      .filter(it => it.type === type && itemMatchesSearch(it))
+      .filter(it => it.type === type && itemMatchesSearch(it) && canSeeItemDetails(it))
       .sort((a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt));
 
     const header = document.createElement("div");
@@ -1407,7 +1418,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const creator = it.createdBy ? getProfile(it.createdBy) : null;
     card.innerHTML = `
       <div class="card-top">
-        <h3 class="card-title">${escapeHtml(it.title || "Ohne Titel")}</h3>
+        <h3 class="card-title">${it.private ? "🔒 " : ""}${escapeHtml(it.title || "Ohne Titel")}</h3>
         <button class="card-pin ${it.pinned ? "pinned" : ""}" title="Anheften">${it.pinned ? "★" : "☆"}</button>
       </div>
       ${bodyHtml}
@@ -1451,7 +1462,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function openEditor(type, id) {
     const existing = id ? state.items.find(i => i.id === id) : null;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
-      id: uid(), type, title: "", tags: [], pinned: false,
+      id: uid(), type, title: "", tags: [], pinned: false, private: false,
       createdAt: Date.now(), updatedAt: Date.now(),
       body: "", items: [], dataUrl: "", caption: ""
     };
@@ -1521,6 +1532,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         <div class="field"><label>Tags (mit Komma trennen)</label>
           <input type="text" id="f-tags" value="${escapeHtml((draft.tags || []).join(", "))}" placeholder="z. B. produkt, ux, sprint3">
         </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="f-private" ${draft.private ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+          🔒 Privat — wird beim Teilen mit der Familie nicht mit übertragen
+        </label>
         <div class="modal-footer">
           <div>${existing ? `<button class="btn btn-danger" id="deleteBtn">Löschen</button>` : ""}</div>
           <div class="modal-footer-right">
@@ -1696,6 +1711,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     overlay.querySelector("#saveBtn").onclick = () => {
       draft.title = overlay.querySelector("#f-title").value.trim() || "Ohne Titel";
       draft.tags = overlay.querySelector("#f-tags").value.split(",").map(t => t.trim()).filter(Boolean);
+      draft.private = overlay.querySelector("#f-private").checked;
       if (type === "note") draft.body = overlay.querySelector("#f-body").value;
       if (type === "image") draft.caption = overlay.querySelector("#f-caption").value;
       draft.updatedAt = Date.now();
@@ -1792,9 +1808,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <button class="btn btn-sm btn-accent" id="mmAddBranch">+ Hauptast</button>
       <button class="btn btn-sm" id="mmAddChild">+ Unterpunkt</button>
       <button class="btn btn-sm btn-danger" id="mmDeleteNode">Löschen</button>
+      <button class="btn btn-sm" id="mmPrivateToggle">${state.mindmap.private ? "🔒 Privat" : "🔓 Privat machen"}</button>
       <span class="mindmap-hint">Knoten anklicken = auswählen &amp; sofort tippen.</span>
     `;
     container.appendChild(toolbar);
+    toolbar.querySelector("#mmPrivateToggle").onclick = () => {
+      state.mindmap.private = !state.mindmap.private;
+      saveState(); render();
+      showToast(state.mindmap.private ? "Mind-Map ist jetzt privat." : "Mind-Map wird wieder mitgeteilt.");
+    };
 
     const wrap = document.createElement("div");
     wrap.className = "mindmap-wrap";
@@ -2542,12 +2564,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   async function fetchSchoolHolidays(stateCode) {
+    const FERIEN_LABELS = { winterferien: "Winterferien", osterferien: "Osterferien", pfingstferien: "Pfingstferien", sommerferien: "Sommerferien", herbstferien: "Herbstferien", weihnachtsferien: "Weihnachtsferien", fruehjahrsferien: "Frühjahrsferien" };
+    const thisYear = new Date().getFullYear();
+    const years = [thisYear - 1, thisYear, thisYear + 1, thisYear + 2];
     try {
-      const res = await fetch(`https://ferien-api.de/api/v1/holidays/${stateCode}`);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      const FERIEN_LABELS = { winterferien: "Winterferien", osterferien: "Osterferien", pfingstferien: "Pfingstferien", sommerferien: "Sommerferien", herbstferien: "Herbstferien", weihnachtsferien: "Weihnachtsferien", fruehjahrsferien: "Frühjahrsferien" };
-      state.schoolHolidays[stateCode] = data.map(f => ({
+      const results = await Promise.all(years.map(async (year) => {
+        try {
+          const res = await fetch(`https://schulferien-api.de/api/v1/${year}/${stateCode}`);
+          if (!res.ok) return [];
+          return await res.json();
+        } catch (err) { return []; }
+      }));
+      const flat = results.flat().filter(Boolean);
+      if (!flat.length) throw new Error("Keine Daten erhalten");
+      state.schoolHolidays[stateCode] = flat.map(f => ({
         start: f.start.slice(0, 10), end: f.end.slice(0, 10), name: FERIEN_LABELS[f.name] || f.name
       }));
       saveState({ skipTouch: true });
@@ -2625,6 +2655,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (!activeId) return false;
     if (ev.createdBy === activeId) return true;
     return (ev.profileIds || []).includes(activeId);
+  }
+
+  function canSeeItemDetails(it) {
+    if (!it.private) return true;
+    const activeId = state.activeProfileId;
+    if (!activeId) return false;
+    if (!it.createdBy) return true; // ältere Einträge ohne Zuordnung bleiben sichtbar
+    return it.createdBy === activeId;
   }
 
   function buildDayCellInner(dateStr, day, maxEvents, showHeader) {
@@ -2754,17 +2792,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       </div>
       <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
       <button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>
-      <button class="btn btn-sm" id="calShare" title="Termine teilen/exportieren">🔗 Teilen</button>
-      <button class="btn btn-sm" id="calImport" title="Termine hinzufügen (JSON oder ICS)">⊕ Hinzufügen</button>
+      <button class="btn btn-sm" id="calImport" title="Termine aus anderer Quelle hinzufügen (JSON oder ICS)">⊕ Termine importieren</button>
       <input type="file" id="calImportFile" accept=".json,.ics" style="display:none">
       <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
     `;
     container.appendChild(toolbar);
 
-    toolbar.querySelector("#calShare").onclick = () => {
-      const visibleEvents = state.events.filter(canSeeEventDetails);
-      shareOrDownloadJson({ events: visibleEvents }, `dapp-termine-${Date.now()}.json`, "DApp Termine");
-    };
     const calImportFile = toolbar.querySelector("#calImportFile");
     toolbar.querySelector("#calImport").onclick = () => calImportFile.click();
     calImportFile.onchange = () => {
@@ -3122,37 +3155,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   function renderShoppingView(container) {
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie.</p></div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-sm" id="shopShareBtn">🔗 Teilen</button>
-        <button class="btn btn-sm" id="shopMergeBtn">⊕ Hinzufügen</button>
-        <input type="file" id="shopMergeFile" accept=".json" style="display:none">
-      </div>`;
+    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie — Teilen läuft über das „Familien-Update" auf dem Homescreen.</p></div>`;
     container.appendChild(header);
-
-    header.querySelector("#shopShareBtn").onclick = () => {
-      shareOrDownloadJson({ shoppingList: state.shoppingList }, `dapp-einkaufsliste-${Date.now()}.json`, "DApp Einkaufsliste");
-    };
-    const shopMergeFile = header.querySelector("#shopMergeFile");
-    header.querySelector("#shopMergeBtn").onclick = () => shopMergeFile.click();
-    shopMergeFile.onchange = () => {
-      const file = shopMergeFile.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          const incoming = data.shoppingList || (Array.isArray(data) ? data : []);
-          const before = state.shoppingList.length;
-          state.shoppingList = unionById(state.shoppingList, incoming);
-          const added = state.shoppingList.length - before;
-          saveState(); render();
-          showToast(added > 0 ? `${added} Eintrag/Einträge hinzugefügt.` : "Nichts Neues (schon vorhanden).");
-        } catch (err) { showToast("Import fehlgeschlagen — Datei prüfen."); }
-      };
-      reader.readAsText(file);
-      shopMergeFile.value = "";
-    };
 
     const addRow = document.createElement("div");
     addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;";
@@ -3502,10 +3506,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <h3>Kalender &amp; Wetter</h3>
       <p class="hint">Bundesland für automatische Schulferien, Ort für das Wetter-Widget auf dem Homescreen.</p>
       <div class="field" style="max-width:320px;"><label>Bundesland (Schulferien)</label>
-        <select id="federalStateSelect">
-          <option value="">— nicht ausgewählt —</option>
-          ${GERMAN_STATES.map(s => `<option value="${s.code}" ${state.federalState === s.code ? "selected" : ""}>${s.name}</option>`).join("")}
-        </select>
+        <div style="display:flex;gap:8px;">
+          <select id="federalStateSelect" style="flex:1;">
+            <option value="">— nicht ausgewählt —</option>
+            ${GERMAN_STATES.map(s => `<option value="${s.code}" ${state.federalState === s.code ? "selected" : ""}>${s.name}</option>`).join("")}
+          </select>
+          <button class="btn btn-sm" id="ferienRefreshBtn">↻ Aktualisieren</button>
+        </div>
+        <div class="hint" id="ferienStatus" style="margin-top:6px;">${
+          state.federalState
+            ? (state.schoolHolidays[state.federalState] && state.schoolHolidays[state.federalState].length
+                ? `${state.schoolHolidays[state.federalState].length} Ferienzeiträume geladen.`
+                : "Noch keine Daten geladen — Aktualisieren klicken.")
+            : "Kein Bundesland ausgewählt."
+        }</div>
       </div>
       <div class="field" style="max-width:320px;"><label>Ort für Wetter</label>
         <div style="display:flex;gap:8px;">
@@ -3520,13 +3534,31 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     calWeatherSection.querySelector("#federalStateSelect").addEventListener("change", async (e) => {
       state.federalState = e.target.value;
       saveState();
-      if (state.federalState && !state.schoolHolidays[state.federalState]) {
-        showToast("Lade Schulferien …");
+      const statusEl = calWeatherSection.querySelector("#ferienStatus");
+      if (state.federalState) {
+        statusEl.textContent = "Lade Schulferien …";
         const ok = await fetchSchoolHolidays(state.federalState);
+        statusEl.textContent = ok
+          ? `${(state.schoolHolidays[state.federalState] || []).length} Ferienzeiträume geladen.`
+          : "Schulferien konnten nicht geladen werden — Netzwerk prüfen, dann Aktualisieren.";
         showToast(ok ? "Schulferien geladen." : "Schulferien konnten nicht geladen werden.");
+      } else {
+        statusEl.textContent = "Kein Bundesland ausgewählt.";
       }
       render();
     });
+
+    calWeatherSection.querySelector("#ferienRefreshBtn").onclick = async () => {
+      const stateCode = calWeatherSection.querySelector("#federalStateSelect").value;
+      const statusEl = calWeatherSection.querySelector("#ferienStatus");
+      if (!stateCode) { showToast("Bitte zuerst ein Bundesland auswählen."); return; }
+      statusEl.textContent = "Lade Schulferien …";
+      const ok = await fetchSchoolHolidays(stateCode);
+      statusEl.textContent = ok
+        ? `${(state.schoolHolidays[stateCode] || []).length} Ferienzeiträume geladen.`
+        : "Schulferien konnten nicht geladen werden — Netzwerk prüfen.";
+      showToast(ok ? "Schulferien aktualisiert." : "Aktualisieren fehlgeschlagen.");
+    };
 
     calWeatherSection.querySelector("#weatherSaveBtn").onclick = async () => {
       const city = calWeatherSection.querySelector("#weatherCityInput").value.trim();
@@ -3636,7 +3668,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   backupSection.className = "settings-section";
   backupSection.innerHTML = `
       <h3>Sicherung &amp; Geräte-Abgleich</h3>
-      <p class="hint">Ganz ohne Server: Backup teilen (AirDrop, WhatsApp, Mail, Nearby Share, …), auf dem anderen Gerät „Hinzufügen" — fertig zusammengeführt, nichts geht verloren.</p>
+      <p class="hint">Für das komplette, eigene Backup (inkl. privater Einträge) — zum Teilen mit der Familie (ohne Privates) nutzt ihr stattdessen das „Familien-Update" auf dem Homescreen.</p>
       <div class="backup-row">
         <button class="btn btn-accent" id="backupShareBtn">🔗 Teilen / Herunterladen</button>
         <button class="btn" id="backupMergeBtn">⊕ Von Datei hinzufügen</button>
@@ -3702,7 +3734,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   backupSection.querySelector("#resetBtn").onclick = () => {
       if (confirm("Wirklich ALLE Inhalte löschen — Notizen, Checklisten, Bilder, Mind-Map, Profile, Aufgaben, Belohnungen, Kalender, Betreuungen, Essensplan, Wunschlisten und Einkaufsliste? Das kann nicht rückgängig gemacht werden.")) {
         state = {
-          theme: state.theme, items: [], mindmap: { nodes: [], edges: [] }, meta: { lastModified: Date.now() },
+          theme: state.theme, items: [], mindmap: { nodes: [], edges: [], private: false }, meta: { lastModified: Date.now() },
           profiles: [], activeProfileId: null, tasks: [], rewards: [], pointsLedger: [], events: [], shoppingList: [], custodySchedules: [],
           adminPasswordHash: state.adminPasswordHash, mealPlan: {}, wishlist: [],
           schoolHolidays: state.schoolHolidays, federalState: state.federalState, weatherLocation: state.weatherLocation,
