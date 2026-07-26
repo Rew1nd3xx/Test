@@ -472,43 +472,41 @@ body.theme-militaer {
 .theme-vaultterm .view-container { position: relative; }
 .theme-vaultterm .widget-head h3 { color: var(--accent2); text-shadow: 0 0 6px rgba(255,176,0,.5); }
 
-/* 19. Atombunker — 1950er Atomzeitalter-Werbeplakat-Stil */
+/* 19. Vault-Shelter — flaches Schwarz/Gelb-Design im Stil von Aufbau-Sim-Vault-Apps */
 .theme-atombunker {
-  --bg: #EFE3C4; --surface: #FBF3DE; --surface2: #F2E2B8;
-  --text: #241B12; --text-muted: #6B5A3E;
-  --accent: #C4442E; --accent2: #2E8B84;
-  --border: #241B12; --shadow: 4px 4px 0 rgba(36,27,18,.85);
+  --bg: #0E0E0E; --surface: #1A1A1A; --surface2: #242424;
+  --text: #F5F1E6; --text-muted: #9C9689;
+  --accent: #FFC300; --accent2: #3FA796;
+  --border: #FFC300; --shadow: 0 3px 0 rgba(0,0,0,.5);
   --font-display: 'Archivo Black', sans-serif; --font-body: 'Work Sans', sans-serif;
-  --radius: 3px; --pattern: none;
+  --radius: 10px; --pattern: none;
 }
-body.theme-atombunker {
-  background-color: var(--bg);
-  background-image: radial-gradient(circle, rgba(36,27,18,.14) 1.4px, transparent 1.6px);
-  background-size: 14px 14px;
-}
+body.theme-atombunker { background-color: var(--bg); }
 .theme-atombunker .sidebar, .theme-atombunker .topbar { background-color: var(--surface); border-color: var(--border); border-width: 2px; }
-.theme-atombunker .brand-text, .theme-atombunker .view-title {
-  text-transform: uppercase; letter-spacing: .02em; color: var(--accent);
-  text-shadow: 2px 2px 0 var(--accent2), 4px 4px 0 rgba(36,27,18,.3);
-}
-.theme-atombunker .btn { border-radius: 3px; border-width: 2.5px; text-transform: uppercase; font-weight: 700; letter-spacing: .02em; }
-.theme-atombunker .btn-accent { background: var(--accent); color: var(--surface); border-color: var(--border); box-shadow: 3px 3px 0 var(--border); }
-.theme-atombunker .btn-accent:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--border); }
-.theme-atombunker .btn-accent:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--border); }
+.theme-atombunker .brand-text, .theme-atombunker .view-title { text-transform: uppercase; letter-spacing: .03em; color: var(--accent); }
+.theme-atombunker .btn { border-radius: 8px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; border-color: var(--border); border-width: 2px; }
+.theme-atombunker .btn-accent { background: var(--accent); color: #14100A; border: 2px solid var(--accent); box-shadow: var(--shadow); }
+.theme-atombunker .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 0 rgba(0,0,0,.5); }
 .theme-atombunker .card, .theme-atombunker .widget-card {
-  border-width: 2.5px; border-radius: 3px; background: var(--surface);
-  box-shadow: 4px 4px 0 var(--border);
+  border-color: var(--border); border-width: 2px; border-radius: 10px; background: var(--surface); box-shadow: var(--shadow);
 }
-.theme-atombunker .card:hover, .theme-atombunker .widget-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--border); }
-.theme-atombunker .widget-card::before { background: var(--accent2); width: 5px; }
-.theme-atombunker .widget-head h3 { color: var(--accent2); text-transform: uppercase; letter-spacing: .03em; }
-.theme-atombunker .nav-item.active { background: var(--accent); color: var(--surface); border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); }
-.theme-atombunker .avatar { border-radius: 50%; border: 2.5px solid var(--border); box-shadow: 2px 2px 0 var(--border); }
+.theme-atombunker .card:hover, .theme-atombunker .widget-card:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,.5); }
+.theme-atombunker .widget-card::before { background: var(--accent2); }
+.theme-atombunker .widget-head h3 { color: var(--accent2); text-transform: uppercase; letter-spacing: .03em; font-size: 13px; }
+.theme-atombunker .nav-item.active { background: var(--accent); color: #14100A; border: 2px solid var(--accent); font-weight: 700; }
+.theme-atombunker .avatar {
+  border-radius: 50%; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--border);
+  background-image: repeating-conic-gradient(rgba(255,195,0,.12) 0deg 15deg, transparent 15deg 30deg);
+}
 .theme-atombunker .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-.theme-atombunker .mm-node { border-width: 2.5px; border-radius: 3px; box-shadow: 3px 3px 0 var(--border); }
-.theme-atombunker .mm-node.root { background: var(--accent); color: var(--surface); border: 2.5px solid var(--border); }
-.theme-atombunker ::selection { background: var(--accent2); color: var(--surface); }
-.theme-atombunker input, .theme-atombunker select, .theme-atombunker textarea { border-width: 2px !important; border-radius: 3px !important; }
+.theme-atombunker .mm-node { border-color: var(--border); border-width: 2px; background: var(--surface); border-radius: 10px; }
+.theme-atombunker .mm-node.root {
+  background: var(--surface2); color: var(--accent); border: 3px solid var(--accent); border-radius: 50%;
+  background-image: repeating-conic-gradient(rgba(255,195,0,.1) 0deg 12deg, transparent 12deg 24deg);
+}
+.theme-atombunker ::selection { background: var(--accent); color: #14100A; }
+.theme-atombunker input, .theme-atombunker select, .theme-atombunker textarea { background: var(--surface2) !important; border-color: var(--border) !important; border-width: 2px !important; color: var(--text) !important; border-radius: 8px !important; }
+.theme-atombunker input:focus, .theme-atombunker select:focus, .theme-atombunker textarea:focus { outline: none; border-color: var(--accent2) !important; }
 
 
 /* ============ LAYOUT ============ */
@@ -696,7 +694,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .meal-day-block:last-child { border-bottom: none; }
 .meal-day-head { font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
 .meal-options { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
-.meal-option { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: var(--radius); padding: 5px 8px; flex-wrap: wrap; }
+.meal-option { background: var(--surface2); border-radius: var(--radius); padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; }
+.meal-option-row1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.meal-option-row2 { display: flex; align-items: center; gap: 8px; padding-left: 2px; }
+.meal-rate-stars { display: flex; gap: 1px; }
+.meal-star { font-size: 14px; color: var(--border); cursor: pointer; }
+.meal-star.filled { color: #E8A33D; }
+.meal-avg-rating { font-size: 11px; color: var(--text-muted); }
+.meal-new-forwhom { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; }
 .meal-option.confirmed { border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface2)); }
 .meal-option-text { flex: 1; font-size: 13px; min-width: 90px; }
 .meal-vote-btn { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
@@ -888,7 +893,7 @@ body.menu-open { overflow: hidden; }
 .checklist-view-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .checklist-view-row.done label { text-decoration: line-through; color: var(--text-muted); }
 .shopping-row {
-  display: grid; grid-template-columns: 22px 2fr 1fr 1fr 24px; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 22px 2fr 1fr 1fr 26px 24px; gap: 8px; align-items: center;
   padding: 5px 0; border-bottom: 1px dashed var(--border);
 }
 .shopping-row:last-child { border-bottom: none; }
@@ -902,16 +907,26 @@ body.menu-open { overflow: hidden; }
 }
 @media (max-width: 640px) {
   .shopping-row {
-    grid-template-columns: 20px 1fr 24px; grid-template-areas: "cb text del" "sel loc loc"; row-gap: 4px; padding: 6px 0;
+    grid-template-columns: 20px 1fr 26px 24px; grid-template-areas: "cb text photo del" "sel loc loc loc"; row-gap: 4px; padding: 6px 0;
   }
   .shopping-row-head { display: none; }
   .shopping-row .s-done { grid-area: cb; }
   .shopping-row .s-text { grid-area: text; }
+  .shopping-row .s-photo { grid-area: photo; }
   .shopping-row .s-del { grid-area: del; }
   .shopping-row .s-forwhom { grid-area: sel; width: auto; max-width: 88px; padding: 3px 4px; font-size: 11px; }
   .shopping-row .s-where { grid-area: loc; width: auto; padding: 3px 6px; font-size: 11px; }
 }
 .add-row-btn { align-self: flex-start; margin-top: 4px; }
+
+.shopping-list-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.shopping-list-tab {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 13px; cursor: pointer;
+}
+.shopping-list-tab.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.theme-bauhaus .shopping-list-tab.active { color: #fff; }
+.shopping-list-add { border-style: dashed; color: var(--text-muted); }
 
 /* image dropzone */
 .dropzone {
@@ -1184,7 +1199,7 @@ body.menu-open { overflow: hidden; }
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 60;
+  const APP_BUILD_NUMBER = 64;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1204,7 +1219,7 @@ body.menu-open { overflow: hidden; }
     { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
     { id: "militaer",   name: "Militär",         sub: "Camouflage & Stencil 🎖️", dots: ["#B8A369", "#A63A2C", "#2B2E1F"] },
     { id: "vaultterm",  name: "Vault-Terminal",  sub: "Retro-Röhrenbildschirm 📻", dots: ["#4CFF4C", "#FFB000", "#060A06"] },
-    { id: "atombunker", name: "Atombunker",      sub: "1950er Atomzeitalter ☢️", dots: ["#C4442E", "#2E8B84", "#EFE3C4"] },
+    { id: "atombunker", name: "Vault-Shelter",    sub: "Bunker-Leitsystem 🟡", dots: ["#FFC300", "#3FA796", "#0E0E0E"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -1223,6 +1238,7 @@ body.menu-open { overflow: hidden; }
       pointsLedger: [],
       events: [],
       shoppingList: [],
+      shoppingLists: ["Einkaufen"],
       custodySchedules: [],
       adminPasswordHash: "",
       mealPlan: {},
@@ -1905,8 +1921,9 @@ body.menu-open { overflow: hidden; }
 
     // --- Einkaufsliste ---
     const openShopping = state.shoppingList.filter(i => !i.done);
+    const multiList = (state.shoppingLists || []).length > 1;
     widget("🛒", "Einkaufsliste", "#86B35A",
-      openShopping.length ? openShopping.slice(0, 5).map(i => `<div class="widget-row"><span class="wr-title">${escapeHtml(i.text)}</span></div>`).join("") +
+      openShopping.length ? openShopping.slice(0, 5).map(i => `<div class="widget-row"><span class="wr-title">${escapeHtml(i.text)}</span>${multiList ? `<span class="wr-meta">${escapeHtml(i.list || state.shoppingLists[0])}</span>` : ""}</div>`).join("") +
         (openShopping.length > 5 ? `<div class="widget-empty">+${openShopping.length - 5} weitere</div>` : "")
         : `<div class="widget-empty">Liste ist leer.</div>`,
       "shopping", "Liste ›");
@@ -3747,7 +3764,11 @@ body.menu-open { overflow: hidden; }
       const options = unionById(l.options || [], r.options || []).map(opt => {
         const lo = (l.options || []).find(o => o.id === opt.id);
         const ro = (r.options || []).find(o => o.id === opt.id);
-        if (lo && ro) return { ...opt, votes: [...new Set([...(lo.votes || []), ...(ro.votes || [])])] };
+        if (lo && ro) return {
+          ...opt,
+          votes: [...new Set([...(lo.votes || []), ...(ro.votes || [])])],
+          ratings: { ...(ro.ratings || {}), ...(lo.ratings || {}) }
+        };
         return opt;
       });
       result[dateStr] = { options, confirmed: l.confirmed || r.confirmed || null };
@@ -3761,15 +3782,24 @@ body.menu-open { overflow: hidden; }
     if (typeof raw === "string") return { options: [], confirmed: raw };
     return { options: raw.options || [], confirmed: raw.confirmed || null };
   }
-  function getMealForDate(dateStr) {
+  function getMealForDate(dateStr, profileId) {
+    profileId = profileId === undefined ? state.activeProfileId : profileId;
     const entry = getMealEntry(dateStr);
+    // Persönliche, bestätigte Variante hat Vorrang vor der allgemeinen
+    const personalConfirmed = entry.options.find(o => o.forWhom === profileId && entry.confirmed === o.id);
+    if (personalConfirmed) return personalConfirmed.text;
     if (entry.confirmed) {
       const opt = entry.options.find(o => o.id === entry.confirmed);
-      return opt ? opt.text : entry.confirmed;
+      if (opt) return opt.text;
+      return entry.confirmed;
     }
-    if (entry.options.length) {
-      const top = entry.options.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length)[0];
-      return top.text;
+    const personalOptions = entry.options.filter(o => o.forWhom === profileId);
+    if (personalOptions.length) {
+      return personalOptions.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length)[0].text;
+    }
+    const generalOptions = entry.options.filter(o => !o.forWhom);
+    if (generalOptions.length) {
+      return generalOptions.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length)[0].text;
     }
     return "";
   }
@@ -3778,10 +3808,10 @@ body.menu-open { overflow: hidden; }
     else delete state.mealPlan[dateStr];
     saveState();
   }
-  function addMealOption(dateStr, text) {
+  function addMealOption(dateStr, text, forWhom) {
     if (!text || !text.trim()) return;
     const entry = getMealEntry(dateStr);
-    entry.options.push({ id: uid(), text: text.trim(), createdBy: state.activeProfileId || null, votes: [] });
+    entry.options.push({ id: uid(), text: text.trim(), createdBy: state.activeProfileId || null, votes: [], forWhom: forWhom || null, ratings: {} });
     state.mealPlan[dateStr] = entry;
     saveState();
   }
@@ -3792,6 +3822,21 @@ body.menu-open { overflow: hidden; }
     if (opt && !opt.votes.includes(profileId)) opt.votes.push(profileId);
     state.mealPlan[dateStr] = entry;
     saveState();
+  }
+  function rateMealOption(dateStr, optionId, profileId, score) {
+    const entry = getMealEntry(dateStr);
+    const opt = entry.options.find(o => o.id === optionId);
+    if (!opt) return;
+    opt.ratings = opt.ratings || {};
+    if (opt.ratings[profileId] === score) delete opt.ratings[profileId]; // nochmal draufklicken = Bewertung zurücknehmen
+    else opt.ratings[profileId] = score;
+    state.mealPlan[dateStr] = entry;
+    saveState();
+  }
+  function mealAverageRating(opt) {
+    const vals = Object.values(opt.ratings || {});
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
   }
   function confirmMealOption(dateStr, optionId) {
     const entry = getMealEntry(dateStr);
@@ -4242,17 +4287,30 @@ body.menu-open { overflow: hidden; }
             const voters = (o.votes || []).map(pid => getProfile(pid)).filter(Boolean);
             const isConfirmed = entry.confirmed === o.id;
             const iVoted = activeId && (o.votes || []).includes(activeId);
+            const forWhomProfile = o.forWhom ? getProfile(o.forWhom) : null;
+            const avgRating = mealAverageRating(o);
+            const myRating = (o.ratings || {})[activeId] || 0;
             return `<div class="meal-option${isConfirmed ? " confirmed" : ""}">
-              <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-opt="${o.id}" title="Abstimmen">🗳️ ${(o.votes || []).length}</button>
-              <span class="meal-option-text">${escapeHtml(o.text)}</span>
-              <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
-              ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
-              <button type="button" class="meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
+              <div class="meal-option-row1">
+                <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-opt="${o.id}" title="Abstimmen">🗳️ ${(o.votes || []).length}</button>
+                <span class="meal-option-text">${escapeHtml(o.text)}${forWhomProfile ? ` <span class="tag-chip" style="font-size:10px;">${forWhomProfile.emoji || ""} nur ${escapeHtml(forWhomProfile.name)}</span>` : ""}</span>
+                <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
+                ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
+                <button type="button" class="meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
+              </div>
+              <div class="meal-option-row2">
+                <span class="meal-rate-stars">${[1, 2, 3, 4, 5].map(n => `<span class="meal-star${n <= myRating ? " filled" : ""}" data-opt="${o.id}" data-score="${n}">★</span>`).join("")}</span>
+                ${avgRating ? `<span class="meal-avg-rating">⌀ ${avgRating.toFixed(1)}</span>` : ""}
+              </div>
             </div>`;
           }).join("") || `<div class="widget-empty" style="padding:6px 0;">Noch keine Vorschläge.</div>`}
         </div>
         <div class="meal-add-row">
           <input type="text" class="meal-new-option" placeholder="Vorschlag hinzufügen, z. B. Spaghetti Bolognese">
+          <select class="meal-new-forwhom">
+            <option value="">Für alle</option>
+            ${state.profiles.map(p => `<option value="${p.id}">Nur ${escapeHtml(p.name)}</option>`).join("")}
+          </select>
           <button type="button" class="btn btn-sm meal-add-btn">+ Vorschlag</button>
         </div>
       `;
@@ -4265,11 +4323,15 @@ body.menu-open { overflow: hidden; }
       dayWrap.querySelectorAll(".meal-del-btn").forEach(btn => {
         btn.onclick = () => { removeMealOption(dateStr, btn.dataset.opt); renderMealDay(dayWrap, dateStr, label); };
       });
+      dayWrap.querySelectorAll(".meal-star").forEach(star => {
+        star.onclick = () => { rateMealOption(dateStr, star.dataset.opt, activeId, Number(star.dataset.score)); renderMealDay(dayWrap, dateStr, label); };
+      });
       const addBtn = dayWrap.querySelector(".meal-add-btn");
       const addInput = dayWrap.querySelector(".meal-new-option");
+      const addForWhom = dayWrap.querySelector(".meal-new-forwhom");
       const doAdd = () => {
         if (!addInput.value.trim()) return;
-        addMealOption(dateStr, addInput.value);
+        addMealOption(dateStr, addInput.value, addForWhom.value || null);
         renderMealDay(dayWrap, dateStr, label);
       };
       addBtn.onclick = doAdd;
@@ -4291,6 +4353,28 @@ body.menu-open { overflow: hidden; }
     { label: "↘️ Unten rechts", sub: "Innenflächen & Kauflächen" },
   ];
   let toothbrushTimerHandle = null;
+  let toothbrushMuted = false;
+  let toothbrushAudioCtx = null;
+  function tbBeep(freq, duration, volume) {
+    if (toothbrushMuted) return;
+    try {
+      if (!toothbrushAudioCtx) toothbrushAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = toothbrushAudioCtx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume || 0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) { /* Web Audio evtl. nicht verfügbar — kein Problem, Timer läuft trotzdem */ }
+  }
+  function tbVibrate(pattern) {
+    if (toothbrushMuted) return;
+    if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) { /* nicht unterstützt */ } }
+  }
   function renderToothbrushView(container) {
     const TOTAL = 120; // 2 Minuten, wie von Zahnärzten empfohlen
     let remaining = TOTAL;
@@ -4319,10 +4403,16 @@ body.menu-open { overflow: hidden; }
       <div class="tb-buttons">
         <button class="btn btn-accent" id="tbStartBtn">▶ Start</button>
         <button class="btn" id="tbResetBtn">↺ Neu</button>
+        <button class="btn" id="tbMuteBtn" title="Ton &amp; Vibration ein/aus">${toothbrushMuted ? "🔇" : "🔊"}</button>
       </div>
       <div class="tb-quadrant-list" id="tbQuadrantList"></div>
     `;
     container.appendChild(card);
+
+    card.querySelector("#tbMuteBtn").onclick = () => {
+      toothbrushMuted = !toothbrushMuted;
+      card.querySelector("#tbMuteBtn").textContent = toothbrushMuted ? "🔇" : "🔊";
+    };
 
     const timeEl = card.querySelector("#tbTime");
     const quadEl = card.querySelector("#tbQuadrant");
@@ -4331,6 +4421,7 @@ body.menu-open { overflow: hidden; }
     const listEl = card.querySelector("#tbQuadrantList");
     const CIRC = 2 * Math.PI * 88;
     ringFg.style.strokeDasharray = `${CIRC}`;
+    let lastQuadIdx = -1;
 
     listEl.innerHTML = TOOTHBRUSH_QUADRANTS.map((q, i) => `
       <div class="tb-quadrant-chip" id="tbChip${i}"><strong>${q.label}</strong><span>${q.sub}</span></div>
@@ -4346,6 +4437,11 @@ body.menu-open { overflow: hidden; }
       const quadIdx = Math.min(3, Math.floor(elapsed / 30));
       if (remaining > 0) {
         quadEl.textContent = TOOTHBRUSH_QUADRANTS[quadIdx].label;
+        if (running && quadIdx !== lastQuadIdx && lastQuadIdx !== -1) {
+          tbBeep(660, 0.18, 0.15);
+          tbVibrate(120);
+        }
+        lastQuadIdx = quadIdx;
       }
       TOOTHBRUSH_QUADRANTS.forEach((_, i) => {
         const chip = card.querySelector(`#tbChip${i}`);
@@ -4364,11 +4460,15 @@ body.menu-open { overflow: hidden; }
         clearInterval(toothbrushTimerHandle);
         toothbrushTimerHandle = null;
         startBtn.textContent = "▶ Nochmal";
+        tbBeep(523, 0.2, 0.18);
+        setTimeout(() => tbBeep(659, 0.2, 0.18), 180);
+        setTimeout(() => tbBeep(784, 0.35, 0.2), 360);
+        tbVibrate([120, 80, 120, 80, 200]);
         showToast("🦷 Fertig geputzt — Superstar! ⭐");
       }
     }
     startBtn.onclick = () => {
-      if (remaining <= 0) { remaining = TOTAL; ringFg.classList.remove("tb-ring-done"); paint(); }
+      if (remaining <= 0) { remaining = TOTAL; lastQuadIdx = -1; ringFg.classList.remove("tb-ring-done"); paint(); }
       if (running) {
         running = false;
         clearInterval(toothbrushTimerHandle); toothbrushTimerHandle = null;
@@ -4376,6 +4476,7 @@ body.menu-open { overflow: hidden; }
       } else {
         running = true;
         startBtn.textContent = "⏸ Pause";
+        if (lastQuadIdx === -1) { tbBeep(660, 0.15, 0.15); tbVibrate(80); lastQuadIdx = 0; }
         toothbrushTimerHandle = setInterval(tick, 1000);
       }
     };
@@ -4383,6 +4484,7 @@ body.menu-open { overflow: hidden; }
       running = false;
       if (toothbrushTimerHandle) { clearInterval(toothbrushTimerHandle); toothbrushTimerHandle = null; }
       remaining = TOTAL;
+      lastQuadIdx = -1;
       startBtn.textContent = "▶ Start";
       ringFg.classList.remove("tb-ring-done");
       paint();
@@ -4624,11 +4726,62 @@ body.menu-open { overflow: hidden; }
   }
 
   /* ============ EINKAUFSLISTE ============ */
+  let activeShoppingList = null;
   function renderShoppingView(container) {
+    if (!state.shoppingLists || !state.shoppingLists.length) state.shoppingLists = ["Einkaufen"];
+    if (!activeShoppingList || !state.shoppingLists.includes(activeShoppingList)) activeShoppingList = state.shoppingLists[0];
+
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Gemeinsame Liste für die ganze Familie — Teilen läuft über das „Familien-Update" auf dem Homescreen.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Mehrere Listen möglich — z. B. Wocheneinkauf, Drogerie, Baumarkt.</p></div>`;
     container.appendChild(header);
+
+    const tabRow = document.createElement("div");
+    tabRow.className = "shopping-list-tabs";
+    tabRow.innerHTML = state.shoppingLists.map(name =>
+      `<button class="shopping-list-tab ${name === activeShoppingList ? "active" : ""}" data-list="${escapeHtml(name)}">${escapeHtml(name)}</button>`
+    ).join("") + `<button class="shopping-list-tab shopping-list-add" id="addListBtn">+ Neue Liste</button>`;
+    container.appendChild(tabRow);
+    tabRow.querySelectorAll(".shopping-list-tab[data-list]").forEach(btn => {
+      btn.onclick = () => { activeShoppingList = btn.dataset.list; render(); };
+    });
+    tabRow.querySelector("#addListBtn").onclick = () => {
+      const name = prompt("Name der neuen Liste:");
+      if (!name || !name.trim()) return;
+      if (state.shoppingLists.includes(name.trim())) { showToast("Diese Liste gibt es schon."); return; }
+      state.shoppingLists.push(name.trim());
+      activeShoppingList = name.trim();
+      saveState(); render();
+    };
+
+    if (state.shoppingLists.length > 1) {
+      const listActions = document.createElement("div");
+      listActions.style.cssText = "display:flex;gap:8px;margin-bottom:14px;";
+      listActions.innerHTML = `
+        <button class="btn btn-sm" id="renameListBtn">✎ Umbenennen</button>
+        <button class="btn btn-sm btn-danger" id="deleteListBtn">🗑️ Liste löschen</button>
+      `;
+      container.appendChild(listActions);
+      listActions.querySelector("#renameListBtn").onclick = () => {
+        const newName = prompt("Neuer Name:", activeShoppingList);
+        if (!newName || !newName.trim() || newName.trim() === activeShoppingList) return;
+        if (state.shoppingLists.includes(newName.trim())) { showToast("Diese Liste gibt es schon."); return; }
+        state.shoppingList.forEach(i => { if ((i.list || state.shoppingLists[0]) === activeShoppingList) i.list = newName.trim(); });
+        state.shoppingLists = state.shoppingLists.map(n => n === activeShoppingList ? newName.trim() : n);
+        activeShoppingList = newName.trim();
+        saveState(); render();
+      };
+      listActions.querySelector("#deleteListBtn").onclick = () => {
+        if (!confirm(`Liste „${activeShoppingList}" wirklich komplett löschen (inkl. aller Einträge)?`)) return;
+        const toRemove = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) === activeShoppingList);
+        markDeletedMany(toRemove.map(i => i.id));
+        state.shoppingList = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) !== activeShoppingList);
+        state.shoppingLists = state.shoppingLists.filter(n => n !== activeShoppingList);
+        if (!state.shoppingLists.length) state.shoppingLists = ["Einkaufen"];
+        activeShoppingList = state.shoppingLists[0];
+        saveState(); render();
+      };
+    }
 
     const addRow = document.createElement("div");
     addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;";
@@ -4641,15 +4794,16 @@ body.menu-open { overflow: hidden; }
     card.style.cursor = "default";
     card.style.padding = "10px 16px";
 
-    if (!state.shoppingList.length) {
-      card.innerHTML = `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🛒</span>Die Liste ist leer.</div>`;
+    const listItems = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) === activeShoppingList);
+    if (!listItems.length) {
+      card.innerHTML = `<div class="empty-state" style="padding:20px;"><span class="empty-icon">🛒</span>Diese Liste ist leer.</div>`;
     } else {
       const head = document.createElement("div");
       head.className = "shopping-row shopping-row-head";
-      head.innerHTML = `<span></span><span>Was</span><span>Für wen</span><span>Wo</span><span></span>`;
+      head.innerHTML = `<span></span><span>Was</span><span>Für wen</span><span>Wo</span><span></span><span></span>`;
       card.appendChild(head);
 
-      state.shoppingList.slice().sort((a, b) => a.done - b.done).forEach(item => {
+      listItems.slice().sort((a, b) => a.done - b.done).forEach(item => {
         const row = document.createElement("div");
         row.className = "shopping-row" + (item.done ? " done" : "");
         row.innerHTML = `
@@ -4660,23 +4814,61 @@ body.menu-open { overflow: hidden; }
             ${state.profiles.map(p => `<option value="${p.id}" ${item.forWhom === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
           </select>
           <input type="text" class="s-where" value="${escapeHtml(item.location || "")}" placeholder="z. B. Supermarkt">
+          <button class="card-pin s-photo" title="${item.photo ? "Foto ansehen/ändern" : "Foto hinzufügen"}">${item.photo ? "🖼️" : "📷"}</button>
+          <input type="file" accept="image/*" class="s-photo-input" style="display:none">
           <button class="card-pin s-del" title="Entfernen">✕</button>
         `;
         row.querySelector(".s-done").onchange = (e) => { item.done = e.target.checked; saveState(); render(); };
         row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; saveState(); };
         row.querySelector(".s-where").addEventListener("change", (e) => { item.location = e.target.value.trim(); saveState(); });
+        const photoInput = row.querySelector(".s-photo-input");
+        row.querySelector(".s-photo").onclick = () => {
+          if (item.photo) {
+            if (confirm("Foto ansehen? (Abbrechen = stattdessen ersetzen/entfernen)")) {
+              const w = window.open("");
+              if (w) w.document.write(`<img src="${item.photo}" style="max-width:100%;">`);
+              return;
+            }
+            if (confirm("Foto entfernen?")) { item.photo = ""; saveState(); render(); return; }
+          }
+          photoInput.click();
+        };
+        photoInput.onchange = () => {
+          const file = photoInput.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const maxDim = 600;
+              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+              const c = document.createElement("canvas");
+              c.width = img.width * scale; c.height = img.height * scale;
+              c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+              item.photo = c.toDataURL("image/jpeg", 0.75);
+              saveState(); render();
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        };
         row.querySelector(".s-del").onclick = () => { markDeleted(item.id); state.shoppingList = state.shoppingList.filter(x => x.id !== item.id); saveState(); render(); };
         card.appendChild(row);
       });
     }
     container.appendChild(card);
 
-    if (state.shoppingList.some(i => i.done)) {
+    if (listItems.some(i => i.done)) {
       const clearBtn = document.createElement("button");
       clearBtn.className = "btn btn-sm";
       clearBtn.style.marginTop = "12px";
       clearBtn.textContent = "Erledigte entfernen";
-      clearBtn.onclick = () => { markDeletedMany(state.shoppingList.filter(i => i.done).map(i => i.id)); state.shoppingList = state.shoppingList.filter(i => !i.done); saveState(); render(); };
+      clearBtn.onclick = () => {
+        const toRemove = listItems.filter(i => i.done);
+        markDeletedMany(toRemove.map(i => i.id));
+        state.shoppingList = state.shoppingList.filter(i => !(i.done && (i.list || state.shoppingLists[0]) === activeShoppingList));
+        saveState(); render();
+      };
       container.appendChild(clearBtn);
     }
 
@@ -4684,7 +4876,7 @@ body.menu-open { overflow: hidden; }
       const input = document.getElementById("shopInput");
       const text = input.value.trim();
       if (!text) return;
-      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "" });
+      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "", photo: "", list: activeShoppingList });
       saveState(); render();
       setTimeout(() => document.getElementById("shopInput").focus(), 30);
     }
@@ -4833,6 +5025,7 @@ body.menu-open { overflow: hidden; }
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
     state.events = unionById(state.events, remote.events);
     state.shoppingList = unionById(state.shoppingList, remote.shoppingList);
+    state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
     state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
     state.wishlist = unionById(state.wishlist, remote.wishlist);
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
