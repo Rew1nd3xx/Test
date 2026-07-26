@@ -1155,7 +1155,7 @@ body.menu-open { overflow: hidden; }
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 56;
+  const APP_BUILD_NUMBER = 57;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1554,8 +1554,19 @@ body.menu-open { overflow: hidden; }
     if (!el) return;
     const fresh = Date.now() - pollenCache.fetchedAt < 6 * 60 * 60 * 1000;
     if (!fresh) {
+      const directUrl = "https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json";
+      const proxyUrl = "https://corsproxy.io/?url=" + encodeURIComponent(directUrl);
       try {
-        const res = await fetch("https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json");
+        let res;
+        try {
+          res = await fetch(directUrl);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+        } catch (directErr) {
+          // Direkter Zugriff von DWD Opendata blockiert typischerweise CORS aus dem Browser —
+          // über einen CORS-Proxy umleiten, der die Anfrage im Namen der App weiterreicht.
+          res = await fetch(proxyUrl);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+        }
         const data = await res.json();
         pollenCache = { data: data.content || [], fetchedAt: Date.now() };
       } catch (err) {
