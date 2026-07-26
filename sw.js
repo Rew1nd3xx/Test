@@ -37,6 +37,49 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("push", (event) => {
+  event.waitUntil(handlePushWake());
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || "./";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
+async function handlePushWake() {
+  try {
+    const cache = await caches.open("push-config");
+    const res = await cache.match("/config");
+    if (!res) return; // Noch nicht eingerichtet — nichts zu tun
+    const cfg = await res.json();
+    if (!cfg.serverUrl || !cfg.deviceId) return;
+    const fetchUrl = cfg.serverUrl.replace(/push-subscribe\.php.*$/, "push-fetch.php") + "?device=" + encodeURIComponent(cfg.deviceId);
+    const pendingRes = await fetch(fetchUrl);
+    if (!pendingRes.ok) return;
+    const pending = await pendingRes.json();
+    const notifications = pending.notifications || [];
+    for (const n of notifications) {
+      await self.registration.showNotification(n.title || "DApp", {
+        body: n.body || "",
+        icon: "./icons/icon-192.png",
+        badge: "./icons/icon-192.png",
+        data: { url: n.url || "./" }
+      });
+    }
+  } catch (e) {
+    // Aufwecken ohne Inhalt (z. B. Server gerade nicht erreichbar) — einfach nichts anzeigen,
+    // statt einen kryptischen Fehler zu riskieren.
+  }
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;

@@ -1057,6 +1057,9 @@ body.menu-open { overflow: hidden; }
 .settings-section { margin-bottom: 32px; }
 .settings-section h3 { font-family: var(--font-display); font-size: 19px; margin-bottom: 4px; }
 .settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
+.push-cat-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; font-size: 13px; }
+.push-cat-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.push-cat-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
 
 .theme-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
 .theme-picker-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -1211,7 +1214,8 @@ body.menu-open { overflow: hidden; }
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 65;
+  const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
+  const APP_BUILD_NUMBER = 67;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1261,6 +1265,7 @@ body.menu-open { overflow: hidden; }
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
       tombstones: {},
+      push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
       militaryTemplatesEnabled: false,
       connectors: {
         sharepoint: { siteUrl: "", library: "" },
@@ -1286,6 +1291,10 @@ body.menu-open { overflow: hidden; }
             sharepoint: { ...base.connectors.sharepoint, ...((parsed.connectors || {}).sharepoint || {}) },
             ftp: { ...base.connectors.ftp, ...((parsed.connectors || {}).ftp || {}) },
             network: { ...base.connectors.network, ...((parsed.connectors || {}).network || {}) }
+          },
+          push: {
+            ...base.push, ...(parsed.push || {}),
+            categories: { ...base.push.categories, ...((parsed.push || {}).categories || {}) }
           }
         };
         // Migration: alte Einzel-Mindmap (state.mindmap) → neue Sammlung state.mindmaps
@@ -5242,6 +5251,75 @@ body.menu-open { overflow: hidden; }
     });
 
     // --- Kalender & Wetter ---
+    // --- Push-Benachrichtigungen ---
+    const pushSection = document.createElement("div");
+    pushSection.className = "settings-section";
+    const pushSupported = "serviceWorker" in navigator && "PushManager" in window;
+    pushSection.innerHTML = `
+      <h3>🔔 Push-Benachrichtigungen</h3>
+      <p class="hint">${pushSupported
+        ? "Braucht einen eigenen kleinen Server-Baustein (zwei PHP-Dateien für euren Sync-Server) — Anleitung unten. Auf dem iPhone nur, wenn die App zum Homescreen hinzugefügt wurde."
+        : "Dieser Browser unterstützt leider keine Push-Benachrichtigungen."}</p>
+      ${pushSupported ? `
+        <div class="field"><label>Server-Adresse für Benachrichtigungen (z. B. https://family-dapp.de/push-subscribe.php)</label>
+          <input type="text" id="pushServerUrl" value="${escapeHtml(state.connectors.network.url ? state.connectors.network.url.replace(/sync\.php.*$/, "push-subscribe.php") : "")}" placeholder="https://deine-domain.de/push-subscribe.php">
+        </div>
+        <div class="push-cat-row">
+          <label><input type="checkbox" id="pushCatTasks" ${state.push.categories.tasks ? "checked" : ""}> 📋 Neue/zugewiesene Aufgaben &amp; Termine</label>
+          <label><input type="checkbox" id="pushCatMeals" ${state.push.categories.meals ? "checked" : ""}> 🍽️ Essensplan wartet auf Abstimmung/Freigabe</label>
+          <label><input type="checkbox" id="pushCatWeather" ${state.push.categories.weather ? "checked" : ""}> ⚠️ Wetterwarnungen</label>
+          <label><input type="checkbox" id="pushCatApprovals" ${state.push.categories.approvals ? "checked" : ""}> ✅ Freigabe-Anfragen von Kindern</label>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:14px;">
+          <input type="checkbox" id="pushLocalCheck" ${state.push.localCheckEnabled ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+          🔔 Ohne Server: lokal auf Neuigkeiten prüfen (nur solange die App/der Tab geöffnet ist, kein Server nötig)
+        </label>
+        <div class="backup-row">
+          <button class="btn btn-accent" id="pushSubscribeBtn">${state.push.subscribed ? "🔔 Aktualisieren" : "🔔 Benachrichtigungen aktivieren"}</button>
+          ${state.push.subscribed ? `<button class="btn btn-sm" id="pushUnsubscribeBtn">Deaktivieren</button>` : ""}
+        </div>
+        <details style="margin-top:14px;">
+          <summary style="cursor:pointer;font-size:12.5px;color:var(--text-muted);">Server-Einrichtung (einmalig, für Eltern/Technik)</summary>
+          <p class="hint" style="margin-top:8px;">Zwei PHP-Dateien auf euren Sync-Server hochladen (gleicher Ordner wie sync.php): <code>push-subscribe.php</code> speichert, wer benachrichtigt werden möchte. <code>push-check.php</code> per Cronjob alle paar Minuten aufrufen lassen — es vergleicht den aktuellen Stand mit dem letzten und schickt bei Neuem eine Benachrichtigung raus. Beide Dateien liegen bei den heruntergeladenen App-Dateien bei (push-subscribe.php, push-check.php).</p>
+        </details>
+      ` : ""}
+    `;
+    container.appendChild(pushSection);
+    if (pushSupported) {
+      pushSection.querySelector("#pushServerUrl").addEventListener("change", (e) => {
+        state.push.serverUrl = e.target.value.trim();
+        saveState();
+      });
+      ["tasks", "meals", "weather", "approvals"].forEach(cat => {
+        pushSection.querySelector(`#pushCat${cat[0].toUpperCase()}${cat.slice(1)}`).addEventListener("change", (e) => {
+          state.push.categories[cat] = e.target.checked;
+          saveState();
+          if (state.push.subscribed && state.push.serverUrl) subscribeToPush(state.push.serverUrl);
+        });
+      });
+      pushSection.querySelector("#pushLocalCheck").addEventListener("change", async (e) => {
+        if (e.target.checked) {
+          const perm = await Notification.requestPermission();
+          if (perm !== "granted") {
+            showToast("Benachrichtigungen wurden nicht erlaubt.");
+            e.target.checked = false;
+            return;
+          }
+          state.push.localCheckEnabled = true;
+          saveState();
+          setupLocalNotificationCheck();
+          showToast("Lokale Prüfung aktiv, solange die App geöffnet ist.");
+        } else {
+          state.push.localCheckEnabled = false;
+          saveState();
+          setupLocalNotificationCheck();
+        }
+      });
+      pushSection.querySelector("#pushSubscribeBtn").onclick = () => subscribeToPush(pushSection.querySelector("#pushServerUrl").value.trim());
+      const unsubBtn = pushSection.querySelector("#pushUnsubscribeBtn");
+      if (unsubBtn) unsubBtn.onclick = () => unsubscribeFromPush();
+    }
+
     const coloringSection = document.createElement("div");
     coloringSection.className = "settings-section";
     const activeForColoring = getActiveProfile();
@@ -5959,6 +6037,85 @@ body.menu-open { overflow: hidden; }
     if (el) el.textContent = text;
   }
 
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+  }
+
+  async function cachePushConfig() {
+    try {
+      const cache = await caches.open("push-config");
+      await cache.put("/config", new Response(JSON.stringify({
+        serverUrl: state.push.serverUrl, deviceId: state.push.deviceId
+      }), { headers: { "Content-Type": "application/json" } }));
+    } catch (e) { /* Cache Storage evtl. nicht verfügbar — Push funktioniert dann nicht offline-robust, kein Absturz */ }
+  }
+
+  async function subscribeToPush(serverUrl) {
+    if (!serverUrl) { showToast("Bitte zuerst eine Server-Adresse eintragen."); return; }
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") { showToast("Benachrichtigungen wurden nicht erlaubt."); return; }
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+      }
+      if (!state.push.deviceId) state.push.deviceId = uid();
+      state.push.serverUrl = serverUrl;
+      const res = await fetch(serverUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscription: sub.toJSON(),
+          deviceId: state.push.deviceId,
+          deviceLabel: (getActiveProfile() ? getActiveProfile().name + " – " : "") + navigator.platform,
+          categories: state.push.categories,
+          syncUrl: state.connectors.network.url || ""
+        })
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      state.push.subscribed = true;
+      saveState();
+      await cachePushConfig();
+      render();
+      showToast("Benachrichtigungen aktiviert! 🔔");
+    } catch (err) {
+      console.warn("Push-Anmeldung fehlgeschlagen:", err);
+      showToast("Anmeldung fehlgeschlagen — Server-Adresse und CORS prüfen.");
+    }
+  }
+
+  async function unsubscribeFromPush() {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        if (state.push.serverUrl) {
+          try {
+            await fetch(state.push.serverUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ unsubscribe: true, subscription: sub.toJSON() })
+            });
+          } catch (e) { /* Server evtl. nicht erreichbar — lokal trotzdem abmelden */ }
+        }
+        await sub.unsubscribe();
+      }
+      state.push.subscribed = false;
+      saveState();
+      render();
+      showToast("Benachrichtigungen deaktiviert.");
+    } catch (err) {
+      console.warn("Push-Abmeldung fehlgeschlagen:", err);
+    }
+  }
+
   async function pushToNetwork(silent) {
     const net = state.connectors.network;
     if (!net.url) { if (!silent) showToast("Bitte zuerst eine Server-Adresse eintragen."); return false; }
@@ -6168,6 +6325,76 @@ body.menu-open { overflow: hidden; }
   }
 
   /* ============ INIT ============ */
+  let localCheckInterval = null;
+  const LOCAL_SEEN_KEY = "dapp_local_notify_seen_v1";
+  function loadLocalSeen() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_SEEN_KEY) || "{}"); } catch (e) { return {}; }
+  }
+  function saveLocalSeen(seen) {
+    try { localStorage.setItem(LOCAL_SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* Speicher evtl. voll — nicht kritisch */ }
+  }
+  async function showLocalNotification(title, body) {
+    if (Notification.permission !== "granted") return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification(title, { body, icon: "./icons/icon-192.png", badge: "./icons/icon-192.png" });
+    } catch (e) { /* Service Worker evtl. nicht bereit — kein Absturz */ }
+  }
+  async function checkForLocalNotifications() {
+    if (!state.push.localCheckEnabled || Notification.permission !== "granted") return;
+    const cats = state.push.categories;
+    const todayStrLocal = new Date().toISOString().slice(0, 10);
+    const seen = loadLocalSeen();
+    seen.tasks = seen.tasks || []; seen.approvals = seen.approvals || []; seen.meals = seen.meals || []; seen.warnings = seen.warnings || [];
+
+    if (cats.tasks) {
+      state.tasks.filter(t => t.approved !== false && !seen.tasks.includes(t.id)).forEach(t => {
+        showLocalNotification("DApp", (t.category === "homework" ? "📚 Neue Hausaufgabe: " : "📋 Neue Aufgabe: ") + t.title);
+        seen.tasks.push(t.id);
+      });
+      state.events.filter(ev => !ev.private && !seen.tasks.includes(ev.id)).forEach(ev => {
+        showLocalNotification("DApp", `📅 Neuer Termin: ${ev.title} (${formatDateStrShort(ev.date)})`);
+        seen.tasks.push(ev.id);
+      });
+    }
+    if (cats.meals) {
+      Array.from({ length: 7 }, (_, i) => addDays(todayStrLocal, i)).forEach(d => {
+        const entry = getMealEntry(d);
+        if (entry.options.length && !entry.confirmed && !seen.meals.includes(d)) {
+          showLocalNotification("DApp", `🍽️ Essensplan wartet auf Abstimmung für ${formatDateStrShort(d)}`);
+          seen.meals.push(d);
+        }
+      });
+    }
+    if (cats.approvals) {
+      state.tasks.filter(t => t.approved === false && !seen.approvals.includes(t.id)).forEach(t => {
+        showLocalNotification("DApp", `✅ Freigabe nötig: Aufgabe „${t.title}"`);
+        seen.approvals.push(t.id);
+      });
+      state.rewards.filter(r => r.approved === false && !seen.approvals.includes(r.id)).forEach(r => {
+        showLocalNotification("DApp", `✅ Freigabe nötig: Belohnung „${r.title}"`);
+        seen.approvals.push(r.id);
+      });
+    }
+    if (cats.weather && state.federalState && warnCache.data) {
+      const stateNameLocal = (GERMAN_STATES.find(s => s.code === state.federalState) || {}).name;
+      warnCache.data.filter(w => w.state === stateNameLocal && w.level >= 3).forEach(w => {
+        const wid = (w.headline || "") + (w.regionName || "") + (w.start || "");
+        if (!seen.warnings.includes(wid)) {
+          showLocalNotification("DApp", `⚠️ ${(w.headline || "Unwetterwarnung").replace(/^Amtliche /, "")} — ${w.regionName || ""}`);
+          seen.warnings.push(wid);
+        }
+      });
+    }
+    saveLocalSeen(seen);
+  }
+  function setupLocalNotificationCheck() {
+    if (localCheckInterval) { clearInterval(localCheckInterval); localCheckInterval = null; }
+    if (!state.push.localCheckEnabled) return;
+    checkForLocalNotifications();
+    localCheckInterval = setInterval(checkForLocalNotifications, 3 * 60 * 1000);
+  }
+
   function buildTickerMessages() {
     const todayStr = new Date().toISOString().slice(0, 10);
     const messages = [];
@@ -6332,6 +6559,8 @@ body.menu-open { overflow: hidden; }
     });
     render();
     registerServiceWorker();
+    if (state.push.subscribed) cachePushConfig();
+    setupLocalNotificationCheck();
     setupInstallPrompt();
     setupGlobalTicker();
     if (state.connectors.network.autoSync && state.connectors.network.url) {
