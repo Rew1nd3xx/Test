@@ -736,6 +736,23 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .meal-confirm-btn { font-size: 11px; padding: 3px 7px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-muted); }
 .meal-del-btn { font-size: 12px; }
 .meal-add-row { display: flex; gap: 6px; }
+
+.news-composer { margin-bottom: 22px; }
+.news-composer textarea { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; resize: vertical; }
+.news-composer-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.news-photo-preview, .news-audio-preview { position: relative; margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; }
+.news-photo-preview img { max-height: 140px; border-radius: var(--radius); display: block; }
+.news-photo-preview .card-pin, .news-audio-preview .card-pin { position: absolute; top: -8px; right: -8px; background: var(--surface); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.news-audio-preview audio { height: 36px; }
+#newsRecordBtn.recording { background: #C0453B; color: #fff; border-color: #C0453B; animation: tickerPulse 1s ease-in-out infinite; }
+.news-feed { display: flex; flex-direction: column; gap: 14px; }
+.news-post-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.news-post-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.news-post-author { font-weight: 600; font-size: 13px; }
+.news-post-time { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+.news-post-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 8px; }
+.news-post-photo { max-width: 100%; border-radius: var(--radius); display: block; margin-bottom: 6px; }
+.news-post-audio { width: 100%; height: 40px; }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
 /* Papa-Bereich (admin) */
@@ -1179,6 +1196,9 @@ body.menu-open { overflow: hidden; }
       <button class="nav-item" data-view="toothbrush">
         <span class="nav-icon">🦷</span><span class="nav-label">Zahnputz-Timer</span>
       </button>
+      <button class="nav-item" data-view="news">
+        <span class="nav-icon">📰</span><span class="nav-label">Familien-News</span>
+      </button>
     </nav>
 
     <div class="sidebar-bottom">
@@ -1231,7 +1251,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 68;
+  const APP_BUILD_NUMBER = 69;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1280,6 +1300,7 @@ body.menu-open { overflow: hidden; }
       weatherLocation: { name: "", lat: null, lon: null },
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
+      newsPosts: [],
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
       militaryTemplatesEnabled: false,
@@ -1348,7 +1369,7 @@ body.menu-open { overflow: hidden; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1363,6 +1384,7 @@ body.menu-open { overflow: hidden; }
   let tickerInterval = null;
   let autoPushDebounce = null;
   let activeTagFilter = null;
+  let syncSettingsUnlocked = false;
   let expandedChecklists = new Set();
   let mmSelectedNode = null;
   let exportScope = "all";
@@ -1623,6 +1645,7 @@ body.menu-open { overflow: hidden; }
     if (currentView === "shopping") return renderShoppingView(c);
     if (currentView === "mealplan") return renderMealPlanView(c);
     if (currentView === "toothbrush") return renderToothbrushView(c);
+    if (currentView === "news") return renderNewsView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -1990,6 +2013,16 @@ body.menu-open { overflow: hidden; }
         (openShopping.length > 5 ? `<div class="widget-empty">+${openShopping.length - 5} weitere</div>` : "")
         : `<div class="widget-empty">Liste ist leer.</div>`,
       "shopping", "Liste ›");
+
+    // --- Familien-News ---
+    const recentNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
+    widget("📰", "Familien-News", "#B15CDE",
+      recentNews.length ? recentNews.map(post => {
+        const author = post.createdBy ? getProfile(post.createdBy) : null;
+        const preview = post.text ? escapeHtml(post.text).slice(0, 60) : (post.photo ? "📷 Foto" : post.audio ? "🎤 Sprachnachricht" : "");
+        return `<div class="widget-row">${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span>` : ""}<span class="wr-title">${preview}</span></div>`;
+      }).join("") : `<div class="widget-empty">Noch keine News geteilt.</div>`,
+      "news", "Alle News ›");
 
     // --- Zuletzt bearbeitet ---
     const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
@@ -4587,6 +4620,142 @@ body.menu-open { overflow: hidden; }
     paint();
   }
 
+  let newsRecorder = null;
+  let newsRecordedChunks = [];
+  let newsRecordedBlobUrl = null;
+  let newsRecordedDataUrl = null;
+
+  function renderNewsView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">📰 Familien-News</h1><p class="view-sub">Text, Fotos oder Sprachnachrichten mit der ganzen Familie teilen.</p></div>`;
+    container.appendChild(header);
+
+    const composer = document.createElement("div");
+    composer.className = "calendar-card news-composer";
+    composer.innerHTML = `
+      <textarea id="newsText" placeholder="Was gibt's Neues?" rows="2"></textarea>
+      <div id="newsPhotoPreview"></div>
+      <div id="newsAudioPreview"></div>
+      <div class="news-composer-actions">
+        <button type="button" class="btn btn-sm" id="newsPhotoBtn">📷 Foto</button>
+        <input type="file" id="newsPhotoInput" accept="image/*" style="display:none">
+        <button type="button" class="btn btn-sm" id="newsRecordBtn">🎤 Sprachnachricht</button>
+        <button type="button" class="btn btn-accent" id="newsPostBtn" style="margin-left:auto;">Teilen</button>
+      </div>
+    `;
+    container.appendChild(composer);
+
+    let pendingPhoto = "";
+    newsRecordedDataUrl = null;
+
+    const photoInput = composer.querySelector("#newsPhotoInput");
+    composer.querySelector("#newsPhotoBtn").onclick = () => photoInput.click();
+    photoInput.onchange = () => {
+      const file = photoInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1000;
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = img.width * scale; c.height = img.height * scale;
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          pendingPhoto = c.toDataURL("image/jpeg", 0.8);
+          composer.querySelector("#newsPhotoPreview").innerHTML = `<div class="news-photo-preview"><img src="${pendingPhoto}"><button type="button" class="card-pin" id="newsPhotoRemove">✕</button></div>`;
+          composer.querySelector("#newsPhotoRemove").onclick = () => { pendingPhoto = ""; composer.querySelector("#newsPhotoPreview").innerHTML = ""; };
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const recordBtn = composer.querySelector("#newsRecordBtn");
+    recordBtn.onclick = async () => {
+      if (newsRecorder && newsRecorder.state === "recording") {
+        newsRecorder.stop();
+        return;
+      }
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        showToast("Sprachnachrichten werden von diesem Browser nicht unterstützt.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        newsRecordedChunks = [];
+        newsRecorder = new MediaRecorder(stream);
+        newsRecorder.ondataavailable = (e) => { if (e.data.size) newsRecordedChunks.push(e.data); };
+        newsRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(newsRecordedChunks, { type: "audio/webm" });
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            newsRecordedDataUrl = e.target.result;
+            composer.querySelector("#newsAudioPreview").innerHTML = `
+              <div class="news-audio-preview">
+                <audio controls src="${newsRecordedDataUrl}"></audio>
+                <button type="button" class="card-pin" id="newsAudioRemove">✕</button>
+              </div>`;
+            composer.querySelector("#newsAudioRemove").onclick = () => { newsRecordedDataUrl = null; composer.querySelector("#newsAudioPreview").innerHTML = ""; };
+          };
+          reader.readAsDataURL(blob);
+          recordBtn.textContent = "🎤 Sprachnachricht";
+          recordBtn.classList.remove("recording");
+        };
+        newsRecorder.start();
+        recordBtn.textContent = "⏹ Aufnahme stoppen";
+        recordBtn.classList.add("recording");
+      } catch (err) {
+        showToast("Mikrofonzugriff wurde nicht erlaubt.");
+      }
+    };
+
+    composer.querySelector("#newsPostBtn").onclick = () => {
+      const text = composer.querySelector("#newsText").value.trim();
+      if (!text && !pendingPhoto && !newsRecordedDataUrl) { showToast("Bitte Text, Foto oder Sprachnachricht hinzufügen."); return; }
+      state.newsPosts.unshift({
+        id: uid(), createdBy: state.activeProfileId || null, createdAt: Date.now(),
+        text, photo: pendingPhoto || "", audio: newsRecordedDataUrl || ""
+      });
+      saveState();
+      render();
+      showToast("Geteilt! 📰");
+    };
+
+    const feed = document.createElement("div");
+    feed.className = "news-feed";
+    if (!state.newsPosts.length) {
+      feed.innerHTML = `<div class="empty-state"><span class="empty-icon">📰</span>Noch keine News — teil doch die erste!</div>`;
+    } else {
+      state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).forEach(post => {
+        const author = post.createdBy ? getProfile(post.createdBy) : null;
+        const card = document.createElement("div");
+        card.className = "news-post-card";
+        card.innerHTML = `
+          <div class="news-post-head">
+            ${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span><span class="news-post-author">${escapeHtml(author.name)}</span>` : `<span class="news-post-author">Familie</span>`}
+            <span class="news-post-time">${fmtDate(post.createdAt)}</span>
+            <button type="button" class="card-pin news-post-del" title="Löschen">✕</button>
+          </div>
+          ${post.text ? `<div class="news-post-text">${escapeHtml(post.text)}</div>` : ""}
+          ${post.photo ? `<img class="news-post-photo" src="${post.photo}">` : ""}
+          ${post.audio ? `<audio controls class="news-post-audio" src="${post.audio}"></audio>` : ""}
+        `;
+        card.querySelector(".news-post-del").onclick = () => {
+          if (confirm("Diesen Beitrag wirklich löschen?")) {
+            markDeleted(post.id);
+            state.newsPosts = state.newsPosts.filter(p => p.id !== post.id);
+            saveState(); render();
+          }
+        };
+        feed.appendChild(card);
+      });
+    }
+    container.appendChild(feed);
+  }
+
   function openEventEditor(existing, defaultDate) {
     const draft = existing ? { ...existing, profileIds: [...(existing.profileIds || [])] } : {
       id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: [],
@@ -5091,6 +5260,7 @@ body.menu-open { overflow: hidden; }
     state.custodySchedules = state.custodySchedules.filter(isLive);
     state.wishlist = state.wishlist.filter(isLive);
     state.checklistTemplates = (state.checklistTemplates || []).filter(isLive);
+    state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
     state.items = unionById(state.items, remote.items).map(it => {
@@ -5125,6 +5295,7 @@ body.menu-open { overflow: hidden; }
     state.wishlist = unionById(state.wishlist, remote.wishlist);
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
     state.checklistTemplates = unionById(state.checklistTemplates || [], remote.checklistTemplates);
+    state.newsPosts = unionById(state.newsPosts || [], remote.newsPosts);
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
@@ -5513,11 +5684,71 @@ body.menu-open { overflow: hidden; }
       }, { timeout: 10000 });
     };
 
+    // --- Export, Import & Synchronisierung (admingeschützt) ---
+    const syncAdminHeader = document.createElement("div");
+    syncAdminHeader.className = "settings-section";
+    syncAdminHeader.innerHTML = `<h3>🔒 Export, Import &amp; Synchronisierung</h3><p class="hint">Geschützt, damit Kinder hier nichts versehentlich ändern können.</p>`;
+    container.appendChild(syncAdminHeader);
+
+    const syncAdminGroup = document.createElement("div");
+    container.appendChild(syncAdminGroup);
+
+    if (!state.adminPasswordHash) {
+      const setupBox = document.createElement("div");
+      setupBox.className = "settings-section";
+      setupBox.innerHTML = `
+        <p class="hint">Noch kein Passwort für diesen Bereich vergeben.</p>
+        <div class="field" style="max-width:320px;"><input type="password" id="syncPwSetup1" placeholder="Neues Passwort"></div>
+        <div class="field" style="max-width:320px;"><input type="password" id="syncPwSetup2" placeholder="Passwort wiederholen"></div>
+        <div class="admin-error" id="syncPwSetupError"></div>
+        <button class="btn btn-accent" id="syncPwSetupBtn">Passwort festlegen &amp; freischalten</button>
+      `;
+      container.appendChild(setupBox);
+      setupBox.querySelector("#syncPwSetupBtn").onclick = async () => {
+        const p1 = setupBox.querySelector("#syncPwSetup1").value;
+        const p2 = setupBox.querySelector("#syncPwSetup2").value;
+        const errEl = setupBox.querySelector("#syncPwSetupError");
+        if (!p1 || p1.length < 4) { errEl.textContent = "Mindestens 4 Zeichen."; return; }
+        if (p1 !== p2) { errEl.textContent = "Passwörter stimmen nicht überein."; return; }
+        state.adminPasswordHash = await sha256Hex(p1);
+        syncSettingsUnlocked = true;
+        saveState();
+        render();
+      };
+    } else if (!syncSettingsUnlocked) {
+      const gateBox = document.createElement("div");
+      gateBox.className = "settings-section";
+      gateBox.innerHTML = `
+        <div class="field" style="max-width:320px;"><input type="password" id="syncPwGate" placeholder="Passwort eingeben" autofocus></div>
+        <div class="admin-error" id="syncPwGateError"></div>
+        <button class="btn btn-accent" id="syncPwGateBtn">Entsperren</button>
+      `;
+      container.appendChild(gateBox);
+      const tryUnlock = async () => {
+        const val = gateBox.querySelector("#syncPwGate").value;
+        const hash = await sha256Hex(val);
+        if (hash === state.adminPasswordHash) {
+          syncSettingsUnlocked = true;
+          render();
+        } else {
+          gateBox.querySelector("#syncPwGateError").textContent = "Falsches Passwort.";
+        }
+      };
+      gateBox.querySelector("#syncPwGateBtn").onclick = tryUnlock;
+      gateBox.querySelector("#syncPwGate").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+    } else {
+      const lockBar = document.createElement("div");
+      lockBar.style.cssText = "margin-bottom:16px;";
+      lockBar.innerHTML = `<button class="btn btn-sm" id="syncLockBtn">🔒 Wieder sperren</button>`;
+      container.appendChild(lockBar);
+      lockBar.querySelector("#syncLockBtn").onclick = () => { syncSettingsUnlocked = false; render(); };
+    }
+
     // --- Connectors ---
     const connSection = document.createElement("div");
     connSection.className = "settings-section";
     connSection.innerHTML = `<h3>Datenquellen &amp; Synchronisierung</h3><p class="hint">Zugangsdaten bleiben ausschließlich lokal auf diesem Gerät gespeichert und werden nur an die von dir eingetragene Adresse gesendet — an keinen anderen Ort.</p>`;
-    container.appendChild(connSection);
+    if (syncSettingsUnlocked) syncAdminGroup.appendChild(connSection);
 
     const net = state.connectors.network;
     connSection.innerHTML += `
@@ -5614,7 +5845,7 @@ body.menu-open { overflow: hidden; }
       </div>
     </div>
   `;
-  container.appendChild(exportSection);
+  if (syncSettingsUnlocked) syncAdminGroup.appendChild(exportSection);
   exportSection.querySelectorAll(".scope-chip").forEach(chip => {
     chip.onclick = () => { exportScope = chip.dataset.scope; render(); };
   });
@@ -5637,7 +5868,7 @@ body.menu-open { overflow: hidden; }
         <button class="btn btn-danger" id="resetBtn">Alle Daten löschen</button>
       </div>
     `;
-  container.appendChild(backupSection);
+  if (syncSettingsUnlocked) syncAdminGroup.appendChild(backupSection);
 
   backupSection.querySelector("#backupShareBtn").onclick = () => {
     shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-alle-${Date.now()}.json`, "DApp Backup");
@@ -6559,6 +6790,12 @@ body.menu-open { overflow: hidden; }
       if (bestForTicker && bestForTicker.score >= 2.5) {
         messages.push({ view: "home", text: `🌿 Hohe Pollenbelastung heute: ${POLLEN_NAMES[bestForTicker.type] || bestForTicker.type}` });
       }
+    }
+    const latestNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (latestNews && Date.now() - latestNews.createdAt < 24 * 60 * 60 * 1000) {
+      const author = latestNews.createdBy ? getProfile(latestNews.createdBy) : null;
+      const preview = latestNews.text || (latestNews.photo ? "📷 Foto" : latestNews.audio ? "🎤 Sprachnachricht" : "");
+      messages.push({ view: "news", text: `📰 ${author ? author.name + ": " : ""}${preview}` });
     }
     if (!messages.length) messages.push({ view: "home", text: "👋 Willkommen bei DApp — leg direkt los!" });
     return messages;
