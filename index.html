@@ -1148,7 +1148,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 51;
+  const APP_BUILD_NUMBER = 53;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1269,6 +1269,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let personalAreaUnlockedFor = null;
   let personalAreaViewingProfileId = null;
   let weatherCache = { data: null, fetchedAt: 0 };
+  let kpCache = { data: null, fetchedAt: 0 };
   let tickerInterval = null;
   let autoPushDebounce = null;
   let activeTagFilter = null;
@@ -1519,6 +1520,87 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   };
   function weatherInfo(code) { return WMO_WEATHER[code] || { icon: "🌡️", label: "" }; }
 
+  let warnCache = { data: null, fetchedAt: 0, error: "" };
+  const DWD_WARN_LEVELS = { 1: "Wetterinfo", 2: "Wetterwarnung", 3: "Markante Wetterwarnung", 4: "Unwetterwarnung" };
+  async function updateWarnWidget() {
+    const el = document.getElementById("warnWidgetBody");
+    if (!el) return;
+    const fresh = Date.now() - warnCache.fetchedAt < 15 * 60 * 1000;
+    if (!fresh) {
+      try {
+        const res = await fetch("https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json");
+        const raw = await res.text();
+        const jsonText = raw.replace(/^\s*warnWetter\.loadWarnings\(/, "").replace(/\);\s*$/, "");
+        const parsed = JSON.parse(jsonText);
+        const all = Object.values(parsed.warnings || {}).flat();
+        warnCache = { data: all, fetchedAt: Date.now(), error: "" };
+      } catch (err) {
+        warnCache = { data: null, fetchedAt: Date.now(), error: "Warnungen konnten nicht geladen werden (evtl. CORS/Netzwerk)." };
+        console.warn("DWD-Warnungen-Abruf fehlgeschlagen:", err);
+      }
+    }
+    const stateName = (GERMAN_STATES.find(s => s.code === state.federalState) || {}).name;
+    if (!stateName) {
+      el.innerHTML = `<div class="widget-empty">Bundesland in den Einstellungen wählen für Wetterwarnungen.</div>`;
+      return;
+    }
+    if (warnCache.error) {
+      el.innerHTML = `<div class="widget-empty">${escapeHtml(warnCache.error)}</div>`;
+      return;
+    }
+    const relevant = (warnCache.data || []).filter(w => w.state === stateName);
+    if (!relevant.length) {
+      el.innerHTML = `<div class="widget-empty">✅ Keine aktuellen Warnungen für ${escapeHtml(stateName)}.</div>`;
+      return;
+    }
+    relevant.sort((a, b) => b.level - a.level);
+    el.innerHTML = relevant.slice(0, 3).map(w => `
+      <div class="today-sub-stat" style="border-left:3px solid ${w.level >= 3 ? "#C0453B" : "#D9A441"};padding-left:8px;">
+        <strong>${w.level >= 3 ? "🔴" : "🟡"} ${escapeHtml(DWD_WARN_LEVELS[w.level] || "Warnung")}</strong><br>
+        <span style="font-size:11.5px;">${escapeHtml(w.regionName || "")}: ${escapeHtml((w.headline || "").replace(/^Amtliche /, ""))}</span>
+      </div>
+    `).join("");
+  }
+
+  // Grobe Faustformel: ab welchem Kp-Wert Polarlicht bei einem bestimmten Breitengrad
+  // grundsätzlich sichtbar werden kann (je weiter südlich, desto höherer Kp nötig).
+  function kpNeededForLatitude(lat) {
+    const absLat = Math.abs(lat);
+    return Math.max(1, Math.min(9, Math.round((65 - absLat) / 3)));
+  }
+
+  async function updateKpWidget() {
+    const el = document.getElementById("kpWidgetBody");
+    if (!el) return;
+    const fresh = Date.now() - kpCache.fetchedAt < 30 * 60 * 1000;
+    if (!fresh) {
+      try {
+        const res = await fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
+        const rows = await res.json();
+        kpCache = { data: rows[rows.length - 1], fetchedAt: Date.now() };
+      } catch (err) { console.warn("Kp-Index-Abruf fehlgeschlagen:", err); }
+    }
+    if (kpCache.data) {
+      const kp = Math.round(kpCache.data.Kp);
+      const loc = state.weatherLocation;
+      const needed = loc && loc.lat ? kpNeededForLatitude(loc.lat) : null;
+      let chance = "";
+      if (needed !== null) {
+        if (kp >= needed + 2) chance = "🟢 Gute Chance heute Nacht!";
+        else if (kp >= needed) chance = "🟡 Möglich, wenn's dunkel & klar ist";
+        else if (kp >= needed - 2) chance = "🟠 Eher unwahrscheinlich";
+        else chance = "⚪ Aktuell sehr unwahrscheinlich";
+      }
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:34px;">🌌</span>
+          <div><div class="widget-big-stat">Kp ${kp}</div><div style="font-size:12px;color:var(--text-muted);">${loc && loc.name ? "für " + escapeHtml(loc.name) : "Planetarer Index"}</div></div>
+        </div>
+        ${chance ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${chance}</div>` : `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Ort in den Einstellungen hinterlegen für eine Einschätzung.</div>`}
+      `;
+    }
+  }
+
   async function updateWeatherWidget() {
     const loc = state.weatherLocation;
     const el = document.getElementById("weatherWidgetBody");
@@ -1623,6 +1705,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (dashLink) dashLink.onclick = () => setView(dashLink.dataset.goto);
       if (hasWeather) updateWeatherWidget();
     }
+
+    // --- Wetterwarnung ---
+    if (state.federalState) {
+      widget("⚠️", "Wetterwarnung", "#C0453B",
+        `<div id="warnWidgetBody">${warnCache.data || warnCache.error ? "" : `<div class="widget-empty">Lade Warnungen …</div>`}</div>`,
+        "settings", "Einstellungen ›");
+      updateWarnWidget();
+    }
+
+    // --- Kp-Index / Nordlicht-Chance ---
+    widget("🌌", "Nordlicht-Chance", "#3A5A9B",
+      `<div id="kpWidgetBody">${kpCache.data ? "" : `<div class="widget-empty">Lade Kp-Index …</div>`}</div>`,
+      "settings", "Ort einstellen ›");
+    updateKpWidget();
 
     // --- Nächste Termine ---
     const upcoming = state.events.filter(ev => ev.date >= todayStr).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""))).slice(0, 5);
@@ -5619,6 +5715,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (kidsForLeader.length) {
       const leader = kidsForLeader.map(p => ({ p, pts: pointsBalance(p.id) })).sort((a, b) => b.pts - a.pts)[0];
       if (leader && leader.pts > 0) messages.push(`⭐ ${leader.p.name} führt mit ${leader.pts} Punkten`);
+    }
+    if (kpCache.data && state.weatherLocation.lat) {
+      const kpForTicker = Math.round(kpCache.data.Kp);
+      const neededForTicker = kpNeededForLatitude(state.weatherLocation.lat);
+      if (kpForTicker >= neededForTicker) {
+        messages.push(`🌌 Nordlicht-Chance heute Nacht! Kp ${kpForTicker}`);
+      }
+    }
+    if (state.federalState && warnCache.data) {
+      const stateNameForTicker = (GERMAN_STATES.find(s => s.code === state.federalState) || {}).name;
+      const severeWarn = warnCache.data.filter(w => w.state === stateNameForTicker && w.level >= 3)[0];
+      if (severeWarn) {
+        messages.push(`⚠️ ${(severeWarn.headline || "Unwetterwarnung").replace(/^Amtliche /, "")} — ${severeWarn.regionName || ""}`);
+      }
     }
     if (!messages.length) messages.push("👋 Willkommen bei DApp — leg direkt los!");
     return messages;
