@@ -798,13 +798,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   font-size: 12.5px; width: 100%;
 }
 @media (max-width: 640px) {
-  .shopping-row { grid-template-columns: 20px 1fr 24px; grid-template-areas: "cb text del" "sel sel sel" "loc loc loc"; row-gap: 6px; }
+  .shopping-row {
+    grid-template-columns: 20px 1fr 24px; grid-template-areas: "cb text del" "sel loc loc"; row-gap: 4px; padding: 6px 0;
+  }
   .shopping-row-head { display: none; }
   .shopping-row .s-done { grid-area: cb; }
   .shopping-row .s-text { grid-area: text; }
   .shopping-row .s-del { grid-area: del; }
-  .shopping-row .s-forwhom { grid-area: sel; }
-  .shopping-row .s-where { grid-area: loc; }
+  .shopping-row .s-forwhom { grid-area: sel; width: auto; max-width: 88px; padding: 3px 4px; font-size: 11px; }
+  .shopping-row .s-where { grid-area: loc; width: auto; padding: 3px 6px; font-size: 11px; }
 }
 .add-row-btn { align-self: flex-start; margin-top: 4px; }
 
@@ -1022,6 +1024,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       <button class="nav-item" data-view="shopping">
         <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
       </button>
+      <button class="nav-item" data-view="mealplan">
+        <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
+      </button>
     </nav>
 
     <div class="sidebar-bottom">
@@ -1068,7 +1073,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 40;
+  const APP_BUILD_NUMBER = 43;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1178,7 +1183,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1422,6 +1427,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     if (currentView === "tasks") return renderTasksView(c);
     if (currentView === "calendar") return renderCalendarView(c);
     if (currentView === "shopping") return renderShoppingView(c);
+    if (currentView === "mealplan") return renderMealPlanView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -1609,7 +1615,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const mealToday = getMealForDate(todayStr);
     widget("🍽️", "Essensplan heute", "#FF9270",
       mealToday ? `<div class="widget-big-stat" style="font-size:16px;">${escapeHtml(mealToday)}</div>` : `<div class="widget-empty">Noch nichts geplant.</div>`,
-      "calendar", "Planen ›");
+      "mealplan", "Planen ›");
 
     // --- Zuletzt bearbeitet ---
     const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
@@ -3361,6 +3367,40 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       .filter(x => x.result);
   }
 
+  function parseMealCsv(text) {
+    const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(l => l.trim() !== "");
+    if (!lines.length) return [];
+    const delimiter = (lines[0].match(/;/g) || []).length >= (lines[0].match(/,/g) || []).length ? ";" : ",";
+    function parseLine(line) {
+      const cells = []; let cur = ""; let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+          if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else cur += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === delimiter) { cells.push(cur); cur = ""; }
+          else cur += ch;
+        }
+      }
+      cells.push(cur);
+      return cells.map(c => c.trim());
+    }
+    function normalizeDate(raw) {
+      raw = (raw || "").trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+      const de = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+      if (de) return `${de[3]}-${de[2].padStart(2, "0")}-${de[1].padStart(2, "0")}`;
+      return null;
+    }
+    let rows = lines.map(parseLine);
+    const firstDate = normalizeDate(rows[0][0]);
+    if (!firstDate) rows = rows.slice(1); // Kopfzeile überspringen, falls die erste Zelle kein Datum ist
+    return rows.map(cells => ({ date: normalizeDate(cells[0]), text: cells[1] || "" })).filter(r => r.date && r.text);
+  }
+
   function mergeMealPlans(remote, local) {
     remote = remote || {}; local = local || {};
     const result = {};
@@ -3773,35 +3813,101 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     toolbar.querySelector("#calToday").onclick = () => { calendarCursorStr = new Date().toISOString().slice(0, 10); render(); };
     toolbar.querySelector("#calAdd").onclick = () => openEventEditor(null, todayStr);
     toolbar.querySelector("#calCustody").onclick = () => openCustodyManager();
-    toolbar.querySelector("#calMeal").onclick = () => openMealPlanEditor();
+    toolbar.querySelector("#calMeal").onclick = () => setView("mealplan");
     toolbar.querySelector("#calModeMonth").onclick = () => { calendarViewMode = "month"; render(); };
     toolbar.querySelector("#calModeWeek").onclick = () => { calendarViewMode = "week"; render(); };
   }
 
-  function openMealPlanEditor() {
-    const wStart = startOfWeek(new Date().toISOString().slice(0, 10));
+  let mealPlanWeekCursor = null;
+  function renderMealPlanView(container) {
+    if (!mealPlanWeekCursor) mealPlanWeekCursor = new Date().toISOString().slice(0, 10);
+    const wStart = startOfWeek(mealPlanWeekCursor);
+    const wEnd = addDays(wStart, 6);
     const days = Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
     const dayNames = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
-    const overlay = document.createElement("div");
-    overlay.className = "modal-overlay";
-    overlay.innerHTML = `
-      <div class="modal" style="max-width:560px;">
-        <div class="modal-header"><h2>🍽️ Essensplan (diese Woche)</h2><button class="close-btn" id="closeModal">✕</button></div>
-        <p class="hint" style="margin-top:-6px;">Vorschläge sammeln, alle stimmen ab — der Vorschlag mit den meisten Stimmen gilt, oder legt selbst einen fest.</p>
-        <div id="mealRows"></div>
-        <div class="modal-footer"><div></div><div class="modal-footer-right">
-          <button class="btn btn-accent" id="mealCloseBtn">Fertig</button>
-        </div></div>
-      </div>`;
-    document.body.appendChild(overlay);
-    const rowsWrap = overlay.querySelector("#mealRows");
     const activeId = state.activeProfileId;
+    const activeProfileForMeal = getActiveProfile();
+    const isParentForMeal = !activeProfileForMeal || activeProfileForMeal.role === "parent";
+
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">Essensplan</h1><p class="view-sub">Vorschläge sammeln, alle stimmen ab${isParentForMeal ? " — ihr als Eltern gebt den finalen Plan frei." : " — ein Elternteil gibt den finalen Plan frei."}</p></div>`;
+    const csvHint = document.createElement("p");
+    csvHint.className = "hint";
+    csvHint.style.marginTop = "-8px";
+    csvHint.innerHTML = `Import als CSV (zwei Spalten: <b>Datum, Vorschlag</b> — z. B. <code>2026-08-03,Spaghetti Bolognese</code>, Datum auch als 03.08.2026 möglich, Kopfzeile optional) oder JSON mit <code>{date, text}</code>. Mehrere Zeilen mit demselben Datum = mehrere Vorschläge zum Abstimmen. Export liefert zusätzlich Stimmenzahl und Freigabe-Status je Vorschlag mit.`;
+    container.appendChild(header);
+    container.appendChild(csvHint);
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "mindmap-toolbar";
+    toolbar.innerHTML = `
+      <button class="btn btn-sm" id="mealPrev">‹</button>
+      <span style="font-family:var(--font-display);font-size:15px;min-width:170px;text-align:center;">${formatDateStrShort(wStart)} – ${formatDateStrShort(wEnd)}</span>
+      <button class="btn btn-sm" id="mealNext">›</button>
+      <button class="btn btn-sm" id="mealToday">Diese Woche</button>
+      <button class="btn btn-sm" id="mealExportBtn" style="margin-left:auto;">⇩ Vorschläge exportieren</button>
+      <button class="btn btn-sm" id="mealImportBtn">⊕ Vorschläge importieren</button>
+      <input type="file" id="mealImportFile" accept=".json,.csv" style="display:none">
+    `;
+    container.appendChild(toolbar);
+    toolbar.querySelector("#mealExportBtn").onclick = () => {
+      const rows = [["Datum", "Vorschlag", "Stimmen", "Freigegeben"]];
+      Object.keys(state.mealPlan).sort().forEach(dateStr => {
+        const entry = getMealEntry(dateStr);
+        entry.options.forEach(o => {
+          const text = (o.text || "").replace(/"/g, '""');
+          const votes = (o.votes || []).length;
+          const confirmed = entry.confirmed === o.id ? "ja" : "";
+          rows.push([dateStr, `"${text}"`, votes, confirmed]);
+        });
+      });
+      if (rows.length === 1) { showToast("Noch keine Vorschläge zum Exportieren vorhanden."); return; }
+      const csv = rows.map(r => r.join(",")).join("\n");
+      downloadBlob(csv, `dapp-essensplan-vorschlaege-${Date.now()}.csv`, "text/csv");
+    };
+    toolbar.querySelector("#mealPrev").onclick = () => { mealPlanWeekCursor = addDays(wStart, -7); render(); };
+    toolbar.querySelector("#mealNext").onclick = () => { mealPlanWeekCursor = addDays(wStart, 7); render(); };
+    toolbar.querySelector("#mealToday").onclick = () => { mealPlanWeekCursor = new Date().toISOString().slice(0, 10); render(); };
+
+    const mealImportFile = toolbar.querySelector("#mealImportFile");
+    toolbar.querySelector("#mealImportBtn").onclick = () => mealImportFile.click();
+    mealImportFile.onchange = () => {
+      const file = mealImportFile.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          let list = [];
+          if (file.name.toLowerCase().endsWith(".csv")) {
+            list = parseMealCsv(e.target.result);
+          } else {
+            const data = JSON.parse(e.target.result);
+            list = Array.isArray(data) ? data : (data.suggestions || data.options || []);
+          }
+          let added = 0;
+          list.forEach(entry => {
+            const date = entry.date;
+            const text = entry.text || entry.title || entry.meal;
+            if (date && text) { addMealOption(date, text); added++; }
+          });
+          render();
+          showToast(added ? `${added} Vorschlag/Vorschläge importiert.` : "Keine passenden Vorschläge in der Datei gefunden.");
+        } catch (err) { showToast("Import fehlgeschlagen — erwartet wird CSV (Datum,Vorschlag) oder JSON mit {date, text}."); }
+      };
+      reader.readAsText(file);
+      mealImportFile.value = "";
+    };
+
+    const card = document.createElement("div");
+    card.className = "calendar-card";
+    container.appendChild(card);
 
     function renderMealDay(dayWrap, dateStr, label) {
       const entry = getMealEntry(dateStr);
       const sorted = entry.options.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length);
       dayWrap.innerHTML = `
-        <div class="meal-day-head">${label}</div>
+        <div class="meal-day-head">${label} · ${formatDateStrShort(dateStr)}</div>
         <div class="meal-options">
           ${sorted.map(o => {
             const voters = (o.votes || []).map(pid => getProfile(pid)).filter(Boolean);
@@ -3811,7 +3917,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
               <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-opt="${o.id}" title="Abstimmen">🗳️ ${(o.votes || []).length}</button>
               <span class="meal-option-text">${escapeHtml(o.text)}</span>
               <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
-              <button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als Essen für diesen Tag festlegen">${isConfirmed ? "✓ Fest" : "Festlegen"}</button>
+              ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
               <button type="button" class="meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
             </div>`;
           }).join("") || `<div class="widget-empty" style="padding:6px 0;">Noch keine Vorschläge.</div>`}
@@ -3844,13 +3950,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     days.forEach((d, i) => {
       const dayWrap = document.createElement("div");
       dayWrap.className = "meal-day-block";
-      rowsWrap.appendChild(dayWrap);
+      card.appendChild(dayWrap);
       renderMealDay(dayWrap, d, dayNames[i]);
     });
-    function close() { overlay.remove(); render(); }
-    overlay.querySelector("#closeModal").onclick = close;
-    overlay.querySelector("#mealCloseBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
   }
 
   function openEventEditor(existing, defaultDate) {
