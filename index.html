@@ -572,19 +572,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 /* ============ HOME DASHBOARD ============ */
 .global-ticker {
   display: flex; align-items: center; gap: 10px; background: var(--surface2); border-bottom: 1px solid var(--border);
-  padding: 7px 26px; font-size: 12.5px; min-height: 34px; box-sizing: border-box;
+  padding: 7px 26px; font-size: 12.5px; min-height: 34px; box-sizing: border-box; cursor: pointer;
 }
 .global-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
 @keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.global-ticker-text {
-  transition: opacity .25s ease; white-space: nowrap;
-  display: inline-block;
-}
 .global-ticker-viewport { flex: 1; min-width: 0; overflow: hidden; }
-.global-ticker-viewport.marquee .global-ticker-text { will-change: transform; }
-@keyframes tickerMarquee {
+.global-ticker-text { display: inline-flex; white-space: nowrap; will-change: transform; }
+.ticker-seg { padding: 0 2px; }
+.ticker-seg[data-view]:not([data-view=""]) { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--text) 25%, transparent); text-underline-offset: 3px; }
+.ticker-sep { color: var(--accent); margin: 0 18px; opacity: .7; }
+@keyframes tickerTape {
   0% { transform: translateX(0); }
-  100% { transform: translateX(var(--marquee-distance, -100%)); }
+  100% { transform: translateX(var(--tape-distance, -50%)); }
 }
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
 .dashboard-card { grid-column: 1 / -1; }
@@ -785,10 +784,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .custody-block-row input[type=number] { width: 64px; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.app-header-sticky { position: sticky; top: 0; z-index: 6; }
 .topbar {
   display: flex; align-items: center; gap: 14px; padding: 16px 26px;
   border-bottom: 1px solid var(--border); background: var(--bg);
-  position: sticky; top: 0; z-index: 5;
 }
 .hamburger { display: none; background: none; border: none; font-size: 20px; color: var(--text); }
 .search-wrap { flex: 1; max-width: 480px; }
@@ -1221,18 +1220,20 @@ body.menu-open { overflow: hidden; }
 
   <!-- Main -->
   <div class="main">
-    <header class="topbar">
-      <button class="hamburger" id="hamburger" aria-label="Menü">☰</button>
-      <div class="search-wrap">
-        <input type="text" id="searchInput" placeholder="Ideen, Tags oder Inhalte durchsuchen…" autocomplete="off">
-      </div>
-      <button class="btn btn-accent" id="newItemBtn">+ Neues</button>
-    </header>
+    <div class="app-header-sticky">
+      <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="Menü">☰</button>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="Ideen, Tags oder Inhalte durchsuchen…" autocomplete="off">
+        </div>
+        <button class="btn btn-accent" id="newItemBtn">+ Neues</button>
+      </header>
 
-    <div class="global-ticker" id="globalTicker">
-      <span class="global-ticker-dot"></span>
-      <div class="global-ticker-viewport" id="globalTickerViewport">
-        <span class="global-ticker-text" id="globalTickerText"></span>
+      <div class="global-ticker" id="globalTicker">
+        <span class="global-ticker-dot"></span>
+        <div class="global-ticker-viewport" id="globalTickerViewport">
+          <span class="global-ticker-text" id="globalTickerText"></span>
+        </div>
       </div>
     </div>
 
@@ -1253,7 +1254,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 72;
+  const APP_BUILD_NUMBER = 73;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -5479,16 +5480,8 @@ body.menu-open { overflow: hidden; }
         <div class="theme-dot-row" id="themeDotRow"></div>
       </div>
       <div class="theme-preview" id="themePreview"></div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:16px;">
-        <input type="checkbox" id="tickerMarqueeToggle" ${state.tickerAlwaysMarquee ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
-        📰 Ticker immer als Laufschrift anzeigen (statt nur bei langem Text)
-      </label>`;
+      <p class="hint" style="margin-top:14px;">Der Live-Ticker läuft jetzt immer als durchgehendes Laufband über die volle Breite.</p>`;
     container.appendChild(themeSection);
-    themeSection.querySelector("#tickerMarqueeToggle").addEventListener("change", (e) => {
-      state.tickerAlwaysMarquee = e.target.checked;
-      saveState();
-      setupGlobalTicker();
-    });
 
     function renderThemeDots(t) {
       themeSection.querySelector("#themeDotRow").innerHTML =
@@ -6839,46 +6832,37 @@ body.menu-open { overflow: hidden; }
     const viewport = document.getElementById("globalTickerViewport");
     const tickerEl = document.getElementById("globalTicker");
     if (!textEl || !viewport) return;
-    let messages = buildTickerMessages();
-    let idx = 0;
-    if (tickerInterval) { clearTimeout(tickerInterval); tickerInterval = null; }
+    if (tickerInterval) { clearInterval(tickerInterval); tickerInterval = null; }
+    let lastKey = "";
 
-    function showMessage() {
-      messages = buildTickerMessages();
-      if (idx >= messages.length) idx = 0;
-      const current = messages[idx];
-      textEl.textContent = current.text;
-      tickerEl.style.cursor = current.view ? "pointer" : "default";
-      textEl.style.opacity = "1";
-      viewport.classList.remove("marquee");
+    function buildTape() {
+      const messages = buildTickerMessages();
+      const key = messages.map(m => m.text).join("|");
+      if (key === lastKey) return; // nichts Neues — laufende Animation nicht unterbrechen
+      lastKey = key;
+
+      const segHtml = messages.map(m =>
+        `<span class="ticker-seg" data-view="${m.view || ""}">${escapeHtml(m.text)}</span>`
+      ).join(`<span class="ticker-sep">✦</span>`);
+      // Zweimal hintereinander für einen nahtlosen Loop (bei -50% Verschiebung wiederholt sich exakt derselbe Inhalt).
+      textEl.innerHTML = `<span class="ticker-copy">${segHtml}</span><span class="ticker-sep">✦</span><span class="ticker-copy">${segHtml}</span><span class="ticker-sep">✦</span>`;
       textEl.style.animation = "none";
-      textEl.style.transform = "none";
 
-      // Erst nach dem Einsetzen des Texts messen, ob er in den sichtbaren Bereich passt.
       requestAnimationFrame(() => {
-        const overflow = textEl.scrollWidth - viewport.clientWidth;
-        if (overflow > 4 || state.tickerAlwaysMarquee) {
-          const distance = overflow > 4 ? overflow + 24 : viewport.clientWidth + textEl.scrollWidth;
-          const duration = Math.max(6, distance / 45); // gleichmäßiges Lesetempo, unabhängig von der Länge
-          textEl.style.setProperty("--marquee-distance", `-${distance}px`);
-          viewport.classList.add("marquee");
-          textEl.style.animation = `tickerMarquee ${duration}s linear 1`;
-          tickerInterval = setTimeout(next, (duration + 1.2) * 1000);
-        } else {
-          tickerInterval = setTimeout(next, 4500);
-        }
+        const oneCopyWidth = textEl.querySelector(".ticker-copy").getBoundingClientRect().width
+          + textEl.querySelector(".ticker-sep").getBoundingClientRect().width;
+        const duration = Math.max(12, oneCopyWidth / 55); // gleichmäßiges, ruhiges Lesetempo
+        textEl.style.setProperty("--tape-distance", `-${oneCopyWidth}px`);
+        textEl.style.animation = `tickerTape ${duration}s linear infinite`;
       });
     }
-    function next() {
-      idx = (idx + 1) % messages.length;
-      textEl.style.opacity = "0";
-      setTimeout(showMessage, 250);
-    }
-    tickerEl.onclick = () => {
-      const current = messages[idx];
-      if (current && current.view) setView(current.view);
+    tickerEl.onclick = (e) => {
+      const seg = e.target.closest(".ticker-seg");
+      const view = seg && seg.dataset.view;
+      if (view) setView(view);
     };
-    showMessage();
+    buildTape();
+    tickerInterval = setInterval(buildTape, 20000);
   }
 
   function init() {
