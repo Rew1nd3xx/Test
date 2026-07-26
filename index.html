@@ -21,7 +21,7 @@
 
 /* ============ RESET & BASE ============ */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: hidden; }
 body {
   margin: 0;
   background: var(--bg);
@@ -517,9 +517,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .build-tag { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 10px 6px 2px; opacity: .7; }
 
 /* ============ HOME DASHBOARD ============ */
-.home-greeting { margin-bottom: 22px; }
-.home-greeting h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 4px; }
-.home-greeting .home-date { color: var(--text-muted); font-size: 13.5px; text-transform: capitalize; }
 .global-ticker {
   display: flex; align-items: center; gap: 10px; background: var(--surface2); border-bottom: 1px solid var(--border);
   padding: 7px 26px; font-size: 12.5px;
@@ -528,6 +525,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 @keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .global-ticker-text { transition: opacity .25s ease; }
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
+.dashboard-card { grid-column: 1 / -1; }
+.dashboard-greeting { margin-bottom: 10px; }
+.dashboard-greeting h1 { font-family: var(--font-display); font-size: 26px; margin: 0 0 4px; }
+.dashboard-greeting .home-date { color: var(--text-muted); font-size: 13px; text-transform: capitalize; }
 .family-share-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
   background: var(--surface); border: 1px solid var(--border);
@@ -591,7 +592,29 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .view-toggle button.active { background: var(--accent); color: var(--surface); }
 .theme-bauhaus .view-toggle button.active { color: #fff; }
 .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-.week-day-cell { min-height: 220px; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; background: var(--surface); cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.calendar-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: calc(var(--radius) + 6px);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.cal-month-grid { display: grid; gap: 6px; }
+.cal-weekday-head {
+  text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em; padding: 4px 4px 10px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.cal-day-cell {
+  min-height: 92px; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px;
+  background: var(--bg); cursor: pointer; position: relative;
+  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.cal-day-cell:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 14px rgba(0,0,0,.12); z-index: 1; }
+.cal-day-cell.is-today {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  border: 1.5px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.week-day-cell { min-height: 220px; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; background: var(--bg); cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease; }
+.week-day-cell:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 14px rgba(0,0,0,.12); }
+.week-day-cell.is-today { background: color-mix(in srgb, var(--accent) 14%, var(--bg)); border: 1.5px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.week-day-cell.is-today .wd-num { color: var(--accent); font-weight: 700; }
 .week-day-cell .wd-label { font-size: 12px; color: var(--text-muted); }
 .week-day-cell .wd-num { font-family: var(--font-display); font-size: 20px; }
 .week-meal-tag { font-size: 11px; background: var(--surface2); border-radius: 6px; padding: 4px 7px; color: var(--text-muted); }
@@ -651,7 +674,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .btn-sm { padding: 6px 10px; font-size: 12.5px; }
 .btn-danger { color: #C0453B; border-color: #C0453B; background: transparent; }
 
-.view-container { flex: 1; padding: 26px; max-width: 1100px; width: 100%; margin: 0 auto; }
+.view-container { flex: 1; padding: 26px; max-width: 1100px; width: 100%; margin: 0 auto; overflow-x: hidden; }
 .view-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;}
 .view-title { font-family: var(--font-display); font-size: 28px; margin: 0; }
 .view-sub { color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0; }
@@ -1035,8 +1058,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 37;
-  const APP_BUILD_DATE = "2026-07-25";
+  const APP_BUILD_NUMBER = 38;
+  const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -1427,16 +1450,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const todayStr = new Date().toISOString().slice(0, 10);
     const activeProfile = getActiveProfile();
 
-    const greeting = document.createElement("div");
-    greeting.className = "home-greeting";
-    const hour = new Date().getHours();
-    const salutation = hour < 11 ? "Guten Morgen" : hour < 18 ? "Hallo" : "Guten Abend";
-    greeting.innerHTML = `
-      <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
-      <div class="home-date">${new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</div>
-    `;
-    container.appendChild(greeting);
-
     const grid = document.createElement("div");
     grid.className = "widget-grid";
     container.appendChild(grid);
@@ -1455,12 +1468,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       return card;
     }
 
-    // --- Heute: Wetter, Ferien & Betreuung (kombiniert) ---
+    // --- Dashboard-Kachel: Begrüßung + Name + Datum, zusammen mit Wetter, Ferien & Betreuung ---
+    const hour = new Date().getHours();
+    const salutation = hour < 11 ? "Guten Morgen" : hour < 18 ? "Hallo" : "Guten Abend";
     const ferienStatus = getFerienStatus();
     const hasWeather = !!state.weatherLocation.lat;
     const hasFerien = !!state.federalState;
     const hasCustody = state.custodySchedules.length > 0;
-    if (hasWeather || hasFerien || hasCustody) {
+    {
       const weatherPart = hasWeather
         ? `<div id="weatherWidgetBody">${weatherCache.data ? "" : `<div class="widget-empty">Lade Wetter …</div>`}</div>`
         : "";
@@ -1488,7 +1503,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         }).join("");
         custodyPart = `<div class="today-sub-stat">${rows || `<div class="widget-empty" style="padding:0;">Nichts hinterlegt.</div>`}</div>`;
       }
-      widget("🌤️", "Heute", "#0057A6", weatherPart + ferienPart + custodyPart, "calendar", "Kalender ›");
+      const dashCard = document.createElement("div");
+      dashCard.className = "widget-card dashboard-card";
+      dashCard.style.setProperty("--widget-accent", "#0057A6");
+      const dashBody = weatherPart + ferienPart + custodyPart;
+      dashCard.innerHTML = `
+        <div class="dashboard-greeting">
+          <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
+          <div class="home-date">${new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</div>
+        </div>
+        ${dashBody ? `<div class="widget-body">${dashBody}</div>` : ""}
+      `;
+      grid.appendChild(dashCard);
       if (hasWeather) updateWeatherWidget();
     }
 
@@ -3562,13 +3588,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const todayStr = new Date().toISOString().slice(0, 10);
 
     if (calendarViewMode === "month") {
+      const calCard = document.createElement("div");
+      calCard.className = "calendar-card";
       const grid = document.createElement("div");
-      grid.style.display = "grid";
+      grid.className = "cal-month-grid";
       grid.style.gridTemplateColumns = "repeat(7, 1fr)";
-      grid.style.gap = "6px";
       ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].forEach(d => {
         const h = document.createElement("div");
-        h.style.cssText = "text-align:center;font-size:11.5px;color:var(--text-muted);font-weight:600;padding:4px;";
+        h.className = "cal-weekday-head";
         h.textContent = d;
         grid.appendChild(h);
       });
@@ -3581,16 +3608,21 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const cell = document.createElement("div");
         const isHoliday = !!getHolidayName(dateStr);
         const isFerien = !!getSchoolHolidayName(dateStr);
-        const bg = isHoliday ? "color-mix(in srgb, #C0453B 22%, var(--surface))" : isFerien ? "color-mix(in srgb, #D9A441 32%, var(--surface))" : "var(--surface)";
-        cell.style.cssText = `min-height:92px;border:1px solid var(--border);border-radius:var(--radius);padding:6px;background:${bg};cursor:pointer;position:relative;${dateStr === todayStr ? "outline:2px solid var(--accent);" : ""}`;
+        const isToday = dateStr === todayStr;
+        cell.className = "cal-day-cell" + (isToday ? " is-today" : "");
+        const bg = isHoliday ? "color-mix(in srgb, #C0453B 22%, var(--surface))" : isFerien ? "color-mix(in srgb, #D9A441 32%, var(--surface))" : "";
+        if (bg) cell.style.background = bg;
         cell.innerHTML = buildDayCellInner(dateStr, day, 3, true);
         wireDayCell(cell, dateStr);
         grid.appendChild(cell);
       }
-      container.appendChild(grid);
+      calCard.appendChild(grid);
+      container.appendChild(calCard);
       toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, -1); render(); };
       toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, 1); render(); };
     } else {
+      const weekCard = document.createElement("div");
+      weekCard.className = "calendar-card";
       const weekGrid = document.createElement("div");
       weekGrid.className = "week-grid";
       const wStart = startOfWeek(calendarCursorStr);
@@ -3604,13 +3636,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         const isFerien = !!getSchoolHolidayName(dateStr);
         if (isHoliday) cell.style.background = "color-mix(in srgb, #C0453B 22%, var(--surface))";
         else if (isFerien) cell.style.background = "color-mix(in srgb, #D9A441 32%, var(--surface))";
-        if (dateStr === todayStr) cell.style.outline = "2px solid var(--accent)";
+        if (dateStr === todayStr) cell.classList.add("is-today");
         cell.innerHTML = `<div><div class="wd-label">${labels[i]}</div><div class="wd-num">${parseInt(dNum, 10)}</div></div>` +
           buildDayCellInner(dateStr, "", 6, false);
         wireDayCell(cell, dateStr);
         weekGrid.appendChild(cell);
       }
-      container.appendChild(weekGrid);
+      weekCard.appendChild(weekGrid);
+      container.appendChild(weekCard);
       toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, -7); render(); };
       toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, 7); render(); };
     }
