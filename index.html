@@ -774,13 +774,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 @media (max-width: 860px) {
-  .sidebar { position: fixed; z-index: 40; left: 0; top: 0; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,.3);}
+  .sidebar { position: fixed; z-index: 40; left: 0; top: 0; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,.3); height: 100dvh; }
   .sidebar.open { transform: translateX(0); }
   .hamburger { display: block; }
   .view-container { padding: 16px; }
   .topbar { padding: 12px 16px; }
   .global-ticker { padding: 6px 16px; font-size: 11.5px; }
+  .sidebar-backdrop.show { display: block; }
 }
+.sidebar-backdrop {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 39;
+}
+body.menu-open { overflow: hidden; }
 
 /* ============ GRID / CARDS ============ */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -1115,6 +1120,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     </div>
   </aside>
 
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- Main -->
   <div class="main">
     <header class="topbar">
@@ -1148,7 +1155,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 53;
+  const APP_BUILD_NUMBER = 55;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1481,13 +1488,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   }
 
   /* ============ VIEW ROUTING ============ */
+  function setSidebarOpen(open) {
+    document.getElementById("sidebar").classList.toggle("open", open);
+    document.getElementById("sidebarBackdrop").classList.toggle("show", open);
+    document.body.classList.toggle("menu-open", open);
+  }
+
   function setView(view) {
     currentView = view;
     try { localStorage.setItem(LAST_VIEW_KEY, view); } catch (e) { /* Speicher evtl. voll — kein Problem, dann startet die App eben auf Home */ }
     document.querySelectorAll(".nav-item[data-view]").forEach(b => {
       b.classList.toggle("active", b.dataset.view === view);
     });
-    document.getElementById("sidebar").classList.remove("open");
+    setSidebarOpen(false);
     render();
   }
 
@@ -1523,7 +1536,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   let warnCache = { data: null, fetchedAt: 0, error: "" };
   const DWD_WARN_LEVELS = { 1: "Wetterinfo", 2: "Wetterwarnung", 3: "Markante Wetterwarnung", 4: "Unwetterwarnung" };
   async function updateWarnWidget() {
-    const el = document.getElementById("warnWidgetBody");
+    const el = document.getElementById("warnBadgeBody");
     if (!el) return;
     const fresh = Date.now() - warnCache.fetchedAt < 15 * 60 * 1000;
     if (!fresh) {
@@ -1541,25 +1554,22 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     }
     const stateName = (GERMAN_STATES.find(s => s.code === state.federalState) || {}).name;
     if (!stateName) {
-      el.innerHTML = `<div class="widget-empty">Bundesland in den Einstellungen wählen für Wetterwarnungen.</div>`;
+      el.innerHTML = `⚪ Bundesland in den Einstellungen wählen für Wetterwarnungen`;
       return;
     }
     if (warnCache.error) {
-      el.innerHTML = `<div class="widget-empty">${escapeHtml(warnCache.error)}</div>`;
+      el.innerHTML = `⚪ ${escapeHtml(warnCache.error)}`;
       return;
     }
     const relevant = (warnCache.data || []).filter(w => w.state === stateName);
     if (!relevant.length) {
-      el.innerHTML = `<div class="widget-empty">✅ Keine aktuellen Warnungen für ${escapeHtml(stateName)}.</div>`;
+      el.innerHTML = `🟢 Keine aktuellen Wetterwarnungen für ${escapeHtml(stateName)}`;
       return;
     }
     relevant.sort((a, b) => b.level - a.level);
-    el.innerHTML = relevant.slice(0, 3).map(w => `
-      <div class="today-sub-stat" style="border-left:3px solid ${w.level >= 3 ? "#C0453B" : "#D9A441"};padding-left:8px;">
-        <strong>${w.level >= 3 ? "🔴" : "🟡"} ${escapeHtml(DWD_WARN_LEVELS[w.level] || "Warnung")}</strong><br>
-        <span style="font-size:11.5px;">${escapeHtml(w.regionName || "")}: ${escapeHtml((w.headline || "").replace(/^Amtliche /, ""))}</span>
-      </div>
-    `).join("");
+    const top = relevant[0];
+    const light = top.level >= 3 ? "🔴" : "🟡";
+    el.innerHTML = `${light} ${relevant.length > 1 ? relevant.length + " Warnungen — " : ""}${escapeHtml((top.headline || "Warnung").replace(/^Amtliche /, ""))} (${escapeHtml(top.regionName || "")})`;
   }
 
   // Grobe Faustformel: ab welchem Kp-Wert Polarlicht bei einem bestimmten Breitengrad
@@ -1569,15 +1579,21 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return Math.max(1, Math.min(9, Math.round((65 - absLat) / 3)));
   }
 
+  let kpForecastCache = { data: null, fetchedAt: 0 };
   async function updateKpWidget() {
-    const el = document.getElementById("kpWidgetBody");
+    const el = document.getElementById("auroraWidgetBody");
     if (!el) return;
     const fresh = Date.now() - kpCache.fetchedAt < 30 * 60 * 1000;
     if (!fresh) {
       try {
-        const res = await fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
-        const rows = await res.json();
-        kpCache = { data: rows[rows.length - 1], fetchedAt: Date.now() };
+        const [curRes, fcRes] = await Promise.all([
+          fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"),
+          fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json")
+        ]);
+        const curRows = await curRes.json();
+        const fcRows = await fcRes.json();
+        kpCache = { data: curRows[curRows.length - 1], fetchedAt: Date.now() };
+        kpForecastCache = { data: fcRows, fetchedAt: Date.now() };
       } catch (err) { console.warn("Kp-Index-Abruf fehlgeschlagen:", err); }
     }
     if (kpCache.data) {
@@ -1586,17 +1602,35 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const needed = loc && loc.lat ? kpNeededForLatitude(loc.lat) : null;
       let chance = "";
       if (needed !== null) {
-        if (kp >= needed + 2) chance = "🟢 Gute Chance heute Nacht!";
+        if (kp >= needed + 2) chance = "🟢 Gute Chance gerade jetzt!";
         else if (kp >= needed) chance = "🟡 Möglich, wenn's dunkel & klar ist";
         else if (kp >= needed - 2) chance = "🟠 Eher unwahrscheinlich";
         else chance = "⚪ Aktuell sehr unwahrscheinlich";
       }
+      // Vorschau für die kommende Nacht (nächste ca. 15h ab jetzt), damit man's nicht vergisst
+      let nightHtml = "";
+      if (kpForecastCache.data) {
+        const now = Date.now();
+        const windowEnd = now + 15 * 60 * 60 * 1000;
+        const upcoming = kpForecastCache.data.filter(r => {
+          const t = new Date(r.time_tag + "Z").getTime();
+          return t >= now - 60 * 60 * 1000 && t <= windowEnd;
+        });
+        if (upcoming.length) {
+          const maxKp = Math.round(Math.max(...upcoming.map(r => r.kp)));
+          let nightChance = "";
+          if (needed !== null) {
+            nightChance = maxKp >= needed ? " — 🟢 gute Chance heute Nacht!" : maxKp >= needed - 2 ? " — 🟡 leichte Chance" : "";
+          }
+          nightHtml = `<div class="today-sub-stat">🌙 Vorschau heute Nacht: bis zu Kp ${maxKp}${nightChance}</div>`;
+        }
+      }
       el.innerHTML = `
         <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:34px;">🌌</span>
-          <div><div class="widget-big-stat">Kp ${kp}</div><div style="font-size:12px;color:var(--text-muted);">${loc && loc.name ? "für " + escapeHtml(loc.name) : "Planetarer Index"}</div></div>
+          <span style="font-size:28px;">🌌</span>
+          <div><div class="widget-big-stat" style="font-size:20px;">Kp ${kp}</div><div style="font-size:12px;color:var(--text-muted);">${loc && loc.name ? "für " + escapeHtml(loc.name) : "Planetarer Index"}${chance ? " · " + chance : ""}</div></div>
         </div>
-        ${chance ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${chance}</div>` : `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Ort in den Einstellungen hinterlegen für eine Einschätzung.</div>`}
+        ${nightHtml}
       `;
     }
   }
@@ -1689,10 +1723,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         <span>🍽️ ${mealToday ? escapeHtml(mealToday) : "Essensplan: noch nichts geplant."}</span>
         <span class="widget-link" data-goto="mealplan" style="cursor:pointer;white-space:nowrap;">Planen ›</span>
       </div>`;
+      const auroraPart = `<div class="today-sub-stat" id="auroraWidgetBody">Lade Nordlicht-Vorschau …</div>`;
+      const warnPart = state.federalState
+        ? `<div class="today-sub-stat" id="warnBadgeBody">Lade Wetterwarnungen …</div>`
+        : "";
       const dashCard = document.createElement("div");
       dashCard.className = "widget-card dashboard-card";
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + custodyPart + mealPart;
+      const dashBody = weatherPart + ferienPart + custodyPart + mealPart + auroraPart + warnPart;
       dashCard.innerHTML = `
         <div class="dashboard-greeting">
           <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
@@ -1704,21 +1742,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const dashLink = dashCard.querySelector("[data-goto]");
       if (dashLink) dashLink.onclick = () => setView(dashLink.dataset.goto);
       if (hasWeather) updateWeatherWidget();
+      updateKpWidget();
+      if (state.federalState) updateWarnWidget();
     }
-
-    // --- Wetterwarnung ---
-    if (state.federalState) {
-      widget("⚠️", "Wetterwarnung", "#C0453B",
-        `<div id="warnWidgetBody">${warnCache.data || warnCache.error ? "" : `<div class="widget-empty">Lade Warnungen …</div>`}</div>`,
-        "settings", "Einstellungen ›");
-      updateWarnWidget();
-    }
-
-    // --- Kp-Index / Nordlicht-Chance ---
-    widget("🌌", "Nordlicht-Chance", "#3A5A9B",
-      `<div id="kpWidgetBody">${kpCache.data ? "" : `<div class="widget-empty">Lade Kp-Index …</div>`}</div>`,
-      "settings", "Ort einstellen ›");
-    updateKpWidget();
 
     // --- Nächste Termine ---
     const upcoming = state.events.filter(ev => ev.date >= todayStr).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""))).slice(0, 5);
@@ -1769,7 +1795,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     // --- Hausaufgaben ---
     const openHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.approved !== false)
       .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
-    widget("📚", "Hausaufgaben", "#3A5A9B",
+    widget("📚", "Hausi", "#3A5A9B",
       openHomework.length ? openHomework.slice(0, 5).map(t => {
         const owner = getProfile(t.assignedTo);
         const overdue = t.dueDate && t.dueDate < todayStr;
@@ -5783,8 +5809,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     setupBlockBreakEffect();
 
     document.getElementById("hamburger").onclick = () => {
-      document.getElementById("sidebar").classList.toggle("open");
+      setSidebarOpen(!document.getElementById("sidebar").classList.contains("open"));
     };
+    document.getElementById("sidebarBackdrop").onclick = () => setSidebarOpen(false);
     document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
       btn.onclick = () => setView(btn.dataset.view);
     });
