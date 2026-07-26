@@ -661,7 +661,13 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .calendar-card {
   background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface2) 40%, var(--surface)));
   border: 1px solid var(--border); border-radius: calc(var(--radius) + 10px);
-  padding: 20px; box-shadow: var(--shadow);
+  padding: 20px; box-shadow: var(--shadow), 0 20px 40px rgba(0,0,0,.08);
+  position: relative;
+}
+.calendar-card::before {
+  content: ""; position: absolute; top: 0; left: 16px; right: 16px; height: 3px; border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 30%, transparent));
+  opacity: .7;
 }
 .cal-month-grid { display: grid; gap: 8px; }
 .cal-weekday-head {
@@ -669,15 +675,16 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   text-transform: uppercase; letter-spacing: .07em; padding: 2px 4px 12px;
 }
 .cal-day-cell {
-  min-height: 96px; border: 1px solid var(--border); border-radius: calc(var(--radius) + 2px); padding: 7px;
+  min-height: 96px; border: 1px solid var(--border); border-radius: calc(var(--radius) + 4px); padding: 8px;
   background: var(--bg); cursor: pointer; position: relative; overflow: hidden;
-  transition: transform .14s cubic-bezier(.2,.8,.3,1), border-color .15s ease, box-shadow .15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  transition: transform .16s cubic-bezier(.2,.8,.3,1), border-color .15s ease, box-shadow .2s ease;
 }
 .cal-day-cell::before {
-  content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,.05), transparent 40%);
+  content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,.06), transparent 45%);
   pointer-events: none;
 }
-.cal-day-cell:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,.14); z-index: 1; }
+.cal-day-cell:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 14px 26px rgba(0,0,0,.16); z-index: 1; }
 .cal-day-cell.is-today {
   background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 20%, var(--bg)), color-mix(in srgb, var(--accent) 8%, var(--bg)));
   border: 1.5px solid var(--accent);
@@ -702,25 +709,32 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 .cal-event:hover { transform: translateX(1px); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
 .cal-homework-chip { font-weight: 600; }
-.meal-day-block { padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.meal-day-block { padding: 12px 0; border-bottom: 1px dashed var(--border); }
 .meal-day-block:last-child { border-bottom: none; }
-.meal-day-head { font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
-.meal-options { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
-.meal-option { background: var(--surface2); border-radius: var(--radius); padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; }
-.meal-option-row1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.meal-option-row2 { display: flex; align-items: center; gap: 8px; padding-left: 2px; }
-.meal-rate-stars { display: flex; gap: 1px; }
-.meal-star { font-size: 14px; color: var(--border); cursor: pointer; }
+.meal-day-head { font-size: 13px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 10px; }
+.meal-options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
+.meal-group-head { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.meal-group-head .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
+.meal-option-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; margin-bottom: 7px; box-shadow: var(--shadow);
+}
+.meal-option-card.confirmed { border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.meal-option-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.meal-option-title { font-size: 14px; font-weight: 600; }
+.meal-option-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.meal-option-mid { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.meal-rate-stars { display: flex; gap: 2px; }
+.meal-star { font-size: 17px; color: var(--border); cursor: pointer; line-height: 1; }
 .meal-star.filled { color: #E8A33D; }
-.meal-avg-rating { font-size: 11px; color: var(--text-muted); }
+.meal-avg-rating { font-size: 11.5px; color: var(--text-muted); }
 .meal-new-forwhom { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; }
-.meal-option.confirmed { border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface2)); }
-.meal-option-text { flex: 1; font-size: 13px; min-width: 90px; }
-.meal-vote-btn { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
+.meal-vote-btn { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; }
 .meal-vote-btn.voted { background: var(--accent); color: var(--surface); border-color: var(--accent); }
 .meal-voters { display: flex; gap: 2px; }
 .meal-voters .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
-.meal-confirm-btn, .meal-del-btn { font-size: 11px; padding: 3px 7px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-muted); }
+.meal-confirm-btn { font-size: 11px; padding: 3px 7px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-muted); }
+.meal-del-btn { font-size: 12px; }
 .meal-add-row { display: flex; gap: 6px; }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
@@ -1060,6 +1074,8 @@ body.menu-open { overflow: hidden; }
 .push-cat-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; font-size: 13px; }
 .push-cat-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .push-cat-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+.size-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 12px; margin-bottom: 6px; }
+.size-grid .field { margin-bottom: 8px; }
 
 .theme-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
 .theme-picker-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -1215,7 +1231,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 67;
+  const APP_BUILD_NUMBER = 68;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1482,9 +1498,9 @@ body.menu-open { overflow: hidden; }
 
   function openProfileEditor(id) {
     const existing = id ? getProfile(id) : null;
-    const draft = existing ? { ...existing } : {
+    const draft = existing ? { ...existing, sizes: { ...(existing.sizes || {}) } } : {
       id: uid(), name: "", color: PROFILE_COLORS[state.profiles.length % PROFILE_COLORS.length],
-      emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child", pinHash: ""
+      emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child", pinHash: "", sizes: {}
     };
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
@@ -1508,6 +1524,17 @@ body.menu-open { overflow: hidden; }
             ${PROFILE_COLORS.map(c => `<button type="button" class="color-opt" data-color="${c}" style="width:28px;height:28px;border-radius:50%;background:${c};border:2px solid ${c === draft.color ? "var(--text)" : "transparent"};"></button>`).join("")}
           </div>
         </div>
+        <details ${draft.role === "child" ? "open" : ""}>
+          <summary style="cursor:pointer;font-size:13px;color:var(--text-muted);margin-bottom:10px;">👕 Kleidergrößen (für den nächsten Einkauf)</summary>
+          <div class="size-grid">
+            <div class="field"><label>Oberteil</label><input type="text" id="p-size-shirt" value="${escapeHtml(draft.sizes.shirt || "")}" placeholder="z. B. 122/128"></div>
+            <div class="field"><label>Hose</label><input type="text" id="p-size-pants" value="${escapeHtml(draft.sizes.pants || "")}" placeholder="z. B. 128"></div>
+            <div class="field"><label>Schuhe</label><input type="text" id="p-size-shoes" value="${escapeHtml(draft.sizes.shoes || "")}" placeholder="z. B. 32"></div>
+            <div class="field"><label>Jacke</label><input type="text" id="p-size-jacket" value="${escapeHtml(draft.sizes.jacket || "")}" placeholder="z. B. 128"></div>
+            <div class="field"><label>Kopfumfang</label><input type="text" id="p-size-head" value="${escapeHtml(draft.sizes.head || "")}" placeholder="z. B. 54 cm"></div>
+            <div class="field"><label>Handschuhe</label><input type="text" id="p-size-gloves" value="${escapeHtml(draft.sizes.gloves || "")}" placeholder="z. B. 5"></div>
+          </div>
+        </details>
         <div class="modal-footer">
           <div>${existing ? `<button class="btn btn-danger" id="deleteProfileBtn">Profil löschen</button>` : ""}</div>
           <div class="modal-footer-right">
@@ -1537,6 +1564,7 @@ body.menu-open { overflow: hidden; }
     if (existing) {
       overlay.querySelector("#deleteProfileBtn").onclick = () => {
         if (confirm(`Profil „${existing.name}" wirklich löschen? Zugewiesene Aufgaben/Termine bleiben erhalten, aber ohne Zuordnung.`)) {
+          markDeleted(existing.id);
           state.profiles = state.profiles.filter(p => p.id !== existing.id);
           if (state.activeProfileId === existing.id) state.activeProfileId = (state.profiles[0] || {}).id || null;
           saveState(); close(); renderProfileBar(); render();
@@ -1546,6 +1574,14 @@ body.menu-open { overflow: hidden; }
     overlay.querySelector("#saveProfileBtn").onclick = () => {
       draft.name = overlay.querySelector("#p-name").value.trim() || "Familie";
       draft.role = overlay.querySelector("#p-role").value;
+      draft.sizes = {
+        shirt: overlay.querySelector("#p-size-shirt").value.trim(),
+        pants: overlay.querySelector("#p-size-pants").value.trim(),
+        shoes: overlay.querySelector("#p-size-shoes").value.trim(),
+        jacket: overlay.querySelector("#p-size-jacket").value.trim(),
+        head: overlay.querySelector("#p-size-head").value.trim(),
+        gloves: overlay.querySelector("#p-size-gloves").value.trim(),
+      };
       const idx = state.profiles.findIndex(p => p.id === draft.id);
       if (idx >= 0) state.profiles[idx] = draft; else state.profiles.push(draft);
       if (!state.activeProfileId) state.activeProfileId = draft.id;
@@ -3212,6 +3248,7 @@ body.menu-open { overflow: hidden; }
     return entry.id;
   }
   function ledgerRemove(entryId) {
+    markDeleted(entryId);
     state.pointsLedger = state.pointsLedger.filter(l => l.id !== entryId);
   }
 
@@ -3231,6 +3268,7 @@ body.menu-open { overflow: hidden; }
     const overview = document.createElement("div");
     overview.className = "grid";
     overview.style.marginBottom = "22px";
+    const isParentForReset = !getActiveProfile() || getActiveProfile().role === "parent";
     state.profiles.forEach(p => {
       const card = document.createElement("div");
       card.className = "card";
@@ -3241,8 +3279,20 @@ body.menu-open { overflow: hidden; }
             <div class="avatar" style="background:${p.color};cursor:default;">${p.emoji || p.name.charAt(0)}</div>
             <h3 class="card-title" style="margin:0;">${escapeHtml(p.name)}</h3>
           </div>
+          ${isParentForReset ? `<button class="card-pin reset-points-btn" title="Punkte zurücksetzen">↺</button>` : ""}
         </div>
         <div style="font-family:var(--font-display);font-size:26px;">${pointsBalance(p.id)} <span style="font-size:13px;color:var(--text-muted);font-family:var(--font-body);">Punkte</span></div>`;
+      const resetBtn = card.querySelector(".reset-points-btn");
+      if (resetBtn) {
+        resetBtn.onclick = () => {
+          if (!confirm(`Punktestand von ${p.name} wirklich auf 0 zurücksetzen? Das kann nicht rückgängig gemacht werden.`)) return;
+          const toRemove = state.pointsLedger.filter(l => l.profileId === p.id);
+          markDeletedMany(toRemove.map(l => l.id));
+          state.pointsLedger = state.pointsLedger.filter(l => l.profileId !== p.id);
+          saveState(); renderProfileBar(); render();
+          showToast(`Punkte von ${p.name} zurückgesetzt.`);
+        };
+      }
       overview.appendChild(card);
     });
     container.appendChild(overview);
@@ -4304,34 +4354,52 @@ body.menu-open { overflow: hidden; }
     card.className = "calendar-card";
     container.appendChild(card);
 
+    function renderMealOptionCard(o, entry, dateStr, dayWrap, label) {
+      const voters = (o.votes || []).map(pid => getProfile(pid)).filter(Boolean);
+      const isConfirmed = entry.confirmed === o.id;
+      const iVoted = activeId && (o.votes || []).includes(activeId);
+      const avgRating = mealAverageRating(o);
+      const myRating = (o.ratings || {})[activeId] || 0;
+      return `<div class="meal-option-card${isConfirmed ? " confirmed" : ""}">
+        <div class="meal-option-top">
+          <span class="meal-option-title">${escapeHtml(o.text)}</span>
+          <div class="meal-option-actions">
+            ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
+            <button type="button" class="card-pin meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
+          </div>
+        </div>
+        <div class="meal-option-mid">
+          <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-opt="${o.id}" title="Abstimmen">🗳️ ${(o.votes || []).length}</button>
+          <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
+          <span class="meal-rate-stars">${[1, 2, 3, 4, 5].map(n => `<span class="meal-star${n <= myRating ? " filled" : ""}" data-opt="${o.id}" data-score="${n}">★</span>`).join("")}</span>
+          ${avgRating ? `<span class="meal-avg-rating">⌀ ${avgRating.toFixed(1)}</span>` : ""}
+        </div>
+      </div>`;
+    }
+
     function renderMealDay(dayWrap, dateStr, label) {
       const entry = getMealEntry(dateStr);
-      const sorted = entry.options.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length);
+      const sortFn = (a, b) => (b.votes || []).length - (a.votes || []).length;
+      const generalOpts = entry.options.filter(o => !o.forWhom).sort(sortFn);
+      const personGroups = state.profiles
+        .map(p => ({ p, opts: entry.options.filter(o => o.forWhom === p.id).sort(sortFn) }))
+        .filter(g => g.opts.length);
+
+      const groupsHtml = [
+        `<div class="meal-group">
+          <div class="meal-group-head">🍽️ Für alle</div>
+          ${generalOpts.map(o => renderMealOptionCard(o, entry, dateStr)).join("") || `<div class="widget-empty" style="padding:4px 0;">Noch keine Vorschläge für alle.</div>`}
+        </div>`,
+        ...personGroups.map(g => `
+        <div class="meal-group">
+          <div class="meal-group-head"><span class="mini-avatar" style="background:${g.p.color};">${g.p.emoji || g.p.name.charAt(0)}</span> Nur ${escapeHtml(g.p.name)}</div>
+          ${g.opts.map(o => renderMealOptionCard(o, entry, dateStr)).join("")}
+        </div>`)
+      ].join("");
+
       dayWrap.innerHTML = `
         <div class="meal-day-head">${label} · ${formatDateStrShort(dateStr)}</div>
-        <div class="meal-options">
-          ${sorted.map(o => {
-            const voters = (o.votes || []).map(pid => getProfile(pid)).filter(Boolean);
-            const isConfirmed = entry.confirmed === o.id;
-            const iVoted = activeId && (o.votes || []).includes(activeId);
-            const forWhomProfile = o.forWhom ? getProfile(o.forWhom) : null;
-            const avgRating = mealAverageRating(o);
-            const myRating = (o.ratings || {})[activeId] || 0;
-            return `<div class="meal-option${isConfirmed ? " confirmed" : ""}">
-              <div class="meal-option-row1">
-                <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-opt="${o.id}" title="Abstimmen">🗳️ ${(o.votes || []).length}</button>
-                <span class="meal-option-text">${escapeHtml(o.text)}${forWhomProfile ? ` <span class="tag-chip" style="font-size:10px;">${forWhomProfile.emoji || ""} nur ${escapeHtml(forWhomProfile.name)}</span>` : ""}</span>
-                <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
-                ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
-                <button type="button" class="meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
-              </div>
-              <div class="meal-option-row2">
-                <span class="meal-rate-stars">${[1, 2, 3, 4, 5].map(n => `<span class="meal-star${n <= myRating ? " filled" : ""}" data-opt="${o.id}" data-score="${n}">★</span>`).join("")}</span>
-                ${avgRating ? `<span class="meal-avg-rating">⌀ ${avgRating.toFixed(1)}</span>` : ""}
-              </div>
-            </div>`;
-          }).join("") || `<div class="widget-empty" style="padding:6px 0;">Noch keine Vorschläge.</div>`}
-        </div>
+        <div class="meal-options">${groupsHtml}</div>
         <div class="meal-add-row">
           <input type="text" class="meal-new-option" placeholder="Vorschlag hinzufügen, z. B. Spaghetti Bolognese">
           <select class="meal-new-forwhom">
@@ -5841,6 +5909,24 @@ body.menu-open { overflow: hidden; }
         </div>
       `;
       container.appendChild(info);
+
+      const kidsForSizes = state.profiles.filter(p => p.role === "child" && p.sizes && Object.values(p.sizes).some(v => v));
+      if (kidsForSizes.length) {
+        const sizesCard = document.createElement("div");
+        sizesCard.className = "settings-section";
+        sizesCard.innerHTML = `<h3>👕 Kleidergrößen</h3>` + kidsForSizes.map(k => {
+          const rows = [
+            k.sizes.shirt && `Oberteil ${escapeHtml(k.sizes.shirt)}`,
+            k.sizes.pants && `Hose ${escapeHtml(k.sizes.pants)}`,
+            k.sizes.shoes && `Schuhe ${escapeHtml(k.sizes.shoes)}`,
+            k.sizes.jacket && `Jacke ${escapeHtml(k.sizes.jacket)}`,
+            k.sizes.head && `Kopf ${escapeHtml(k.sizes.head)}`,
+            k.sizes.gloves && `Handschuhe ${escapeHtml(k.sizes.gloves)}`,
+          ].filter(Boolean).join(" · ");
+          return `<div class="widget-row"><span class="mini-avatar" style="background:${k.color};">${k.emoji || k.name.charAt(0)}</span><span class="wr-title">${escapeHtml(k.name)}</span><span class="wr-meta" style="text-align:right;max-width:60%;">${rows}</span></div>`;
+        }).join("");
+        container.appendChild(sizesCard);
+      }
 
       const future = document.createElement("div");
       future.className = "empty-state";
