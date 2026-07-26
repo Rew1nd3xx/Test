@@ -564,11 +564,20 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 /* ============ HOME DASHBOARD ============ */
 .global-ticker {
   display: flex; align-items: center; gap: 10px; background: var(--surface2); border-bottom: 1px solid var(--border);
-  padding: 7px 26px; font-size: 12.5px;
+  padding: 7px 26px; font-size: 12.5px; min-height: 34px; box-sizing: border-box;
 }
 .global-ticker-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: tickerPulse 1.8s ease-in-out infinite; }
 @keyframes tickerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.global-ticker-text { transition: opacity .25s ease; }
+.global-ticker-text {
+  transition: opacity .25s ease; white-space: nowrap;
+  display: inline-block;
+}
+.global-ticker-viewport { flex: 1; min-width: 0; overflow: hidden; }
+.global-ticker-viewport.marquee .global-ticker-text { will-change: transform; }
+@keyframes tickerMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(var(--marquee-distance, -100%)); }
+}
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
 .dashboard-card { grid-column: 1 / -1; }
 .dashboard-greeting { margin-bottom: 10px; }
@@ -1117,7 +1126,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     </header>
 
     <div class="global-ticker" id="globalTicker">
-      <span class="global-ticker-dot"></span><span class="global-ticker-text" id="globalTickerText"></span>
+      <span class="global-ticker-dot"></span>
+      <div class="global-ticker-viewport" id="globalTickerViewport">
+        <span class="global-ticker-text" id="globalTickerText"></span>
+      </div>
     </div>
 
     <main class="view-container" id="viewContainer">
@@ -1136,7 +1148,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 49;
+  const APP_BUILD_NUMBER = 51;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -5614,17 +5626,42 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   function setupGlobalTicker() {
     const textEl = document.getElementById("globalTickerText");
-    if (!textEl) return;
+    const viewport = document.getElementById("globalTickerViewport");
+    if (!textEl || !viewport) return;
     let messages = buildTickerMessages();
     let idx = 0;
-    textEl.textContent = messages[0];
-    if (tickerInterval) { clearInterval(tickerInterval); tickerInterval = null; }
-    tickerInterval = setInterval(() => {
+    if (tickerInterval) { clearTimeout(tickerInterval); tickerInterval = null; }
+
+    function showMessage() {
       messages = buildTickerMessages();
+      if (idx >= messages.length) idx = 0;
+      textEl.textContent = messages[idx];
+      textEl.style.opacity = "1";
+      viewport.classList.remove("marquee");
+      textEl.style.animation = "none";
+      textEl.style.transform = "none";
+
+      // Erst nach dem Einsetzen des Texts messen, ob er in den sichtbaren Bereich passt.
+      requestAnimationFrame(() => {
+        const overflow = textEl.scrollWidth - viewport.clientWidth;
+        if (overflow > 4) {
+          const distance = overflow + 24; // kleiner Nachlauf, bevor sie umspringt
+          const duration = Math.max(6, distance / 45); // gleichmäßiges Lesetempo, unabhängig von der Länge
+          textEl.style.setProperty("--marquee-distance", `-${distance}px`);
+          viewport.classList.add("marquee");
+          textEl.style.animation = `tickerMarquee ${duration}s linear 1`;
+          tickerInterval = setTimeout(next, (duration + 1.2) * 1000);
+        } else {
+          tickerInterval = setTimeout(next, 4500);
+        }
+      });
+    }
+    function next() {
       idx = (idx + 1) % messages.length;
       textEl.style.opacity = "0";
-      setTimeout(() => { textEl.textContent = messages[idx]; textEl.style.opacity = "1"; }, 250);
-    }, 4500);
+      setTimeout(showMessage, 250);
+    }
+    showMessage();
   }
 
   function init() {
