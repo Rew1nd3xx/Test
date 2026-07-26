@@ -1058,7 +1058,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 38;
+  const APP_BUILD_NUMBER = 39;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -4065,6 +4065,27 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return changed;
   }
 
+  function mergeStateFrom(remote) {
+    state.items = unionById(state.items, remote.items).map(it => {
+      const local = state.items.find(l => l.id === it.id);
+      const remoteMatch = (remote.items || []).find(r => r.id === it.id);
+      if (local && remoteMatch && remoteMatch.updatedAt > local.updatedAt) return remoteMatch;
+      return it;
+    });
+    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: "" })));
+    state.tasks = unionById(state.tasks, remote.tasks);
+    state.rewards = unionById(state.rewards, remote.rewards);
+    state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
+    state.events = unionById(state.events, remote.events);
+    state.shoppingList = unionById(state.shoppingList, remote.shoppingList);
+    state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
+    state.wishlist = unionById(state.wishlist, remote.wishlist);
+    state.mealPlan = { ...(remote.mealPlan || {}), ...state.mealPlan };
+    state.checklistTemplates = unionById(state.checklistTemplates || [], remote.checklistTemplates);
+    mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
+    if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
+  }
+
   function parseICS(text) {
     // Zeilen entfalten (RFC 5545: fortgesetzte Zeilen beginnen mit Leerzeichen/Tab)
     const unfolded = text.replace(/\r\n/g, "\n").replace(/\n[ \t]/g, "");
@@ -4412,7 +4433,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
           <input type="checkbox" id="netAutoSync" ${net.autoSync ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
           Automatisch synchronisieren (lädt bei Änderungen hoch, holt beim Start das Neueste ab)
         </label>
-        <p class="hint" style="margin-top:0;margin-bottom:12px;">Lädt jetzt wenige Sekunden nach jeder Änderung automatisch hoch (nicht erst nach Ablauf des Intervalls) — solange die App offen ist. Das Intervall oben bestimmt nur, wie oft nach fremden Änderungen gesucht wird. Browser pausieren Hintergrund-Timer bei komplett geschlossener/gesperrter App — dann hilft „Jetzt hochladen" von Hand oder die Buttons auf dem Homescreen.</p>
+        <p class="hint" style="margin-top:0;margin-bottom:12px;">Lädt wenige Sekunden nach jeder Änderung automatisch hoch (nicht erst nach Ablauf des Intervalls) — solange die App offen ist. Das Intervall oben bestimmt nur, wie oft nach fremden Änderungen gesucht wird. Hoch- und Herunterladen führen Daten jetzt zusammen, statt etwas zu überschreiben — nichts geht dabei verloren. Browser pausieren Hintergrund-Timer bei komplett geschlossener/gesperrter App — dann hilft „Jetzt hochladen" von Hand.</p>
         <div class="backup-row">
           <button class="btn btn-sm" id="netTestBtn">Verbindung testen</button>
           <button class="btn btn-sm btn-accent" id="netPushBtn">⇧ Jetzt hochladen</button>
@@ -4442,26 +4463,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       </div>`;
 
     wireNetworkSyncControls(connSection);
-
-  function mergeStateFrom(remote) {
-    state.items = unionById(state.items, remote.items).map(it => {
-      const local = state.items.find(l => l.id === it.id);
-      const remoteMatch = (remote.items || []).find(r => r.id === it.id);
-      if (local && remoteMatch && remoteMatch.updatedAt > local.updatedAt) return remoteMatch;
-      return it;
-    });
-    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: "" })));
-    state.tasks = unionById(state.tasks, remote.tasks);
-    state.rewards = unionById(state.rewards, remote.rewards);
-    state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
-    state.events = unionById(state.events, remote.events);
-    state.shoppingList = unionById(state.shoppingList, remote.shoppingList);
-    state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
-    state.wishlist = unionById(state.wishlist, remote.wishlist);
-    state.mealPlan = { ...(remote.mealPlan || {}), ...state.mealPlan };
-    mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
-    if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
-  }
 
   // --- Export ---
   const exportSection = document.createElement("div");
@@ -4989,6 +4990,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     const net = state.connectors.network;
     if (!net.url) { if (!silent) showToast("Bitte zuerst eine Server-Adresse eintragen."); return false; }
     try {
+      // Erst den aktuellen Serverstand holen und lokal einmischen, damit ein Hochladen
+      // niemals Daten überschreibt, die nur auf dem Server (z. B. von einem anderen Gerät) stehen.
+      try {
+        const getRes = await fetch(net.url, { method: "GET", headers: buildSyncHeaders() });
+        if (getRes.ok) {
+          const remote = await getRes.json();
+          if (remote && Array.isArray(remote.items)) {
+            mergeStateFrom(remote);
+            saveState({ skipTouch: true });
+          }
+        }
+      } catch (mergeErr) { /* kein Serverstand abrufbar — einfach mit dem lokalen Stand weitermachen */ }
+
       const res = await fetch(net.url, {
         method: net.method || "PUT",
         headers: buildSyncHeaders(),
@@ -4997,6 +5011,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (!res.ok) throw new Error("HTTP " + res.status);
       net.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
+      renderProfileBar();
+      render();
       setLastSyncNote("Zuletzt hochgeladen: " + fmtDate(net.lastSyncAt));
       if (!silent) showToast("DApp wurde hochgeladen.");
       return true;
@@ -5022,32 +5038,16 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         setLastSyncNote("Lokaler Stand ist bereits aktuell (Stand Server: " + fmtDate(remoteModified) + ").");
         return false;
       }
-      if (!silent && !(opts && opts.skipConfirm)) {
-        if (!confirm("Der Server-Stand ersetzt deine lokalen Daten auf diesem Gerät. Fortfahren?")) return false;
-      }
-      const keepNetworkConfig = state.connectors.network;
-      const keepAdminHash = state.adminPasswordHash;
-      const keepSharedAreas = state.sharedAreas;
-      const keepActiveProfileId = state.activeProfileId;
-      const keepTheme = state.theme;
-      const localPins = new Map(state.profiles.map(p => [p.id, p.pinHash]));
-      state = { ...defaultState(), ...remote,
-        connectors: { ...defaultState().connectors, ...(remote.connectors || {}), network: keepNetworkConfig },
-        adminPasswordHash: keepAdminHash,
-        sharedAreas: keepSharedAreas };
-      state.profiles = (state.profiles || []).map(p => ({ ...p, pinHash: localPins.get(p.id) || p.pinHash || "" }));
-      if (keepActiveProfileId && state.profiles.some(p => p.id === keepActiveProfileId)) {
-        state.activeProfileId = keepActiveProfileId;
-      }
-      if (keepTheme) state.theme = keepTheme;
+      // Zusammenführen statt überschreiben: bestehende lokale Daten bleiben erhalten,
+      // alles Neue vom Server kommt ergänzend dazu (verhindert Datenverlust bei mehreren Geräten).
+      mergeStateFrom(remote);
       personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
       state.connectors.network.lastSyncAt = Date.now();
-      saveState({ skipTouch: true });
-      applyTheme(state.theme || "papier");
+      saveState();
       renderProfileBar();
       render();
       setLastSyncNote("Zuletzt heruntergeladen: " + fmtDate(state.connectors.network.lastSyncAt));
-      if (!silent) showToast("DApp wurde vom Server übernommen.");
+      if (!silent) showToast("Neue Daten vom Server übernommen (zusammengeführt).");
       return true;
     } catch (err) {
       if (!silent) showToast("Herunterladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
