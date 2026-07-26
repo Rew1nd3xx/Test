@@ -95,15 +95,6 @@ a { color: var(--accent); }
   --font-display: 'Poppins', sans-serif; --font-body: 'Nunito Sans', sans-serif;
   --radius: 14px; --pattern: none;
 }
-/* 7. Terminal — retro phosphor */
-.theme-terminal {
-  --bg: #0B0F0C; --surface: #101610; --surface2: #161D16;
-  --text: #4CFF6B; --text-muted: #3A9950;
-  --accent: #FFB000; --accent2: #4CFF6B;
-  --border: #234027; --shadow: 0 0 0 1px #234027;
-  --font-display: 'VT323', monospace; --font-body: 'IBM Plex Mono', monospace;
-  --radius: 0px; --pattern: none;
-}
 /* 8. Rosé — soft editorial */
 .theme-rose {
   --bg: #F6E9EE; --surface: #FFF8FA; --surface2: #F0DCE3;
@@ -440,7 +431,7 @@ body.theme-militaer {
   --accent: #4CFF4C; --accent2: #FFB000;
   --border: #1F3D1F; --shadow: 0 0 0 1px #1F3D1F, 0 0 26px rgba(76,255,76,.15);
   --font-display: 'Share Tech Mono', monospace; --font-body: 'Share Tech Mono', monospace;
-  --radius: 4px; --pattern: none;
+  --radius: 12px; --pattern: none;
 }
 .theme-vaultterm #app { position: relative; z-index: 0; }
 .theme-vaultterm #app::before {
@@ -460,20 +451,64 @@ body.theme-militaer {
 }
 .theme-vaultterm .sidebar, .theme-vaultterm .topbar { background-color: var(--surface); border-color: var(--border); }
 .theme-vaultterm .brand-text, .theme-vaultterm .view-title { text-shadow: 0 0 6px var(--accent), 0 0 16px rgba(76,255,76,.5); text-transform: uppercase; letter-spacing: .04em; }
-.theme-vaultterm .btn { border-radius: 2px; text-transform: uppercase; letter-spacing: .04em; border-color: var(--border); }
+.theme-vaultterm .btn { border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; border-color: var(--border); }
 .theme-vaultterm .btn-accent { background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(76,255,76,.4), inset 0 0 10px rgba(76,255,76,.08); }
 .theme-vaultterm .btn-accent:hover { background: rgba(76,255,76,.12); box-shadow: 0 0 18px rgba(76,255,76,.65), inset 0 0 14px rgba(76,255,76,.15); }
-.theme-vaultterm .card, .theme-vaultterm .widget-card { border-color: var(--border); background: var(--surface); }
-.theme-vaultterm .card:hover, .theme-vaultterm .widget-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(76,255,76,.3); transform: none; }
+.theme-vaultterm .card, .theme-vaultterm .widget-card {
+  border-color: var(--border); border-width: 2px; border-radius: 16px; background: var(--surface);
+  box-shadow: 0 0 0 1px rgba(255,176,0,.18), var(--shadow);
+}
+.theme-vaultterm .card:hover, .theme-vaultterm .widget-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(255,176,0,.3), 0 0 20px rgba(76,255,76,.3); transform: none; }
+.theme-vaultterm .widget-card::before { background: var(--accent2); box-shadow: 0 0 8px rgba(255,176,0,.6); }
 .theme-vaultterm .nav-item.active { background: rgba(76,255,76,.14); color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 12px rgba(76,255,76,.35); }
-.theme-vaultterm .avatar { border-radius: 50%; box-shadow: 0 0 0 2px var(--border); }
+.theme-vaultterm .avatar { border-radius: 50%; box-shadow: 0 0 0 2px var(--border), 0 0 0 4px rgba(255,176,0,.35); }
 .theme-vaultterm .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent), 0 0 14px rgba(76,255,76,.6); }
-.theme-vaultterm .mm-node { border-color: var(--border); background: var(--surface); }
-.theme-vaultterm .mm-node.root { background: var(--surface2); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 0 22px rgba(76,255,76,.5); }
+.theme-vaultterm .mm-node { border-color: var(--border); background: var(--surface); border-radius: 14px; }
+.theme-vaultterm .mm-node.root { background: var(--surface2); color: var(--accent); border: 2px solid var(--accent); box-shadow: 0 0 22px rgba(76,255,76,.5); border-radius: 50%; }
 .theme-vaultterm .mindmap-svg path.mm-edge { filter: drop-shadow(0 0 3px rgba(76,255,76,.5)); }
 .theme-vaultterm ::selection { background: var(--accent); color: #060A06; }
-.theme-vaultterm input, .theme-vaultterm select, .theme-vaultterm textarea { background: #0A140A !important; border-color: var(--border) !important; color: var(--text) !important; }
+.theme-vaultterm input, .theme-vaultterm select, .theme-vaultterm textarea { background: #0A140A !important; border-color: var(--border) !important; color: var(--text) !important; border-radius: 10px !important; }
 .theme-vaultterm input:focus, .theme-vaultterm select:focus, .theme-vaultterm textarea:focus { outline: none; border-color: var(--accent) !important; box-shadow: 0 0 8px rgba(76,255,76,.4); }
+.theme-vaultterm .view-container { position: relative; }
+.theme-vaultterm .widget-head h3 { color: var(--accent2); text-shadow: 0 0 6px rgba(255,176,0,.5); }
+
+/* 19. Atombunker — 1950er Atomzeitalter-Werbeplakat-Stil */
+.theme-atombunker {
+  --bg: #EFE3C4; --surface: #FBF3DE; --surface2: #F2E2B8;
+  --text: #241B12; --text-muted: #6B5A3E;
+  --accent: #C4442E; --accent2: #2E8B84;
+  --border: #241B12; --shadow: 4px 4px 0 rgba(36,27,18,.85);
+  --font-display: 'Archivo Black', sans-serif; --font-body: 'Work Sans', sans-serif;
+  --radius: 3px; --pattern: none;
+}
+body.theme-atombunker {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, rgba(36,27,18,.14) 1.4px, transparent 1.6px);
+  background-size: 14px 14px;
+}
+.theme-atombunker .sidebar, .theme-atombunker .topbar { background-color: var(--surface); border-color: var(--border); border-width: 2px; }
+.theme-atombunker .brand-text, .theme-atombunker .view-title {
+  text-transform: uppercase; letter-spacing: .02em; color: var(--accent);
+  text-shadow: 2px 2px 0 var(--accent2), 4px 4px 0 rgba(36,27,18,.3);
+}
+.theme-atombunker .btn { border-radius: 3px; border-width: 2.5px; text-transform: uppercase; font-weight: 700; letter-spacing: .02em; }
+.theme-atombunker .btn-accent { background: var(--accent); color: var(--surface); border-color: var(--border); box-shadow: 3px 3px 0 var(--border); }
+.theme-atombunker .btn-accent:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--border); }
+.theme-atombunker .btn-accent:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--border); }
+.theme-atombunker .card, .theme-atombunker .widget-card {
+  border-width: 2.5px; border-radius: 3px; background: var(--surface);
+  box-shadow: 4px 4px 0 var(--border);
+}
+.theme-atombunker .card:hover, .theme-atombunker .widget-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--border); }
+.theme-atombunker .widget-card::before { background: var(--accent2); width: 5px; }
+.theme-atombunker .widget-head h3 { color: var(--accent2); text-transform: uppercase; letter-spacing: .03em; }
+.theme-atombunker .nav-item.active { background: var(--accent); color: var(--surface); border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); }
+.theme-atombunker .avatar { border-radius: 50%; border: 2.5px solid var(--border); box-shadow: 2px 2px 0 var(--border); }
+.theme-atombunker .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.theme-atombunker .mm-node { border-width: 2.5px; border-radius: 3px; box-shadow: 3px 3px 0 var(--border); }
+.theme-atombunker .mm-node.root { background: var(--accent); color: var(--surface); border: 2.5px solid var(--border); }
+.theme-atombunker ::selection { background: var(--accent2); color: var(--surface); }
+.theme-atombunker input, .theme-atombunker select, .theme-atombunker textarea { border-width: 2px !important; border-radius: 3px !important; }
 
 
 /* ============ LAYOUT ============ */
@@ -1101,7 +1136,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 48;
+  const APP_BUILD_NUMBER = 49;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1111,7 +1146,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "bauhaus",    name: "Bauhaus",         sub: "Geometrisch",       dots: ["#D0263B", "#1D4E9B", "#F2EFE6"] },
     { id: "wald",       name: "Wald",            sub: "Tiefgrün & Moos",   dots: ["#86B35A", "#D9A441", "#172A20"] },
     { id: "ozean",      name: "Ozean",           sub: "Ruhig & weit",      dots: ["#FF9270", "#F2D6A2", "#0E3B43"] },
-    { id: "terminal",   name: "Terminal",        sub: "Retro-Phosphor",    dots: ["#4CFF6B", "#FFB000", "#0B0F0C"] },
     { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
     { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
@@ -1122,6 +1156,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
     { id: "militaer",   name: "Militär",         sub: "Camouflage & Stencil 🎖️", dots: ["#B8A369", "#A63A2C", "#2B2E1F"] },
     { id: "vaultterm",  name: "Vault-Terminal",  sub: "Retro-Röhrenbildschirm 📻", dots: ["#4CFF4C", "#FFB000", "#060A06"] },
+    { id: "atombunker", name: "Atombunker",      sub: "1950er Atomzeitalter ☢️", dots: ["#C4442E", "#2E8B84", "#EFE3C4"] },
   ];
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -1555,10 +1590,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         }).join("");
         custodyPart = `<div class="today-sub-stat">${rows || `<div class="widget-empty" style="padding:0;">Nichts hinterlegt.</div>`}</div>`;
       }
+      const mealToday = getMealForDate(todayStr);
+      const mealPart = `<div class="today-sub-stat" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span>🍽️ ${mealToday ? escapeHtml(mealToday) : "Essensplan: noch nichts geplant."}</span>
+        <span class="widget-link" data-goto="mealplan" style="cursor:pointer;white-space:nowrap;">Planen ›</span>
+      </div>`;
       const dashCard = document.createElement("div");
       dashCard.className = "widget-card dashboard-card";
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + custodyPart;
+      const dashBody = weatherPart + ferienPart + custodyPart + mealPart;
       dashCard.innerHTML = `
         <div class="dashboard-greeting">
           <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
@@ -1567,6 +1607,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         ${dashBody ? `<div class="widget-body">${dashBody}</div>` : ""}
       `;
       grid.appendChild(dashCard);
+      const dashLink = dashCard.querySelector("[data-goto]");
+      if (dashLink) dashLink.onclick = () => setView(dashLink.dataset.goto);
       if (hasWeather) updateWeatherWidget();
     }
 
@@ -1638,12 +1680,6 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
         (openShopping.length > 5 ? `<div class="widget-empty">+${openShopping.length - 5} weitere</div>` : "")
         : `<div class="widget-empty">Liste ist leer.</div>`,
       "shopping", "Liste ›");
-
-    // --- Essensplan heute ---
-    const mealToday = getMealForDate(todayStr);
-    widget("🍽️", "Essensplan heute", "#FF9270",
-      mealToday ? `<div class="widget-big-stat" style="font-size:16px;">${escapeHtml(mealToday)}</div>` : `<div class="widget-empty">Noch nichts geplant.</div>`,
-      "mealplan", "Planen ›");
 
     // --- Zuletzt bearbeitet ---
     const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
@@ -4540,6 +4576,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 
   /* ============ SETTINGS ============ */
   function applyTheme(themeId) {
+    if (themeId === "terminal") themeId = "vaultterm"; // Terminal-Theme entfernt, nächstverwandtes Theme übernehmen
     document.body.className = "theme-" + themeId;
     state.theme = themeId;
   }
@@ -5555,6 +5592,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     }
     const openShoppingCount = state.shoppingList.filter(i => !i.done).length;
     if (openShoppingCount) messages.push(`🛒 ${openShoppingCount} Ding${openShoppingCount === 1 ? "" : "e"} auf der Einkaufsliste`);
+    const activeIdForTicker = state.activeProfileId;
+    const mealDatesForTicker = Array.from({ length: 7 }, (_, i) => addDays(todayStr, i));
+    let unvotedMeal = null;
+    for (const d of mealDatesForTicker) {
+      const entry = getMealEntry(d);
+      const pending = entry.options.find(o => !entry.confirmed && (!activeIdForTicker || !(o.votes || []).includes(activeIdForTicker)));
+      if (pending) { unvotedMeal = { date: d, text: pending.text }; break; }
+    }
+    if (unvotedMeal) {
+      messages.push(`🍽️ Neuer Essensvorschlag: ${unvotedMeal.text} (${unvotedMeal.date === todayStr ? "heute" : formatDateStrShort(unvotedMeal.date)}) — jetzt abstimmen!`);
+    }
     const kidsForLeader = state.profiles.filter(p => p.role === "child");
     if (kidsForLeader.length) {
       const leader = kidsForLeader.map(p => ({ p, pts: pointsBalance(p.id) })).sort((a, b) => b.pts - a.pts)[0];
