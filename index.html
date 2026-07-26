@@ -124,10 +124,10 @@ a { color: var(--accent); }
 }
 /* 11. Neon — cyberpunk glow */
 .theme-neon {
-  --bg: #0A0912; --surface: #120F1F; --surface2: #1B1730;
-  --text: #F2EEFF; --text-muted: #8C86B8;
-  --accent: #FF2E88; --accent2: #00E5FF;
-  --border: #2C2650; --shadow: 0 0 24px rgba(255,46,136,.25);
+  --bg: #0A0A0A; --surface: #141414; --surface2: #1E1E1E;
+  --text: #F5F5F5; --text-muted: #999999;
+  --accent: #FF1435; --accent2: #FFFFFF;
+  --border: #331014; --shadow: 0 0 24px rgba(255,20,53,.25);
   --font-display: 'Orbitron', sans-serif; --font-body: 'Rajdhani', sans-serif;
   --radius: 10px; --pattern: none;
 }
@@ -161,15 +161,15 @@ a { color: var(--accent); }
 }
 
 /* ---- Neon: glowing edges on interactive elements ---- */
-.theme-neon .brand-mark, .theme-neon .brand-text { text-shadow: 0 0 10px var(--accent), 0 0 22px rgba(255,46,136,.5); }
-.theme-neon .btn-accent { box-shadow: 0 0 14px rgba(255,46,136,.55), 0 0 2px rgba(255,46,136,.8); border-color: var(--accent); }
-.theme-neon .btn-accent:hover { box-shadow: 0 0 22px rgba(255,46,136,.75), 0 0 4px rgba(255,46,136,.9); }
-.theme-neon .nav-item.active { box-shadow: 0 0 16px rgba(255,46,136,.45), inset 0 0 0 1px rgba(255,255,255,.08); }
-.theme-neon .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 16px rgba(255,46,136,.6); }
-.theme-neon .card:hover, .theme-neon .widget-card:hover { box-shadow: 0 0 0 1px var(--accent2), 0 0 24px rgba(0,229,255,.25); }
-.theme-neon .mm-node.root { box-shadow: 0 0 28px rgba(255,46,136,.45), 0 4px 10px rgba(0,0,0,.3); }
-.theme-neon .view-title { text-shadow: 0 0 18px rgba(255,46,136,.35); }
-.theme-neon ::selection { background: var(--accent2); color: #0A0912; }
+.theme-neon .brand-mark, .theme-neon .brand-text { text-shadow: 0 0 10px var(--accent), 0 0 22px rgba(255,20,53,.5); }
+.theme-neon .btn-accent { box-shadow: 0 0 14px rgba(255,20,53,.55), 0 0 2px rgba(255,20,53,.8); border-color: var(--accent); }
+.theme-neon .btn-accent:hover { box-shadow: 0 0 22px rgba(255,20,53,.75), 0 0 4px rgba(255,20,53,.9); }
+.theme-neon .nav-item.active { box-shadow: 0 0 16px rgba(255,20,53,.45), inset 0 0 0 1px rgba(255,255,255,.08); }
+.theme-neon .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 16px rgba(255,20,53,.6); }
+.theme-neon .card:hover, .theme-neon .widget-card:hover { box-shadow: 0 0 0 1px var(--accent2), 0 0 24px rgba(255,255,255,.2); }
+.theme-neon .mm-node.root { box-shadow: 0 0 28px rgba(255,20,53,.45), 0 4px 10px rgba(0,0,0,.3); }
+.theme-neon .view-title { text-shadow: 0 0 18px rgba(255,20,53,.35); }
+.theme-neon ::selection { background: var(--accent2); color: #0A0A0A; }
 
 /* ---- Sternenstaub: soft twinkling starfield + gentle glow ---- */
 .theme-stardust #app {
@@ -474,24 +474,34 @@ body.theme-militaer {
 
 /* 19. Vault-Shelter — flaches Schwarz/Gelb-Design im Stil von Aufbau-Sim-Vault-Apps */
 .theme-atombunker {
-  --bg: #0E0E0E; --surface: #1A1A1A; --surface2: #242424;
-  --text: #F5F1E6; --text-muted: #9C9689;
+  --bg: #14181B; --surface: #1D2226; --surface2: #272D32;
+  --text: #F0EDE4; --text-muted: #9AA1A6;
   --accent: #FFC300; --accent2: #3FA796;
   --border: #FFC300; --shadow: 0 3px 0 rgba(0,0,0,.5);
   --font-display: 'Archivo Black', sans-serif; --font-body: 'Work Sans', sans-serif;
-  --radius: 10px; --pattern: none;
+  --radius: 6px; --pattern: none;
 }
 body.theme-atombunker { background-color: var(--bg); }
-.theme-atombunker .sidebar, .theme-atombunker .topbar { background-color: var(--surface); border-color: var(--border); border-width: 2px; }
+.theme-atombunker .sidebar, .theme-atombunker .topbar {
+  background-color: var(--surface); border-color: var(--border); border-width: 2px;
+}
+.theme-atombunker .topbar {
+  border-image: repeating-linear-gradient(-45deg, var(--accent) 0 10px, #14181B 10px 20px) 1;
+  border-bottom-width: 5px; border-bottom-style: solid;
+}
 .theme-atombunker .brand-text, .theme-atombunker .view-title { text-transform: uppercase; letter-spacing: .03em; color: var(--accent); }
-.theme-atombunker .btn { border-radius: 8px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; border-color: var(--border); border-width: 2px; }
+.theme-atombunker .btn { border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; border-color: var(--border); border-width: 2px; }
 .theme-atombunker .btn-accent { background: var(--accent); color: #14100A; border: 2px solid var(--accent); box-shadow: var(--shadow); }
 .theme-atombunker .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 0 rgba(0,0,0,.5); }
 .theme-atombunker .card, .theme-atombunker .widget-card {
-  border-color: var(--border); border-width: 2px; border-radius: 10px; background: var(--surface); box-shadow: var(--shadow);
+  border-color: var(--border); border-width: 2px; border-radius: 6px; background: var(--surface); box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.theme-atombunker .card::before, .theme-atombunker .widget-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+  background: repeating-linear-gradient(-45deg, var(--accent) 0 8px, #14100A 8px 16px);
 }
 .theme-atombunker .card:hover, .theme-atombunker .widget-card:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,.5); }
-.theme-atombunker .widget-card::before { background: var(--accent2); }
 .theme-atombunker .widget-head h3 { color: var(--accent2); text-transform: uppercase; letter-spacing: .03em; font-size: 13px; }
 .theme-atombunker .nav-item.active { background: var(--accent); color: #14100A; border: 2px solid var(--accent); font-weight: 700; }
 .theme-atombunker .avatar {
@@ -499,13 +509,13 @@ body.theme-atombunker { background-color: var(--bg); }
   background-image: repeating-conic-gradient(rgba(255,195,0,.12) 0deg 15deg, transparent 15deg 30deg);
 }
 .theme-atombunker .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-.theme-atombunker .mm-node { border-color: var(--border); border-width: 2px; background: var(--surface); border-radius: 10px; }
+.theme-atombunker .mm-node { border-color: var(--border); border-width: 2px; background: var(--surface); border-radius: 6px; }
 .theme-atombunker .mm-node.root {
   background: var(--surface2); color: var(--accent); border: 3px solid var(--accent); border-radius: 50%;
   background-image: repeating-conic-gradient(rgba(255,195,0,.1) 0deg 12deg, transparent 12deg 24deg);
 }
 .theme-atombunker ::selection { background: var(--accent); color: #14100A; }
-.theme-atombunker input, .theme-atombunker select, .theme-atombunker textarea { background: var(--surface2) !important; border-color: var(--border) !important; border-width: 2px !important; color: var(--text) !important; border-radius: 8px !important; }
+.theme-atombunker input, .theme-atombunker select, .theme-atombunker textarea { background: var(--surface2) !important; border-color: var(--border) !important; border-width: 2px !important; color: var(--text) !important; border-radius: 6px !important; }
 .theme-atombunker input:focus, .theme-atombunker select:focus, .theme-atombunker textarea:focus { outline: none; border-color: var(--accent2) !important; }
 
 
@@ -624,6 +634,8 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .today-sub-stat { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
 .dash-clickable { cursor: pointer; border-radius: 6px; transition: background .12s ease; margin-left: -6px; margin-right: -6px; padding-left: 6px; padding-right: 6px; }
 .dash-clickable:hover { background: var(--surface2); }
+#pollenWidgetBody { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.pollen-tomorrow { color: var(--text-muted); font-size: 12px; }
 .custody-today-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 .custody-today-row .arrow { color: var(--text-muted); font-size: 13px; }
 
@@ -1199,7 +1211,7 @@ body.menu-open { overflow: hidden; }
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 64;
+  const APP_BUILD_NUMBER = 65;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1212,7 +1224,7 @@ body.menu-open { overflow: hidden; }
     { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
     { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
-    { id: "neon",       name: "Neon",            sub: "Cyberpunk-Glow ✨",   dots: ["#FF2E88", "#00E5FF", "#0A0912"] },
+    { id: "neon",       name: "Neon",            sub: "Rot-Glow ✨",   dots: ["#FF1435", "#FFFFFF", "#0A0A0A"] },
     { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
     { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
@@ -1629,10 +1641,13 @@ body.menu-open { overflow: hidden; }
     const entries = pollenCache.data.filter(r => r.region_id === regionId);
     if (!entries.length) { el.innerHTML = `⚪ Keine Pollendaten für diese Region.`; return; }
     let best = null;
+    let bestTomorrow = null;
     entries.forEach(r => {
       Object.entries(r.Pollen || {}).forEach(([type, vals]) => {
         const score = pollenScore(vals.today);
         if (score > (best ? best.score : -1)) best = { type, score, raw: vals.today };
+        const scoreTomorrow = pollenScore(vals.tomorrow);
+        if (scoreTomorrow > (bestTomorrow ? bestTomorrow.score : -1)) bestTomorrow = { type, score: scoreTomorrow, raw: vals.tomorrow };
       });
     });
     if (!best || best.score < 1) {
@@ -1640,7 +1655,10 @@ body.menu-open { overflow: hidden; }
       return;
     }
     const light = best.score >= 2.5 ? "🔴" : best.score >= 1.5 ? "🟡" : "🟢";
-    el.innerHTML = `${light} Pollen heute: ${POLLEN_NAMES[best.type] || best.type} (${POLLEN_LABELS[best.raw] || best.raw})`;
+    const tomorrowHtml = (bestTomorrow && bestTomorrow.score >= 1)
+      ? `<span class="pollen-tomorrow">${bestTomorrow.score >= 2.5 ? "🔴" : bestTomorrow.score >= 1.5 ? "🟡" : "🟢"} Morgen: ${POLLEN_NAMES[bestTomorrow.type] || bestTomorrow.type} (${POLLEN_LABELS[bestTomorrow.raw] || bestTomorrow.raw})</span>`
+      : "";
+    el.innerHTML = `<span>${light} Pollen heute: ${POLLEN_NAMES[best.type] || best.type} (${POLLEN_LABELS[best.raw] || best.raw})</span>${tomorrowHtml}`;
   }
 
   async function updateWarnWidget() {
