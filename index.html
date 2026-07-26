@@ -1226,7 +1226,7 @@ body.menu-open { overflow: hidden; }
       <div class="search-wrap">
         <input type="text" id="searchInput" placeholder="Ideen, Tags oder Inhalte durchsuchen…" autocomplete="off">
       </div>
-      <button class="btn btn-accent" id="newItemBtn">+ Neue Idee</button>
+      <button class="btn btn-accent" id="newItemBtn">+ Neues</button>
     </header>
 
     <div class="global-ticker" id="globalTicker">
@@ -1253,7 +1253,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 70;
+  const APP_BUILD_NUMBER = 72;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1303,6 +1303,7 @@ body.menu-open { overflow: hidden; }
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
       newsPosts: [],
+      tickerAlwaysMarquee: false,
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
       militaryTemplatesEnabled: false,
@@ -1538,6 +1539,13 @@ body.menu-open { overflow: hidden; }
             <option value="parent" ${draft.role === "parent" ? "selected" : ""}>Elternteil</option>
           </select>
         </div>
+        <div class="field"><label>Geschlecht (für passende Kleidergrößen)</label>
+          <select id="p-gender">
+            <option value="" ${!draft.gender ? "selected" : ""}>Keine Angabe</option>
+            <option value="female" ${draft.gender === "female" ? "selected" : ""}>Weiblich</option>
+            <option value="male" ${draft.gender === "male" ? "selected" : ""}>Männlich</option>
+          </select>
+        </div>
         <div class="field"><label>Symbol</label>
           <div id="p-emoji-picker" style="display:flex;flex-wrap:wrap;gap:6px;">
             ${PROFILE_EMOJI.map(e => `<button type="button" class="btn btn-sm emoji-opt" data-emoji="${e}" style="${e === draft.emoji ? "outline:2px solid var(--accent);" : ""}">${e}</button>`).join("")}
@@ -1557,6 +1565,7 @@ body.menu-open { overflow: hidden; }
             <div class="field"><label>Jacke</label><input type="text" id="p-size-jacket" value="${escapeHtml(draft.sizes.jacket || "")}" placeholder="z. B. 128"></div>
             <div class="field"><label>Kopfumfang</label><input type="text" id="p-size-head" value="${escapeHtml(draft.sizes.head || "")}" placeholder="z. B. 54 cm"></div>
             <div class="field"><label>Handschuhe</label><input type="text" id="p-size-gloves" value="${escapeHtml(draft.sizes.gloves || "")}" placeholder="z. B. 5"></div>
+            <div class="field" id="p-size-bra-row" style="${draft.gender === "female" ? "" : "display:none;"}"><label>BH</label><input type="text" id="p-size-bra" value="${escapeHtml(draft.sizes.bra || "")}" placeholder="z. B. 75B"></div>
           </div>
         </details>
         <div class="modal-footer">
@@ -1569,6 +1578,9 @@ body.menu-open { overflow: hidden; }
       </div>`;
     document.body.appendChild(overlay);
 
+    overlay.querySelector("#p-gender").addEventListener("change", (e) => {
+      overlay.querySelector("#p-size-bra-row").style.display = e.target.value === "female" ? "" : "none";
+    });
     overlay.querySelectorAll(".emoji-opt").forEach(b => b.onclick = () => {
       draft.emoji = b.dataset.emoji;
       overlay.querySelectorAll(".emoji-opt").forEach(x => x.style.outline = "");
@@ -1598,6 +1610,7 @@ body.menu-open { overflow: hidden; }
     overlay.querySelector("#saveProfileBtn").onclick = () => {
       draft.name = overlay.querySelector("#p-name").value.trim() || "Familie";
       draft.role = overlay.querySelector("#p-role").value;
+      draft.gender = overlay.querySelector("#p-gender").value;
       draft.sizes = {
         shirt: overlay.querySelector("#p-size-shirt").value.trim(),
         pants: overlay.querySelector("#p-size-pants").value.trim(),
@@ -1605,6 +1618,7 @@ body.menu-open { overflow: hidden; }
         jacket: overlay.querySelector("#p-size-jacket").value.trim(),
         head: overlay.querySelector("#p-size-head").value.trim(),
         gloves: overlay.querySelector("#p-size-gloves").value.trim(),
+        bra: overlay.querySelector("#p-size-bra").value.trim(),
       };
       const idx = state.profiles.findIndex(p => p.id === draft.id);
       if (idx >= 0) state.profiles[idx] = draft; else state.profiles.push(draft);
@@ -1617,9 +1631,11 @@ body.menu-open { overflow: hidden; }
 
   /* ============ VIEW ROUTING ============ */
   function setSidebarOpen(open) {
-    document.getElementById("sidebar").classList.toggle("open", open);
+    const sidebarEl = document.getElementById("sidebar");
+    sidebarEl.classList.toggle("open", open);
     document.getElementById("sidebarBackdrop").classList.toggle("show", open);
     document.body.classList.toggle("menu-open", open);
+    if (open) sidebarEl.scrollTop = 0;
   }
 
   function setView(view) {
@@ -5462,8 +5478,17 @@ body.menu-open { overflow: hidden; }
         </select>
         <div class="theme-dot-row" id="themeDotRow"></div>
       </div>
-      <div class="theme-preview" id="themePreview"></div>`;
+      <div class="theme-preview" id="themePreview"></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:16px;">
+        <input type="checkbox" id="tickerMarqueeToggle" ${state.tickerAlwaysMarquee ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+        📰 Ticker immer als Laufschrift anzeigen (statt nur bei langem Text)
+      </label>`;
     container.appendChild(themeSection);
+    themeSection.querySelector("#tickerMarqueeToggle").addEventListener("change", (e) => {
+      state.tickerAlwaysMarquee = e.target.checked;
+      saveState();
+      setupGlobalTicker();
+    });
 
     function renderThemeDots(t) {
       themeSection.querySelector("#themeDotRow").innerHTML =
@@ -6159,6 +6184,7 @@ body.menu-open { overflow: hidden; }
             k.sizes.jacket && `Jacke ${escapeHtml(k.sizes.jacket)}`,
             k.sizes.head && `Kopf ${escapeHtml(k.sizes.head)}`,
             k.sizes.gloves && `Handschuhe ${escapeHtml(k.sizes.gloves)}`,
+            k.sizes.bra && `BH ${escapeHtml(k.sizes.bra)}`,
           ].filter(Boolean).join(" · ");
           return `<div class="widget-row"><span class="mini-avatar" style="background:${k.color};">${k.emoji || k.name.charAt(0)}</span><span class="wr-title">${escapeHtml(k.name)}</span><span class="wr-meta" style="text-align:right;max-width:60%;">${rows}</span></div>`;
         }).join("");
@@ -6627,13 +6653,14 @@ body.menu-open { overflow: hidden; }
       { type: "note", label: "📝 Notiz" },
       { type: "checklist", label: "☑️ Checkliste" },
       { type: "image", label: "🖼️ Bild" },
+      { type: "news", label: "📰 Familien-News" },
     ];
     options.forEach(o => {
       const b = document.createElement("button");
       b.className = "nav-item";
       b.style.padding = "8px 10px";
       b.textContent = o.label;
-      b.onclick = () => { menu.remove(); openEditor(o.type); };
+      b.onclick = () => { menu.remove(); if (o.type === "news") setView("news"); else openEditor(o.type); };
       menu.appendChild(b);
     });
     document.body.appendChild(menu);
@@ -6830,8 +6857,8 @@ body.menu-open { overflow: hidden; }
       // Erst nach dem Einsetzen des Texts messen, ob er in den sichtbaren Bereich passt.
       requestAnimationFrame(() => {
         const overflow = textEl.scrollWidth - viewport.clientWidth;
-        if (overflow > 4) {
-          const distance = overflow + 24; // kleiner Nachlauf, bevor sie umspringt
+        if (overflow > 4 || state.tickerAlwaysMarquee) {
+          const distance = overflow > 4 ? overflow + 24 : viewport.clientWidth + textEl.scrollWidth;
           const duration = Math.max(6, distance / 45); // gleichmäßiges Lesetempo, unabhängig von der Länge
           textEl.style.setProperty("--marquee-distance", `-${distance}px`);
           viewport.classList.add("marquee");
