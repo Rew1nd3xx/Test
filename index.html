@@ -1073,7 +1073,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   "use strict";
 
   const STORAGE_KEY = "ideabook_state_v1";
-  const APP_BUILD_NUMBER = 43;
+  const APP_BUILD_NUMBER = 46;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -4275,12 +4275,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
     return state.items.filter(i => i.type === scope);
   }
 
-  function sanitizedStateSnapshot(base) {
+  function sanitizedStateSnapshot(base, includePins) {
     const snap = JSON.parse(JSON.stringify(base || state));
+    // Der Verbindungs-Schlüssel zum eigenen Sync-Server bleibt immer draußen — das ist
+    // die Zugangsdaten-Konfiguration des jeweiligen Geräts, kein Familieninhalt.
     if (snap.connectors && snap.connectors.network) snap.connectors.network.authHeader = "";
-    snap.adminPasswordHash = "";
-    if (Array.isArray(snap.profiles)) snap.profiles.forEach(p => { p.pinHash = ""; });
-    if (snap.sharedAreas) { if (snap.sharedAreas.parent) snap.sharedAreas.parent.pinHash = ""; if (snap.sharedAreas.child) snap.sharedAreas.child.pinHash = ""; }
+    if (!includePins) {
+      // Export/Teilen als Datei: PINs & Passwort-Hash bleiben draußen, da eine Datei
+      // leichter weitergeleitet wird als der eigene, selbst verwaltete Sync-Server.
+      snap.adminPasswordHash = "";
+      if (Array.isArray(snap.profiles)) snap.profiles.forEach(p => { p.pinHash = ""; });
+      if (snap.sharedAreas) { if (snap.sharedAreas.parent) snap.sharedAreas.parent.pinHash = ""; if (snap.sharedAreas.child) snap.sharedAreas.child.pinHash = ""; }
+    }
     return snap;
   }
 
@@ -4342,7 +4348,22 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       if (local && remoteMatch && remoteMatch.updatedAt > local.updatedAt) return remoteMatch;
       return it;
     });
-    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: "" })));
+    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: p.pinHash || "" })));
+    state.profiles.forEach(p => {
+      if (!p.pinHash) {
+        const remoteMatch = (remote.profiles || []).find(r => r.id === p.id);
+        if (remoteMatch && remoteMatch.pinHash) p.pinHash = remoteMatch.pinHash;
+      }
+    });
+    if (!state.adminPasswordHash && remote.adminPasswordHash) state.adminPasswordHash = remote.adminPasswordHash;
+    if (remote.sharedAreas) {
+      if (!state.sharedAreas.parent.pinHash && remote.sharedAreas.parent && remote.sharedAreas.parent.pinHash) {
+        state.sharedAreas.parent.pinHash = remote.sharedAreas.parent.pinHash;
+      }
+      if (!state.sharedAreas.child.pinHash && remote.sharedAreas.child && remote.sharedAreas.child.pinHash) {
+        state.sharedAreas.child.pinHash = remote.sharedAreas.child.pinHash;
+      }
+    }
     state.tasks = unionById(state.tasks, remote.tasks);
     state.rewards = unionById(state.rewards, remote.rewards);
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
@@ -5276,7 +5297,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
       const res = await fetch(net.url, {
         method: net.method || "PUT",
         headers: buildSyncHeaders(),
-        body: JSON.stringify(sanitizedStateSnapshot())
+        body: JSON.stringify(sanitizedStateSnapshot(null, true))
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       net.lastSyncAt = Date.now();

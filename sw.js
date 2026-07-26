@@ -4,7 +4,7 @@
    für externe Ressourcen (Google Fonts, jsPDF).
 */
 
-const CACHE_VERSION = "dapp-v4";
+const CACHE_VERSION = "dapp-v5";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -48,7 +48,7 @@ self.addEventListener("fetch", (event) => {
   // sobald online — mit Cache als Fallback für den Offline-Fall.
   if (isSameOrigin) {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: "no-store" })
         .then((res) => {
           const copy = res.clone();
           caches.open(SHELL_CACHE).then((cache) => cache.put(req, copy));
