@@ -1254,7 +1254,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 73;
+  const APP_BUILD_NUMBER = 76;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1497,7 +1497,9 @@ body.menu-open { overflow: hidden; }
       av.textContent = p.emoji || p.name.charAt(0).toUpperCase();
       av.title = p.name + (p.role === "child" ? ` — ${pointsBalance(p.id)} Punkte` : "");
       av.onclick = () => {
-        if (state.activeProfileId !== p.id) { personalAreaUnlockedFor = null; personalAreaViewingProfileId = null; }
+        if (state.activeProfileId === p.id) return;
+        if (p.pinHash) { openProfileSwitchGate(p); return; }
+        personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
         state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
       };
       av.ondblclick = () => openProfileEditor(p.id);
@@ -1522,8 +1524,53 @@ body.menu-open { overflow: hidden; }
       : "Noch keine Profile — legt eins für jedes Familienmitglied an.";
   }
 
+  function openProfileSwitchGate(p) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:360px;text-align:center;">
+        <div class="modal-header"><h2>Zu ${escapeHtml(p.name)} wechseln</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <span class="mini-avatar" style="background:${p.color};width:52px;height:52px;font-size:24px;margin:0 auto 14px;">${p.emoji || p.name.charAt(0)}</span>
+        <div id="switchBioRow"></div>
+        <div class="field"><input type="password" id="switchPw" inputmode="numeric" placeholder="PIN" autocomplete="current-password" style="text-align:center;"></div>
+        <div class="admin-error" id="switchError"></div>
+        <button class="btn btn-accent" id="switchUnlockBtn" style="width:100%;">Wechseln</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    function doSwitch() {
+      close();
+      personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
+      state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
+    }
+    if (hasBiometricSetup("profile-" + p.id)) {
+      overlay.querySelector("#switchBioRow").innerHTML = `<button type="button" class="btn" id="switchBioBtn" style="width:100%;margin-bottom:12px;">👆 Mit Face ID / Fingerabdruck</button>`;
+      overlay.querySelector("#switchBioBtn").onclick = async () => {
+        const ok = await verifyBiometric("profile-" + p.id);
+        if (ok) doSwitch();
+        else overlay.querySelector("#switchError").textContent = "Nicht erkannt — bitte PIN verwenden.";
+      };
+    }
+    async function submit() {
+      const pw = overlay.querySelector("#switchPw").value;
+      const hash = await sha256Hex(pw);
+      if (hash === p.pinHash) { doSwitch(); }
+      else {
+        overlay.querySelector("#switchError").textContent = "Falsche PIN.";
+        overlay.querySelector("#switchPw").value = "";
+      }
+    }
+    overlay.querySelector("#switchUnlockBtn").onclick = submit;
+    overlay.querySelector("#switchPw").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    setTimeout(() => overlay.querySelector("#switchPw").focus(), 30);
+  }
+
   function openProfileEditor(id) {
     const existing = id ? getProfile(id) : null;
+    const isParentForReset = !getActiveProfile() || getActiveProfile().role === "parent";
     const draft = existing ? { ...existing, sizes: { ...(existing.sizes || {}) } } : {
       id: uid(), name: "", color: PROFILE_COLORS[state.profiles.length % PROFILE_COLORS.length],
       emoji: PROFILE_EMOJI[state.profiles.length % PROFILE_EMOJI.length], role: "child", pinHash: "", sizes: {}
@@ -1570,7 +1617,10 @@ body.menu-open { overflow: hidden; }
           </div>
         </details>
         <div class="modal-footer">
-          <div>${existing ? `<button class="btn btn-danger" id="deleteProfileBtn">Profil löschen</button>` : ""}</div>
+          <div style="display:flex;gap:8px;">
+            ${existing && existing.pinHash && isParentForReset ? `<button class="btn" id="resetPinBtn" title="Setzt PIN und Face ID/Fingerabdruck zurück, falls jemand ausgesperrt ist">🔓 PIN zurücksetzen</button>` : ""}
+            ${existing ? `<button class="btn btn-danger" id="deleteProfileBtn">Profil löschen</button>` : ""}
+          </div>
           <div class="modal-footer-right">
             <button class="btn btn-ghost" id="cancelBtn">Abbrechen</button>
             <button class="btn btn-accent" id="saveProfileBtn">Speichern</button>
@@ -1599,6 +1649,17 @@ body.menu-open { overflow: hidden; }
     overlay.onclick = (e) => { if (e.target === overlay) close(); };
 
     if (existing) {
+      const resetBtn = overlay.querySelector("#resetPinBtn");
+      if (resetBtn) {
+        resetBtn.onclick = () => {
+          if (confirm(`PIN und Face ID/Fingerabdruck von „${existing.name}" wirklich zurücksetzen? Muss danach neu eingerichtet werden.`)) {
+            existing.pinHash = "";
+            removeBiometric("profile-" + existing.id);
+            saveState(); close(); render();
+            showToast(`Zugang für ${existing.name} zurückgesetzt.`);
+          }
+        };
+      }
       overlay.querySelector("#deleteProfileBtn").onclick = () => {
         if (confirm(`Profil „${existing.name}" wirklich löschen? Zugewiesene Aufgaben/Termine bleiben erhalten, aber ohne Zuordnung.`)) {
           markDeleted(existing.id);
@@ -5743,11 +5804,20 @@ body.menu-open { overflow: hidden; }
       const gateBox = document.createElement("div");
       gateBox.className = "settings-section";
       gateBox.innerHTML = `
+        <div id="syncBioRow"></div>
         <div class="field" style="max-width:320px;"><input type="password" id="syncPwGate" placeholder="Passwort eingeben" autofocus></div>
         <div class="admin-error" id="syncPwGateError"></div>
         <button class="btn btn-accent" id="syncPwGateBtn">Entsperren</button>
       `;
       container.appendChild(gateBox);
+      if (hasBiometricSetup("sync-admin")) {
+        gateBox.querySelector("#syncBioRow").innerHTML = `<button type="button" class="btn" id="syncBioBtn" style="width:100%;max-width:320px;margin-bottom:10px;">👆 Mit Face ID / Fingerabdruck entsperren</button>`;
+        gateBox.querySelector("#syncBioBtn").onclick = async () => {
+          const ok = await verifyBiometric("sync-admin");
+          if (ok) { syncSettingsUnlocked = true; render(); }
+          else gateBox.querySelector("#syncPwGateError").textContent = "Nicht erkannt — bitte Passwort verwenden.";
+        };
+      }
       const tryUnlock = async () => {
         const val = gateBox.querySelector("#syncPwGate").value;
         const hash = await sha256Hex(val);
@@ -5762,10 +5832,26 @@ body.menu-open { overflow: hidden; }
       gateBox.querySelector("#syncPwGate").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
     } else {
       const lockBar = document.createElement("div");
-      lockBar.style.cssText = "margin-bottom:16px;";
-      lockBar.innerHTML = `<button class="btn btn-sm" id="syncLockBtn">🔒 Wieder sperren</button>`;
+      lockBar.style.cssText = "margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;";
+      lockBar.innerHTML = `<button class="btn btn-sm" id="syncLockBtn">🔒 Wieder sperren</button><span id="syncBioSetupRow"></span>`;
       container.appendChild(lockBar);
       lockBar.querySelector("#syncLockBtn").onclick = () => { syncSettingsUnlocked = false; render(); };
+      (async () => {
+        const available = await isBiometricAvailable();
+        if (!available) return;
+        const bioRow = lockBar.querySelector("#syncBioSetupRow");
+        if (hasBiometricSetup("sync-admin")) {
+          bioRow.innerHTML = `<button class="btn btn-sm btn-danger" id="syncBioRemoveBtn">Face ID / Fingerabdruck entfernen</button>`;
+          bioRow.querySelector("#syncBioRemoveBtn").onclick = () => { removeBiometric("sync-admin"); render(); };
+        } else {
+          bioRow.innerHTML = `<button class="btn btn-sm" id="syncBioSetupBtn">👆 Face ID / Fingerabdruck einrichten</button>`;
+          bioRow.querySelector("#syncBioSetupBtn").onclick = async () => {
+            const ok = await registerBiometric("sync-admin", "DApp-Einstellungen");
+            showToast(ok ? "Eingerichtet! 👆" : "Einrichtung abgebrochen oder fehlgeschlagen.");
+            render();
+          };
+        }
+      })();
     }
 
     // --- Connectors ---
@@ -6111,6 +6197,79 @@ body.menu-open { overflow: hidden; }
     setTimeout(() => box.querySelector("#ap-new").focus(), 30);
   }
 
+  const WEBAUTHN_KEY = "dapp_webauthn_creds_v1";
+  function loadWebAuthnCreds() {
+    try { return JSON.parse(localStorage.getItem(WEBAUTHN_KEY) || "{}"); } catch (e) { return {}; }
+  }
+  function saveWebAuthnCreds(creds) {
+    try { localStorage.setItem(WEBAUTHN_KEY, JSON.stringify(creds)); } catch (e) { /* Speicher evtl. voll — nicht kritisch */ }
+  }
+  async function isBiometricAvailable() {
+    return !!(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
+      await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
+  }
+  function biometricEntries(key) {
+    const creds = loadWebAuthnCreds()[key];
+    return Array.isArray(creds) ? creds : (creds ? [{ id: creds, label: "Eingerichtet" }] : []); // alte Einzel-Einträge weiter unterstützen
+  }
+  function hasBiometricSetup(key) {
+    return biometricEntries(key).length > 0;
+  }
+  async function registerBiometric(key, label) {
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "DApp" },
+          user: { id: userId, name: label, displayName: label },
+          pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+          authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+          timeout: 60000,
+        }
+      });
+      if (!cred) return false;
+      const creds = loadWebAuthnCreds();
+      const entries = biometricEntries(key);
+      entries.push({ id: btoa(String.fromCharCode(...new Uint8Array(cred.rawId))), label });
+      creds[key] = entries;
+      saveWebAuthnCreds(creds);
+      return true;
+    } catch (err) {
+      console.warn("Face ID/Fingerabdruck-Einrichtung fehlgeschlagen:", err);
+      return false;
+    }
+  }
+  async function verifyBiometric(key) {
+    const entries = biometricEntries(key);
+    if (!entries.length) return false;
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          allowCredentials: entries.map(e => ({ type: "public-key", id: Uint8Array.from(atob(e.id), c => c.charCodeAt(0)) })),
+          userVerification: "required",
+          timeout: 60000,
+        }
+      });
+      return !!assertion;
+    } catch (err) {
+      return false;
+    }
+  }
+  function removeBiometricEntry(key, entryId) {
+    const creds = loadWebAuthnCreds();
+    creds[key] = biometricEntries(key).filter(e => e.id !== entryId);
+    saveWebAuthnCreds(creds);
+  }
+  function removeBiometric(key) {
+    const creds = loadWebAuthnCreds();
+    delete creds[key];
+    saveWebAuthnCreds(creds);
+  }
+
   function renderPersonalGate(container, profile) {
     const header = document.createElement("div");
     header.className = "view-header";
@@ -6122,11 +6281,21 @@ body.menu-open { overflow: hidden; }
     box.className = "admin-gate";
     box.innerHTML = `
       <span class="mini-avatar" style="background:${profile.color};width:52px;height:52px;font-size:24px;margin:0 auto 14px;">${profile.emoji || profile.name.charAt(0)}</span>
+      <div id="ap-bio-row"></div>
       <input type="password" id="ap-pw" inputmode="numeric" placeholder="PIN" autocomplete="current-password">
       <div class="admin-error" id="ap-error"></div>
       <button class="btn btn-accent" id="ap-unlock" style="width:100%;">Entsperren</button>
     `;
     container.appendChild(box);
+
+    if (hasBiometricSetup("profile-" + profile.id)) {
+      box.querySelector("#ap-bio-row").innerHTML = `<button type="button" class="btn" id="ap-bio-btn" style="width:100%;margin-bottom:10px;">👆 Mit Face ID / Fingerabdruck entsperren</button>`;
+      box.querySelector("#ap-bio-btn").onclick = async () => {
+        const ok = await verifyBiometric("profile-" + profile.id);
+        if (ok) { personalAreaUnlockedFor = profile.id; render(); }
+        else box.querySelector("#ap-error").textContent = "Nicht erkannt — bitte PIN verwenden.";
+      };
+    }
 
     async function submit() {
       const pw = box.querySelector("#ap-pw").value;
@@ -6232,6 +6401,39 @@ body.menu-open { overflow: hidden; }
       <button class="btn" id="ap-change-btn">PIN ändern</button>
     `;
     container.appendChild(pwSection);
+
+    {
+      const bioSection = document.createElement("div");
+      bioSection.className = "settings-section";
+      bioSection.innerHTML = `<h3>👆 Face ID / Fingerabdruck</h3><p class="hint">Nur auf diesem Gerät.${profile.shared ? " Mehrere Personen können hier jeweils ihr eigenes Face ID/Fingerabdruck hinzufügen — jedes davon entsperrt diesen Bereich." : ""} Ersetzt die PIN-Eingabe beim Entsperren — die PIN bleibt immer als Rückfalloption erhalten.</p><div id="bioSetupBody"></div>`;
+      container.appendChild(bioSection);
+      const bioBody = bioSection.querySelector("#bioSetupBody");
+      const bioKey = "profile-" + profile.id;
+      function renderBioBody() {
+        const entries = biometricEntries(bioKey);
+        bioBody.innerHTML = `
+          ${entries.length ? entries.map(e => `
+            <div class="widget-row"><span class="wr-title">👆 ${escapeHtml(e.label || "Eingerichtet")}</span><button class="card-pin bio-remove-btn" data-id="${e.id}" title="Entfernen">✕</button></div>
+          `).join("") : `<div class="widget-empty">Noch nicht eingerichtet.</div>`}
+          <button class="btn btn-sm" id="bioSetupBtn" style="margin-top:8px;">+ Face ID / Fingerabdruck hinzufügen</button>
+        `;
+        bioBody.querySelectorAll(".bio-remove-btn").forEach(btn => {
+          btn.onclick = () => { removeBiometricEntry(bioKey, btn.dataset.id); renderBioBody(); };
+        });
+        bioBody.querySelector("#bioSetupBtn").onclick = async () => {
+          const label = profile.shared ? (prompt("Für wen? (Name)", getActiveProfile() ? getActiveProfile().name : "") || "").trim() : profile.name;
+          if (profile.shared && !label) return;
+          const ok = await registerBiometric(bioKey, label || profile.name);
+          showToast(ok ? "Eingerichtet! 👆" : "Einrichtung abgebrochen oder fehlgeschlagen.");
+          renderBioBody();
+        };
+      }
+      (async () => {
+        const available = await isBiometricAvailable();
+        if (!available) { bioBody.innerHTML = `<p class="hint">Dieses Gerät/dieser Browser unterstützt das leider nicht.</p>`; return; }
+        renderBioBody();
+      })();
+    }
 
     header.querySelector("#ap-lock").onclick = () => { personalAreaUnlockedFor = null; render(); showToast(`${areaLabel(profile)} gesperrt.`); };
 
