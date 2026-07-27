@@ -774,14 +774,29 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   .dash-clock-digital { font-size: 14px; line-height: 46px; }
 }
 
-/* Echo Show 15 / große Ambient-Displays: größere Schrift, größere Bedienelemente, aus Sitzabstand gut lesbar */
-/* Echo Show 15 / große Ambient-Displays: nur Ticker und Dashboard-Kachel groß, Rest bleibt normal */
-body.echo-show-mode .global-ticker { font-size: 19px; padding: 14px 26px; min-height: 50px; }
-body.echo-show-mode .dashboard-card { padding: 30px; }
+/* Echo Show 15 / große Ambient-Displays: Menüleiste, Ticker und die erste (Dashboard-)Kachel
+   werden bildschirmfüllend gezoomt, alle anderen Kacheln ausgeblendet — gedacht für ein
+   dauerhaft an der Wand hängendes Gerät, nicht zum Durchklicken. */
+body.echo-show-mode .sidebar,
+body.echo-show-mode .app-header-sticky {
+  zoom: 1.35;
+}
+body.echo-show-mode .grid > .widget-card:not(.dashboard-card) { display: none; }
+body.echo-show-mode .dashboard-card {
+  zoom: 1.35; padding: 30px; min-height: 56vh;
+  display: flex; flex-wrap: wrap; align-items: center; align-content: center; gap: 18px;
+}
+body.echo-show-mode .dashboard-greeting { flex: 1 1 200px; padding-right: 0; order: 1; }
 body.echo-show-mode .dashboard-greeting h1 { font-size: 38px; }
 body.echo-show-mode .dashboard-card .home-date { font-size: 16px; }
 body.echo-show-mode .dashboard-card .today-sub-stat { font-size: 18px; padding-top: 10px; margin-top: 10px; }
 body.echo-show-mode .dashboard-card .widget-empty { font-size: 17px; }
+body.echo-show-mode .dash-clock {
+  position: static; width: 44%; max-width: 220px; height: auto; aspect-ratio: 1 / 1; flex-shrink: 0; order: 0;
+}
+body.echo-show-mode .dashboard-card .widget-body { flex-basis: 100%; order: 2; }
+body.echo-show-mode .dash-clock-digital { font-size: 15vw; line-height: 1; display: flex; align-items: center; justify-content: center; height: 100%; }
+@media (min-width: 700px) { body.echo-show-mode .dash-clock-digital { font-size: 3.2vw; } }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
 /* Papa-Bereich (admin) */
@@ -1285,7 +1300,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 79;
+  const APP_BUILD_NUMBER = 80;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -5766,7 +5781,7 @@ body.menu-open { overflow: hidden; }
       <div class="theme-preview" id="themePreview"></div>
       <p class="hint" style="margin-top:14px;">Der Live-Ticker läuft jetzt immer als durchgehendes Laufband über die volle Breite.</p>
       <button class="btn ${document.body.classList.contains("echo-show-mode") ? "btn-accent" : ""}" id="echoShowBtn" style="margin-top:10px;">📺 ${document.body.classList.contains("echo-show-mode") ? "Optimierte Ansicht beenden" : "Optimierte Ansicht für Echo Show 15"}</button>
-      <p class="hint" style="margin-top:6px;">Vergrößert Ticker und Dashboard-Kachel (inkl. Uhr) für große Ambient-Displays wie den Echo Show 15 — nur auf diesem Gerät, nicht mitsynchronisiert.</p>`;
+      <p class="hint" style="margin-top:6px;">Zoomt Menüleiste, Liveticker und die erste Kachel bildschirmfüllend, blendet die übrigen Kacheln aus — für große Ambient-Displays wie den Echo Show 15. Nur auf diesem Gerät, nicht mitsynchronisiert.</p>`;
     container.appendChild(themeSection);
     themeSection.querySelector("#echoShowBtn").onclick = () => {
       const on = !document.body.classList.contains("echo-show-mode");
