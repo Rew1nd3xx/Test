@@ -587,7 +587,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
 .dashboard-card { grid-column: 1 / -1; }
-.dashboard-greeting { margin-bottom: 10px; }
+.dashboard-greeting { margin-bottom: 10px; padding-right: 78px; }
 .dashboard-greeting h1 { font-family: var(--font-display); font-size: 26px; margin: 0 0 4px; }
 .dashboard-greeting .home-date { color: var(--text-muted); font-size: 13px; text-transform: capitalize; }
 .family-share-bar {
@@ -756,19 +756,32 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .news-post-audio { width: 100%; height: 40px; }
 .allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
 
+.dashboard-card { position: relative; }
+.dash-clock { position: absolute; top: 20px; right: 22px; width: 64px; height: 64px; }
+.dash-clock-digital {
+  font-family: var(--font-display); font-size: 20px; text-align: center; line-height: 64px;
+  color: var(--accent);
+}
+.dash-clock-analog { width: 100%; height: 100%; }
+.dash-clock-face { fill: color-mix(in srgb, var(--surface2) 60%, transparent); stroke: var(--border); stroke-width: 2.5; }
+.dash-clock-tick { stroke: var(--text-muted); stroke-width: 2; }
+.dash-clock-hand-h { stroke: var(--text); stroke-width: 3.5; stroke-linecap: round; }
+.dash-clock-hand-m { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+.dash-clock-hand-s { stroke: var(--accent); stroke-width: 1.2; stroke-linecap: round; }
+.dash-clock-pin { fill: var(--accent); }
+@media (max-width: 640px) {
+  .dash-clock { width: 46px; height: 46px; top: 14px; right: 14px; }
+  .dash-clock-digital { font-size: 14px; line-height: 46px; }
+}
+
 /* Echo Show 15 / große Ambient-Displays: größere Schrift, größere Bedienelemente, aus Sitzabstand gut lesbar */
-body.echo-show-mode { font-size: 19px; }
-body.echo-show-mode .sidebar { width: 260px; }
-body.echo-show-mode .nav-item { padding: 16px 18px; font-size: 17px; gap: 14px; }
-body.echo-show-mode .nav-icon { font-size: 24px; }
-body.echo-show-mode .view-title { font-size: 32px; }
-body.echo-show-mode .card-title, body.echo-show-mode .widget-head h3 { font-size: 18px; }
-body.echo-show-mode .btn { padding: 14px 22px; font-size: 17px; }
-body.echo-show-mode .global-ticker { font-size: 18px; padding: 12px 26px; min-height: 46px; }
-body.echo-show-mode .dashboard-greeting h1 { font-size: 30px; }
-body.echo-show-mode .widget-row, body.echo-show-mode .today-sub-stat { font-size: 15.5px; }
-body.echo-show-mode .avatar, body.echo-show-mode .mini-avatar { transform: scale(1.15); }
-body.echo-show-mode input, body.echo-show-mode select, body.echo-show-mode textarea { font-size: 17px !important; padding: 12px !important; }
+/* Echo Show 15 / große Ambient-Displays: nur Ticker und Dashboard-Kachel groß, Rest bleibt normal */
+body.echo-show-mode .global-ticker { font-size: 19px; padding: 14px 26px; min-height: 50px; }
+body.echo-show-mode .dashboard-card { padding: 30px; }
+body.echo-show-mode .dashboard-greeting h1 { font-size: 38px; }
+body.echo-show-mode .dashboard-card .home-date { font-size: 16px; }
+body.echo-show-mode .dashboard-card .today-sub-stat { font-size: 18px; padding-top: 10px; margin-top: 10px; }
+body.echo-show-mode .dashboard-card .widget-empty { font-size: 17px; }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
 /* Papa-Bereich (admin) */
@@ -1272,8 +1285,8 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 78;
-  const APP_BUILD_DATE = "2026-07-26";
+  const APP_BUILD_NUMBER = 79;
+  const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -1721,6 +1734,7 @@ body.menu-open { overflow: hidden; }
 
   function setView(view) {
     if (toothbrushTimerHandle && view !== "toothbrush") { clearInterval(toothbrushTimerHandle); toothbrushTimerHandle = null; }
+    if (dashClockInterval && view !== "home") { clearInterval(dashClockInterval); dashClockInterval = null; }
     currentView = view;
     try { localStorage.setItem(LAST_VIEW_KEY, view); } catch (e) { /* Speicher evtl. voll — kein Problem, dann startet die App eben auf Home */ }
     document.querySelectorAll(".nav-item[data-view]").forEach(b => {
@@ -2029,6 +2043,7 @@ body.menu-open { overflow: hidden; }
       dashCard.style.setProperty("--widget-accent", "#0057A6");
       const dashBody = weatherPart + ferienPart + custodyPart + mealPart + auroraPart + warnPart + pollenPart;
       dashCard.innerHTML = `
+        <div class="dash-clock" id="dashClock"></div>
         <div class="dashboard-greeting">
           <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
           <div class="home-date">${new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</div>
@@ -2042,6 +2057,7 @@ body.menu-open { overflow: hidden; }
       if (hasWeather) updateWeatherWidget();
       updateKpWidget();
       if (state.federalState) { updateWarnWidget(); updatePollenWidget(); }
+      setupDashboardClock();
     }
 
     // --- Nächste Termine ---
@@ -4613,6 +4629,43 @@ body.menu-open { overflow: hidden; }
     { label: "↙️ Unten links", sub: "Innenflächen" },
     { label: "↘️ Unten rechts", sub: "Innenflächen & Kauflächen" },
   ];
+  const DIGITAL_CLOCK_THEMES = ["neon", "vaultterm", "blockwelt", "bausteine", "atombunker", "militaer", "stardust"];
+  let dashClockInterval = null;
+  function setupDashboardClock() {
+    if (dashClockInterval) { clearInterval(dashClockInterval); dashClockInterval = null; }
+    const el = document.getElementById("dashClock");
+    if (!el) return;
+    const digital = DIGITAL_CLOCK_THEMES.includes(state.theme);
+    function paint() {
+      const el2 = document.getElementById("dashClock");
+      if (!el2) { clearInterval(dashClockInterval); dashClockInterval = null; return; }
+      const now = new Date();
+      if (digital) {
+        el2.innerHTML = `<div class="dash-clock-digital">${now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</div>`;
+      } else {
+        const h = (now.getHours() % 12) + now.getMinutes() / 60;
+        const m = now.getMinutes() + now.getSeconds() / 60;
+        const s = now.getSeconds();
+        el2.innerHTML = `
+          <svg viewBox="0 0 100 100" class="dash-clock-analog">
+            <circle cx="50" cy="50" r="46" class="dash-clock-face"/>
+            ${[...Array(12)].map((_, i) => {
+              const a = i * 30 * Math.PI / 180;
+              const x1 = 50 + 40 * Math.sin(a), y1 = 50 - 40 * Math.cos(a);
+              const x2 = 50 + 44 * Math.sin(a), y2 = 50 - 44 * Math.cos(a);
+              return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="dash-clock-tick"/>`;
+            }).join("")}
+            <line x1="50" y1="50" x2="${50 + 24 * Math.sin(h * 30 * Math.PI / 180)}" y2="${50 - 24 * Math.cos(h * 30 * Math.PI / 180)}" class="dash-clock-hand-h"/>
+            <line x1="50" y1="50" x2="${50 + 34 * Math.sin(m * 6 * Math.PI / 180)}" y2="${50 - 34 * Math.cos(m * 6 * Math.PI / 180)}" class="dash-clock-hand-m"/>
+            <line x1="50" y1="50" x2="${50 + 37 * Math.sin(s * 6 * Math.PI / 180)}" y2="${50 - 37 * Math.cos(s * 6 * Math.PI / 180)}" class="dash-clock-hand-s"/>
+            <circle cx="50" cy="50" r="2.5" class="dash-clock-pin"/>
+          </svg>`;
+      }
+    }
+    paint();
+    dashClockInterval = setInterval(paint, digital ? 15000 : 1000);
+  }
+
   let toothbrushTimerHandle = null;
   let toothbrushMuted = false;
   let toothbrushAudioCtx = null;
@@ -5713,7 +5766,7 @@ body.menu-open { overflow: hidden; }
       <div class="theme-preview" id="themePreview"></div>
       <p class="hint" style="margin-top:14px;">Der Live-Ticker läuft jetzt immer als durchgehendes Laufband über die volle Breite.</p>
       <button class="btn ${document.body.classList.contains("echo-show-mode") ? "btn-accent" : ""}" id="echoShowBtn" style="margin-top:10px;">📺 ${document.body.classList.contains("echo-show-mode") ? "Optimierte Ansicht beenden" : "Optimierte Ansicht für Echo Show 15"}</button>
-      <p class="hint" style="margin-top:6px;">Größere Schrift und Bedienelemente für große Ambient-Displays (z. B. Echo Show 15) — nur auf diesem Gerät, nicht mitsynchronisiert.</p>`;
+      <p class="hint" style="margin-top:6px;">Vergrößert Ticker und Dashboard-Kachel (inkl. Uhr) für große Ambient-Displays wie den Echo Show 15 — nur auf diesem Gerät, nicht mitsynchronisiert.</p>`;
     container.appendChild(themeSection);
     themeSection.querySelector("#echoShowBtn").onclick = () => {
       const on = !document.body.classList.contains("echo-show-mode");
