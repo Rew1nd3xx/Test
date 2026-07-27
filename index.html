@@ -754,6 +754,21 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .news-post-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 8px; }
 .news-post-photo { max-width: 100%; border-radius: var(--radius); display: block; margin-bottom: 6px; }
 .news-post-audio { width: 100%; height: 40px; }
+.allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+
+/* Echo Show 15 / große Ambient-Displays: größere Schrift, größere Bedienelemente, aus Sitzabstand gut lesbar */
+body.echo-show-mode { font-size: 19px; }
+body.echo-show-mode .sidebar { width: 260px; }
+body.echo-show-mode .nav-item { padding: 16px 18px; font-size: 17px; gap: 14px; }
+body.echo-show-mode .nav-icon { font-size: 24px; }
+body.echo-show-mode .view-title { font-size: 32px; }
+body.echo-show-mode .card-title, body.echo-show-mode .widget-head h3 { font-size: 18px; }
+body.echo-show-mode .btn { padding: 14px 22px; font-size: 17px; }
+body.echo-show-mode .global-ticker { font-size: 18px; padding: 12px 26px; min-height: 46px; }
+body.echo-show-mode .dashboard-greeting h1 { font-size: 30px; }
+body.echo-show-mode .widget-row, body.echo-show-mode .today-sub-stat { font-size: 15.5px; }
+body.echo-show-mode .avatar, body.echo-show-mode .mini-avatar { transform: scale(1.15); }
+body.echo-show-mode input, body.echo-show-mode select, body.echo-show-mode textarea { font-size: 17px !important; padding: 12px !important; }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
 /* Papa-Bereich (admin) */
@@ -1200,6 +1215,9 @@ body.menu-open { overflow: hidden; }
       <button class="nav-item" data-view="news">
         <span class="nav-icon">📰</span><span class="nav-label">Familien-News</span>
       </button>
+      <button class="nav-item" data-view="allowance">
+        <span class="nav-icon">💰</span><span class="nav-label">Taschengeld</span>
+      </button>
     </nav>
 
     <div class="sidebar-bottom">
@@ -1254,7 +1272,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 77;
+  const APP_BUILD_NUMBER = 78;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -1305,6 +1323,7 @@ body.menu-open { overflow: hidden; }
       checklistTemplates: [],
       newsPosts: [],
       tickerAlwaysMarquee: false,
+      allowanceLedger: [], pointsToMoneyRate: 0.10,
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
       militaryTemplatesEnabled: false,
@@ -1373,7 +1392,7 @@ body.menu-open { overflow: hidden; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1726,6 +1745,7 @@ body.menu-open { overflow: hidden; }
     if (currentView === "mealplan") return renderMealPlanView(c);
     if (currentView === "toothbrush") return renderToothbrushView(c);
     if (currentView === "news") return renderNewsView(c);
+    if (currentView === "allowance") return renderAllowanceView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -4059,6 +4079,28 @@ body.menu-open { overflow: hidden; }
     dt.setUTCDate(dt.getUTCDate() + n);
     return dt.toISOString().slice(0, 10);
   }
+  function resetRecurringTasksIfNeeded() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    let changed = false;
+    state.tasks.forEach(t => {
+      if (!t.recurring || !t.done) return;
+      const completedStr = t.updatedAt ? new Date(t.updatedAt).toISOString().slice(0, 10) : null;
+      if (!completedStr) return;
+      const shouldReset = t.recurring === "daily"
+        ? completedStr < todayStr
+        : startOfWeek(completedStr) < startOfWeek(todayStr);
+      if (shouldReset) {
+        // Bereits verdiente Punkte bleiben im Verlauf erhalten — nur der "erledigt"-Status
+        // für den neuen Tag/die neue Woche wird zurückgesetzt.
+        t.done = false;
+        t.lastEntryId = null;
+        t.updatedAt = Date.now();
+        changed = true;
+      }
+    });
+    if (changed) saveState();
+  }
+
   function startOfWeek(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
     const dt = new Date(Date.UTC(y, m - 1, d));
@@ -4847,6 +4889,107 @@ body.menu-open { overflow: hidden; }
     container.appendChild(feed);
   }
 
+  function allowanceBalance(profileId) {
+    return state.allowanceLedger.filter(l => l.profileId === profileId).reduce((sum, l) => sum + l.amount, 0);
+  }
+  function allowanceAdd(profileId, amount, reason) {
+    state.allowanceLedger.push({ id: uid(), profileId, amount, reason, at: Date.now(), createdBy: state.activeProfileId || null });
+    saveState();
+  }
+  function fmtEuro(n) {
+    return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  }
+
+  function renderAllowanceView(container) {
+    const isParentForAllowance = !getActiveProfile() || getActiveProfile().role === "parent";
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">💰 Taschengeld</h1><p class="view-sub">Guthaben je Kind, mit optionaler Umwandlung von Punkten.</p></div>`;
+    container.appendChild(header);
+
+    if (isParentForAllowance) {
+      const rateRow = document.createElement("div");
+      rateRow.className = "settings-section";
+      rateRow.innerHTML = `<h3>Umrechnungskurs</h3>
+        <div class="field" style="max-width:220px;"><label>1 Punkt entspricht</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text" id="rateInput" value="${state.pointsToMoneyRate}" inputmode="decimal" style="width:90px;">
+            <span>€</span>
+          </div>
+        </div>`;
+      container.appendChild(rateRow);
+      rateRow.querySelector("#rateInput").addEventListener("change", (e) => {
+        const v = parseFloat((e.target.value || "0").replace(",", "."));
+        state.pointsToMoneyRate = isNaN(v) ? 0 : v;
+        saveState(); showToast("Kurs gespeichert.");
+      });
+    }
+
+    const kids = state.profiles.filter(p => p.role === "child");
+    kids.forEach(kid => {
+      const balance = allowanceBalance(kid.id);
+      const points = pointsBalance(kid.id);
+      const pointsValue = points * state.pointsToMoneyRate;
+      const card = document.createElement("div");
+      card.className = "calendar-card";
+      card.style.marginBottom = "18px";
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <span class="mini-avatar" style="background:${kid.color};width:40px;height:40px;font-size:18px;">${kid.emoji || kid.name.charAt(0)}</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;">${escapeHtml(kid.name)}</div>
+            <div style="font-family:var(--font-display);font-size:26px;">${fmtEuro(balance)}</div>
+          </div>
+        </div>
+        <div class="today-sub-stat">⭐ ${points} Punkte offen (≈ ${fmtEuro(pointsValue)} bei aktuellem Kurs)</div>
+        ${isParentForAllowance ? `
+        <div class="news-composer-actions" style="margin-top:12px;">
+          <button type="button" class="btn btn-sm" data-action="convert" data-id="${kid.id}" ${points <= 0 ? "disabled" : ""}>Punkte umwandeln</button>
+          <button type="button" class="btn btn-sm" data-action="add" data-id="${kid.id}">+ Betrag hinzufügen</button>
+          <button type="button" class="btn btn-sm" data-action="pay" data-id="${kid.id}">– Auszahlen</button>
+        </div>` : ""}
+        <div class="allowance-history" id="hist-${kid.id}"></div>
+      `;
+      container.appendChild(card);
+
+      const histEl = card.querySelector(`#hist-${kid.id}`);
+      const entries = state.allowanceLedger.filter(l => l.profileId === kid.id).sort((a, b) => b.at - a.at).slice(0, 8);
+      histEl.innerHTML = entries.length ? entries.map(e => `
+        <div class="widget-row"><span class="wr-title">${escapeHtml(e.reason || (e.amount >= 0 ? "Gutschrift" : "Auszahlung"))}</span><span class="wr-meta" style="color:${e.amount >= 0 ? "#3FA796" : "#C0453B"};">${e.amount >= 0 ? "+" : ""}${fmtEuro(e.amount)}</span></div>
+      `).join("") : `<div class="widget-empty">Noch keine Bewegungen.</div>`;
+
+      if (isParentForAllowance) {
+        card.querySelector('[data-action="convert"]').onclick = () => {
+          if (points <= 0) return;
+          ledgerAdd(kid.id, -points, "In Taschengeld umgewandelt");
+          allowanceAdd(kid.id, +(points * state.pointsToMoneyRate).toFixed(2), `${points} Punkte umgewandelt`);
+          render();
+        };
+        card.querySelector('[data-action="add"]').onclick = () => {
+          const amount = parseFloat((prompt("Betrag in €:") || "").replace(",", "."));
+          if (!amount || isNaN(amount)) return;
+          const reason = prompt("Wofür? (optional)") || "";
+          allowanceAdd(kid.id, Math.abs(amount), reason);
+          render();
+        };
+        card.querySelector('[data-action="pay"]').onclick = () => {
+          const amount = parseFloat((prompt("Auszahlungsbetrag in €:") || "").replace(",", "."));
+          if (!amount || isNaN(amount)) return;
+          if (Math.abs(amount) > balance) { if (!confirm("Betrag ist höher als das Guthaben — trotzdem auszahlen?")) return; }
+          const reason = prompt("Wofür? (optional)") || "Ausgezahlt";
+          allowanceAdd(kid.id, -Math.abs(amount), reason);
+          render();
+        };
+      }
+    });
+    if (!kids.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = `<span class="empty-icon">💰</span>Noch keine Kinderprofile angelegt.`;
+      container.appendChild(empty);
+    }
+  }
+
   function openEventEditor(existing, defaultDate) {
     const draft = existing ? { ...existing, profileIds: [...(existing.profileIds || [])] } : {
       id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: [],
@@ -5398,6 +5541,7 @@ body.menu-open { overflow: hidden; }
     state.tasks = mergeByIdNewest(state.tasks, remote.tasks);
     state.rewards = mergeByIdNewest(state.rewards, remote.rewards);
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
+    state.allowanceLedger = unionById(state.allowanceLedger || [], remote.allowanceLedger);
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
@@ -5567,8 +5711,16 @@ body.menu-open { overflow: hidden; }
         <div class="theme-dot-row" id="themeDotRow"></div>
       </div>
       <div class="theme-preview" id="themePreview"></div>
-      <p class="hint" style="margin-top:14px;">Der Live-Ticker läuft jetzt immer als durchgehendes Laufband über die volle Breite.</p>`;
+      <p class="hint" style="margin-top:14px;">Der Live-Ticker läuft jetzt immer als durchgehendes Laufband über die volle Breite.</p>
+      <button class="btn ${document.body.classList.contains("echo-show-mode") ? "btn-accent" : ""}" id="echoShowBtn" style="margin-top:10px;">📺 ${document.body.classList.contains("echo-show-mode") ? "Optimierte Ansicht beenden" : "Optimierte Ansicht für Echo Show 15"}</button>
+      <p class="hint" style="margin-top:6px;">Größere Schrift und Bedienelemente für große Ambient-Displays (z. B. Echo Show 15) — nur auf diesem Gerät, nicht mitsynchronisiert.</p>`;
     container.appendChild(themeSection);
+    themeSection.querySelector("#echoShowBtn").onclick = () => {
+      const on = !document.body.classList.contains("echo-show-mode");
+      document.body.classList.toggle("echo-show-mode", on);
+      try { localStorage.setItem("dapp_echo_show_mode", on ? "1" : "0"); } catch (e) {}
+      render();
+    };
 
     function renderThemeDots(t) {
       themeSection.querySelector("#themeDotRow").innerHTML =
@@ -7096,6 +7248,7 @@ body.menu-open { overflow: hidden; }
 
   function init() {
     applyTheme(state.theme || "papier");
+    try { if (localStorage.getItem("dapp_echo_show_mode") === "1") document.body.classList.add("echo-show-mode"); } catch (e) {}
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
     renderProfileBar();
     const buildTagEl = document.getElementById("buildTag");
@@ -7126,6 +7279,7 @@ body.menu-open { overflow: hidden; }
     document.querySelectorAll(".nav-item[data-view]").forEach(b => {
       b.classList.toggle("active", b.dataset.view === currentView);
     });
+    resetRecurringTasksIfNeeded();
     render();
     registerServiceWorker();
     if (state.push.subscribed) cachePushConfig();
@@ -7137,6 +7291,8 @@ body.menu-open { overflow: hidden; }
     }
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
+      resetRecurringTasksIfNeeded();
+      render();
       const net = state.connectors.network;
       if (!net.autoSync || !net.url) return;
       const dueMs = Math.max(1, net.intervalMinutes || 5) * 60 * 1000;
