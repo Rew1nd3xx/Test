@@ -1254,7 +1254,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 76;
+  const APP_BUILD_NUMBER = 77;
   const APP_BUILD_DATE = "2026-07-26";
 
   const THEMES = [
@@ -3172,6 +3172,7 @@ body.menu-open { overflow: hidden; }
               sw.onclick = (ev) => {
                 ev.stopPropagation();
                 node.color = sw.dataset.c || null;
+                node.updatedAt = Date.now();
                 saveState(); renderNodes(); drawEdges();
                 picker.remove();
               };
@@ -3195,12 +3196,13 @@ body.menu-open { overflow: hidden; }
         textEl.addEventListener("focus", () => { textEl.textContent = node.text; });
         textEl.addEventListener("blur", () => {
           node.text = textEl.textContent.trim() || "Ohne Titel";
+          node.updatedAt = Date.now();
           saveState();
           textEl.innerHTML = mdToHtml(node.text);
         });
         textEl.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") { e.preventDefault(); node.text = textEl.textContent.trim() || "Ohne Titel"; saveState(); addSiblingTo(node.id); }
-          else if (e.key === "Tab") { e.preventDefault(); node.text = textEl.textContent.trim() || "Ohne Titel"; saveState(); addChildTo(node.id); }
+          if (e.key === "Enter") { e.preventDefault(); node.text = textEl.textContent.trim() || "Ohne Titel"; node.updatedAt = Date.now(); saveState(); addSiblingTo(node.id); }
+          else if (e.key === "Tab") { e.preventDefault(); node.text = textEl.textContent.trim() || "Ohne Titel"; node.updatedAt = Date.now(); saveState(); addChildTo(node.id); }
           else if (e.key === "Escape") { e.preventDefault(); textEl.blur(); el.focus(); }
         });
         textEl.addEventListener("pointerdown", (e) => e.stopPropagation());
@@ -3242,11 +3244,12 @@ body.menu-open { overflow: hidden; }
             dropTarget.classList.remove("drop-target");
             dropTarget = null;
             node.parentId = newParentId;
+            node.updatedAt = Date.now();
             showToast("Neu eingeordnet.");
             saveState(); renderNodes(); drawEdges();
             return;
           }
-          if (moved) saveState();
+          if (moved) { node.updatedAt = Date.now(); saveState(); }
         });
 
         world.appendChild(el);
@@ -3452,6 +3455,7 @@ body.menu-open { overflow: hidden; }
         card.querySelector(".task-check").onchange = (e) => {
           if (e.target.checked) { t.done = true; t.lastEntryId = ledgerAdd(t.assignedTo || null, t.points, "Hausaufgabe: " + t.title); }
           else { t.done = false; if (t.lastEntryId) { ledgerRemove(t.lastEntryId); t.lastEntryId = null; } }
+          t.updatedAt = Date.now();
           saveState(); renderProfileBar(); render();
         };
         card.querySelector(".edit-task").onclick = () => openTaskEditor(t);
@@ -3508,6 +3512,7 @@ body.menu-open { overflow: hidden; }
             t.done = false;
             if (t.lastEntryId) { ledgerRemove(t.lastEntryId); t.lastEntryId = null; }
           }
+          t.updatedAt = Date.now();
           saveState(); renderProfileBar(); render();
         };
         card.querySelector(".edit-task").onclick = () => openTaskEditor(t);
@@ -3597,7 +3602,7 @@ body.menu-open { overflow: hidden; }
             <button class="btn btn-sm btn-danger reject-task">✕ Ablehnen</button>
           </div>` : ""}`;
         if (isParentActive) {
-          card.querySelector(".approve-task").onclick = () => { t.approved = true; saveState(); render(); showToast("Aufgabe freigegeben."); };
+          card.querySelector(".approve-task").onclick = () => { t.approved = true; t.updatedAt = Date.now(); saveState(); render(); showToast("Aufgabe freigegeben."); };
           card.querySelector(".reject-task").onclick = () => {
             if (confirm("Diese Aufgabe wirklich ablehnen und löschen?")) { markDeleted(t.id); state.tasks = state.tasks.filter(x => x.id !== t.id); saveState(); render(); }
           };
@@ -3621,7 +3626,7 @@ body.menu-open { overflow: hidden; }
             <button class="btn btn-sm btn-danger reject-reward">✕ Ablehnen</button>
           </div>` : ""}`;
         if (isParentActive) {
-          card.querySelector(".approve-reward").onclick = () => { r.approved = true; saveState(); render(); showToast("Belohnung freigegeben."); };
+          card.querySelector(".approve-reward").onclick = () => { r.approved = true; r.updatedAt = Date.now(); saveState(); render(); showToast("Belohnung freigegeben."); };
           card.querySelector(".reject-reward").onclick = () => {
             if (confirm("Diese Belohnung wirklich ablehnen und löschen?")) { markDeleted(r.id); state.rewards = state.rewards.filter(x => x.id !== r.id); saveState(); render(); }
           };
@@ -3704,6 +3709,7 @@ body.menu-open { overflow: hidden; }
       draft.dueDate = draft.category === "homework" ? overlay.querySelector("#t-due").value.trim() : "";
       draft.points = Math.max(0, parseInt(overlay.querySelector("#t-points").value, 10) || 0);
       draft.recurring = draft.category === "homework" ? "" : overlay.querySelector("#t-recurring").value;
+      draft.updatedAt = Date.now();
       if (!existing) {
         const creator = getActiveProfile();
         draft.createdBy = state.activeProfileId || null;
@@ -3755,6 +3761,7 @@ body.menu-open { overflow: hidden; }
     overlay.querySelector("#saveBtn").onclick = () => {
       draft.title = overlay.querySelector("#r-title").value.trim() || "Belohnung";
       draft.cost = Math.max(0, parseInt(overlay.querySelector("#r-cost").value, 10) || 0);
+      draft.updatedAt = Date.now();
       if (!existing) {
         const creator = getActiveProfile();
         draft.createdBy = state.activeProfileId || null;
@@ -4890,6 +4897,7 @@ body.menu-open { overflow: hidden; }
       draft.time = overlay.querySelector("#e-time").value.trim();
       draft.profileIds = [...overlay.querySelectorAll(".e-profile:checked")].map(cb => cb.value);
       draft.private = overlay.querySelector("#e-private").checked;
+      draft.updatedAt = Date.now();
       if (!existing) draft.createdBy = state.activeProfileId || null;
       const idx = state.events.findIndex(ev => ev.id === draft.id);
       if (idx >= 0) state.events[idx] = draft; else state.events.push(draft);
@@ -5065,6 +5073,7 @@ body.menu-open { overflow: hidden; }
       draft.startDate = overlay.querySelector("#cs-start").value.trim() || draft.startDate;
       if (!draft.childIds.length) { showToast("Bitte mindestens ein Kind auswählen."); return; }
       if (!draft.blocks.some(b => (b.profileIds || []).length)) { showToast("Bitte mindestens einer Phase ein Elternteil zuweisen."); return; }
+      draft.updatedAt = Date.now();
       const idx = state.custodySchedules.findIndex(s => s.id === draft.id);
       if (idx >= 0) state.custodySchedules[idx] = draft; else state.custodySchedules.push(draft);
       saveState(); close(); if (onDone) onDone(); render();
@@ -5166,9 +5175,9 @@ body.menu-open { overflow: hidden; }
           <input type="file" accept="image/*" class="s-photo-input" style="display:none">
           <button class="card-pin s-del" title="Entfernen">✕</button>
         `;
-        row.querySelector(".s-done").onchange = (e) => { item.done = e.target.checked; saveState(); render(); };
-        row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; saveState(); };
-        row.querySelector(".s-where").addEventListener("change", (e) => { item.location = e.target.value.trim(); saveState(); });
+        row.querySelector(".s-done").onchange = (e) => { item.done = e.target.checked; item.updatedAt = Date.now(); saveState(); render(); };
+        row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; item.updatedAt = Date.now(); saveState(); };
+        row.querySelector(".s-where").addEventListener("change", (e) => { item.location = e.target.value.trim(); item.updatedAt = Date.now(); saveState(); });
         const photoInput = row.querySelector(".s-photo-input");
         row.querySelector(".s-photo").onclick = () => {
           if (item.photo) {
@@ -5177,7 +5186,7 @@ body.menu-open { overflow: hidden; }
               if (w) w.document.write(`<img src="${item.photo}" style="max-width:100%;">`);
               return;
             }
-            if (confirm("Foto entfernen?")) { item.photo = ""; saveState(); render(); return; }
+            if (confirm("Foto entfernen?")) { item.photo = ""; item.updatedAt = Date.now(); saveState(); render(); return; }
           }
           photoInput.click();
         };
@@ -5194,6 +5203,7 @@ body.menu-open { overflow: hidden; }
               c.width = img.width * scale; c.height = img.height * scale;
               c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
               item.photo = c.toDataURL("image/jpeg", 0.75);
+              item.updatedAt = Date.now();
               saveState(); render();
             };
             img.src = e.target.result;
@@ -5224,7 +5234,7 @@ body.menu-open { overflow: hidden; }
       const input = document.getElementById("shopInput");
       const text = input.value.trim();
       if (!text) return;
-      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "", photo: "", list: activeShoppingList });
+      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "", photo: "", list: activeShoppingList, updatedAt: Date.now() });
       saveState(); render();
       setTimeout(() => document.getElementById("shopInput").focus(), 30);
     }
@@ -5297,6 +5307,22 @@ body.menu-open { overflow: hidden; }
     const extra = incoming.filter(r => r && r.id && !tomb[r.id] && !local.some(l => l.id === r.id));
     return [...local, ...extra];
   }
+  // Wie unionById, aber übernimmt bei einer bereits vorhandenen ID die neuere Version
+  // (nach updatedAt) statt die lokale immer zu behalten — nötig für alles, was nach dem
+  // Anlegen noch bearbeitet wird (Aufgaben, Belohnungen, Termine, Einkaufsliste, Betreuung,
+  // Wunschliste), sonst kommen Änderungen an bestehenden Einträgen nie auf anderen Geräten an.
+  function mergeByIdNewest(local, incoming) {
+    local = local || []; incoming = incoming || [];
+    const tomb = state.tombstones || {};
+    const map = new Map(local.map(x => [x.id, x]));
+    incoming.forEach(r => {
+      if (!r || !r.id || tomb[r.id]) return;
+      const loc = map.get(r.id);
+      if (!loc) { map.set(r.id, r); return; }
+      if ((r.updatedAt || 0) > (loc.updatedAt || 0)) map.set(r.id, r);
+    });
+    return [...map.values()];
+  }
   function markDeleted(id) {
     if (!id) return;
     state.tombstones[id] = Date.now();
@@ -5319,7 +5345,7 @@ body.menu-open { overflow: hidden; }
         changed++;
       } else {
         const before = local.nodes.length;
-        local.nodes = unionById(local.nodes, inc.nodes);
+        local.nodes = mergeByIdNewest(local.nodes, inc.nodes);
         if (local.nodes.length > before) { local.updatedAt = Date.now(); changed++; }
       }
     });
@@ -5369,14 +5395,14 @@ body.menu-open { overflow: hidden; }
         state.sharedAreas.child.pinHash = remote.sharedAreas.child.pinHash;
       }
     }
-    state.tasks = unionById(state.tasks, remote.tasks);
-    state.rewards = unionById(state.rewards, remote.rewards);
+    state.tasks = mergeByIdNewest(state.tasks, remote.tasks);
+    state.rewards = mergeByIdNewest(state.rewards, remote.rewards);
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
-    state.events = unionById(state.events, remote.events);
-    state.shoppingList = unionById(state.shoppingList, remote.shoppingList);
+    state.events = mergeByIdNewest(state.events, remote.events);
+    state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
-    state.custodySchedules = unionById(state.custodySchedules, remote.custodySchedules);
-    state.wishlist = unionById(state.wishlist, remote.wishlist);
+    state.custodySchedules = mergeByIdNewest(state.custodySchedules, remote.custodySchedules);
+    state.wishlist = mergeByIdNewest(state.wishlist, remote.wishlist);
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
     state.checklistTemplates = unionById(state.checklistTemplates || [], remote.checklistTemplates);
     state.newsPosts = unionById(state.newsPosts || [], remote.newsPosts);
@@ -6557,6 +6583,7 @@ body.menu-open { overflow: hidden; }
       if (!draft.title) { showToast("Bitte einen Titel eintragen."); return; }
       draft.note = overlay.querySelector("#w-note").value.trim();
       draft.link = overlay.querySelector("#w-link").value.trim();
+      draft.updatedAt = Date.now();
       const idx = state.wishlist.findIndex(x => x.id === draft.id);
       if (idx >= 0) state.wishlist[idx] = draft; else state.wishlist.push(draft);
       saveState(); close(); render();
