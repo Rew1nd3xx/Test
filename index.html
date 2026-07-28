@@ -1331,7 +1331,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 84;
+  const APP_BUILD_NUMBER = 86;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1384,6 +1384,7 @@ body.menu-open { overflow: hidden; }
       newsPosts: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
+      allowanceRequests: [], allowanceRecurring: [],
       kinship: { enabled: false, circleId: "", serverUrl: "", familyLabel: "" },
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
@@ -2067,7 +2068,7 @@ body.menu-open { overflow: hidden; }
         ? (ferienStatus
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
                 ? `🏖️ Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis Schulbeginn (${escapeHtml(ferienStatus.name)})`
-                : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)}`}</div>`
+                : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)} · letzter Schultag ${formatDateStrShort(ferienStatus.lastSchoolDay)}`}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
       let custodyPart = "";
@@ -4000,6 +4001,21 @@ body.menu-open { overflow: hidden; }
     return hit ? hit.name : null;
   }
 
+  function isWeekendStr(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const day = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+    return day === 0 || day === 6; // Sonntag oder Samstag
+  }
+  function lastWorkdayBefore(dateStr) {
+    let d = addDays(dateStr, -1);
+    while (isWeekendStr(d)) d = addDays(d, -1);
+    return d;
+  }
+  function firstWorkdayOnOrAfter(dateStr) {
+    let d = dateStr;
+    while (isWeekendStr(d)) d = addDays(d, 1);
+    return d;
+  }
   function getFerienStatus() {
     const list = state.schoolHolidays[state.federalState];
     if (!list || !list.length) return null;
@@ -4007,12 +4023,18 @@ body.menu-open { overflow: hidden; }
     const sorted = list.slice().sort((a, b) => a.start.localeCompare(b.start));
     const current = sorted.find(f => f.start <= today && today >= f.start && today <= f.end);
     if (current) {
-      // Schule beginnt am Tag nach dem letzten Ferientag — nicht am letzten Ferientag selbst.
-      const daysUntilSchoolStart = dateStrToDayNumber(current.end) + 1 - dateStrToDayNumber(today);
-      return { type: "current", name: current.name, days: daysUntilSchoolStart };
+      // Schule beginnt am nächsten Werktag nach dem letzten Ferientag — fällt der direkt
+      // folgende Tag aufs Wochenende, zählt trotzdem erst der nächste Montag (o. Ä.).
+      const schoolStart = firstWorkdayOnOrAfter(addDays(current.end, 1));
+      const daysUntilSchoolStart = dateStrToDayNumber(schoolStart) - dateStrToDayNumber(today);
+      return { type: "current", name: current.name, days: daysUntilSchoolStart, schoolStart };
     }
     const next = sorted.find(f => f.start > today);
-    if (next) return { type: "next", name: next.name, days: dateStrToDayNumber(next.start) - dateStrToDayNumber(today) };
+    if (next) return {
+      type: "next", name: next.name, days: dateStrToDayNumber(next.start) - dateStrToDayNumber(today),
+      // Letzter Schultag ist der letzte Werktag vor Ferienbeginn (Zeugnistag), nicht einfach "ein Tag davor".
+      lastSchoolDay: lastWorkdayBefore(next.start)
+    };
     return null;
   }
 
@@ -5119,15 +5141,64 @@ body.menu-open { overflow: hidden; }
   function fmtEuro(n) {
     return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
   }
+  function requestAllowanceAction(profileId, type, amount, note) {
+    state.allowanceRequests.push({
+      id: uid(), profileId, type, amount, note: note || "", status: "pending",
+      createdAt: Date.now(), updatedAt: Date.now()
+    });
+    saveState();
+  }
+  function resolveAllowanceRequest(reqId, approve) {
+    const req = state.allowanceRequests.find(r => r.id === reqId);
+    if (!req) return;
+    req.status = approve ? "approved" : "denied";
+    req.updatedAt = Date.now();
+    if (approve) {
+      if (req.type === "payout") {
+        allowanceAdd(req.profileId, -Math.abs(req.amount), "Auszahlung (angefragt): " + (req.note || ""));
+      } else if (req.type === "convert") {
+        const pts = pointsBalance(req.profileId);
+        const usePts = Math.min(pts, req.amount);
+        if (usePts > 0) {
+          ledgerAdd(req.profileId, -usePts, "In Taschengeld umgewandelt");
+          allowanceAdd(req.profileId, +(usePts * state.pointsToMoneyRate).toFixed(2), `${usePts} Punkte umgewandelt (angefragt)`);
+        }
+      }
+    }
+    saveState();
+  }
+  function runDueRecurringAllowances() {
+    const now = Date.now();
+    let any = false;
+    (state.allowanceRecurring || []).forEach(r => {
+      const intervalMs = r.interval === "monthly" ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+      if (!r.lastPaidAt || now - r.lastPaidAt >= intervalMs) {
+        allowanceAdd(r.profileId, Math.abs(r.amount), `Wiederkehrendes Taschengeld (${r.interval === "monthly" ? "monatlich" : "wöchentlich"})`);
+        r.lastPaidAt = now;
+        r.updatedAt = now;
+        any = true;
+        const p = getProfile(r.profileId);
+        if (p) showToast(`💰 Wiederkehrendes Taschengeld für ${p.name} ausgezahlt.`);
+      }
+    });
+    if (any) saveState();
+  }
 
   function renderAllowanceView(container) {
-    const isParentForAllowance = !getActiveProfile() || getActiveProfile().role === "parent";
+    const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
+    if (!viewingEntity || personalAreaUnlockedFor !== viewingEntity.id) {
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">💰</span>Das Taschengeld ist nur im jeweiligen persönlichen Bereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
+      container.querySelector("#goToHubBtn").onclick = () => setView("admin");
+      return;
+    }
+    const isParentView = viewingEntity.role === "parent";
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">💰 Taschengeld</h1><p class="view-sub">Guthaben je Kind, mit optionaler Umwandlung von Punkten.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">💰 Taschengeld</h1><p class="view-sub">${isParentView ? "Guthaben je Kind, mit Umwandlung von Punkten." : "Euer Guthaben und Anfragen an die Eltern."}</p></div>`;
     container.appendChild(header);
 
-    if (isParentForAllowance) {
+    if (isParentView) {
+      runDueRecurringAllowances();
       const rateRow = document.createElement("div");
       rateRow.className = "settings-section";
       rateRow.innerHTML = `<h3>Umrechnungskurs</h3>
@@ -5143,9 +5214,64 @@ body.menu-open { overflow: hidden; }
         state.pointsToMoneyRate = isNaN(v) ? 0 : v;
         saveState(); showToast("Kurs gespeichert.");
       });
+
+      const pendingReqs = state.allowanceRequests.filter(r => r.status === "pending");
+      if (pendingReqs.length) {
+        const reqSection = document.createElement("div");
+        reqSection.className = "settings-section";
+        reqSection.innerHTML = `<h3>📨 Offene Anfragen</h3>` + pendingReqs.map(r => {
+          const p = getProfile(r.profileId);
+          const label = r.type === "payout" ? `Auszahlung ${fmtEuro(r.amount)}` : `${r.amount} Punkte umwandeln`;
+          return `<div class="widget-row">
+            <span class="mini-avatar" style="background:${p ? p.color : "#999"};">${p ? (p.emoji || p.name.charAt(0)) : "?"}</span>
+            <span class="wr-title">${p ? escapeHtml(p.name) : "?"}: ${label}${r.note ? " — " + escapeHtml(r.note) : ""}</span>
+            <button class="btn btn-sm" data-approve="${r.id}" style="margin-left:8px;">✓</button>
+            <button class="card-pin" data-deny="${r.id}" title="Ablehnen">✕</button>
+          </div>`;
+        }).join("");
+        container.appendChild(reqSection);
+        reqSection.querySelectorAll("[data-approve]").forEach(btn => { btn.onclick = () => { resolveAllowanceRequest(btn.dataset.approve, true); render(); }; });
+        reqSection.querySelectorAll("[data-deny]").forEach(btn => { btn.onclick = () => { resolveAllowanceRequest(btn.dataset.deny, false); render(); }; });
+      }
+
+      const recSection = document.createElement("div");
+      recSection.className = "settings-section";
+      recSection.innerHTML = `<h3>🔁 Wiederkehrendes Taschengeld</h3>
+        <p class="hint">Wird automatisch beim Öffnen der App ausgezahlt, sobald fällig.</p>
+        ${state.allowanceRecurring.length ? state.allowanceRecurring.map(r => {
+          const p = getProfile(r.profileId);
+          return `<div class="widget-row">
+            <span class="mini-avatar" style="background:${p ? p.color : "#999"};">${p ? (p.emoji || p.name.charAt(0)) : "?"}</span>
+            <span class="wr-title">${p ? escapeHtml(p.name) : "?"}: ${fmtEuro(r.amount)} / ${r.interval === "monthly" ? "Monat" : "Woche"}</span>
+            <button class="card-pin" data-del-rec="${r.id}" title="Entfernen" style="margin-left:8px;">✕</button>
+          </div>`;
+        }).join("") : `<div class="widget-empty">Noch nichts eingerichtet.</div>`}
+        <button class="btn btn-sm" id="addRecurringBtn" style="margin-top:10px;">+ Wiederkehrendes Taschengeld</button>
+      `;
+      container.appendChild(recSection);
+      recSection.querySelectorAll("[data-del-rec]").forEach(btn => {
+        btn.onclick = () => {
+          markDeleted(btn.dataset.delRec);
+          state.allowanceRecurring = state.allowanceRecurring.filter(r => r.id !== btn.dataset.delRec);
+          saveState(); render();
+        };
+      });
+      recSection.querySelector("#addRecurringBtn").onclick = () => {
+        const kidsForPick = state.profiles.filter(p => p.role === "child");
+        if (!kidsForPick.length) { showToast("Noch keine Kinderprofile."); return; }
+        const name = prompt("Für wen? (" + kidsForPick.map(k => k.name).join(", ") + ")");
+        const kid = kidsForPick.find(k => k.name.toLowerCase() === (name || "").trim().toLowerCase());
+        if (!kid) { showToast("Kein passendes Profil gefunden."); return; }
+        const amount = parseFloat((prompt("Betrag in €:") || "").replace(",", "."));
+        if (!amount || isNaN(amount)) return;
+        const interval = confirm("Wöchentlich? (Abbrechen = monatlich)") ? "weekly" : "monthly";
+        state.allowanceRecurring.push({ id: uid(), profileId: kid.id, amount: Math.abs(amount), interval, lastPaidAt: null, updatedAt: Date.now() });
+        saveState(); render();
+        showToast("Eingerichtet — wird bei Fälligkeit automatisch ausgezahlt.");
+      };
     }
 
-    const kids = state.profiles.filter(p => p.role === "child");
+    const kids = isParentView ? state.profiles.filter(p => p.role === "child") : [viewingEntity];
     kids.forEach(kid => {
       const balance = allowanceBalance(kid.id);
       const points = pointsBalance(kid.id);
@@ -5153,6 +5279,7 @@ body.menu-open { overflow: hidden; }
       const card = document.createElement("div");
       card.className = "calendar-card";
       card.style.marginBottom = "18px";
+      const myPendingReqs = state.allowanceRequests.filter(r => r.profileId === kid.id && r.status === "pending");
       card.innerHTML = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
           <span class="mini-avatar" style="background:${kid.color};width:40px;height:40px;font-size:18px;">${kid.emoji || kid.name.charAt(0)}</span>
@@ -5162,12 +5289,17 @@ body.menu-open { overflow: hidden; }
           </div>
         </div>
         <div class="today-sub-stat">⭐ ${points} Punkte offen (≈ ${fmtEuro(pointsValue)} bei aktuellem Kurs)</div>
-        ${isParentForAllowance ? `
+        ${!isParentView && myPendingReqs.length ? `<div class="today-sub-stat">⏳ ${myPendingReqs.length} Anfrage(n) warten auf die Eltern</div>` : ""}
         <div class="news-composer-actions" style="margin-top:12px;">
-          <button type="button" class="btn btn-sm" data-action="convert" data-id="${kid.id}" ${points <= 0 ? "disabled" : ""}>Punkte umwandeln</button>
-          <button type="button" class="btn btn-sm" data-action="add" data-id="${kid.id}">+ Betrag hinzufügen</button>
-          <button type="button" class="btn btn-sm" data-action="pay" data-id="${kid.id}">– Auszahlen</button>
-        </div>` : ""}
+          ${isParentView ? `
+            <button type="button" class="btn btn-sm" data-action="convert" data-id="${kid.id}" ${points <= 0 ? "disabled" : ""}>Punkte umwandeln</button>
+            <button type="button" class="btn btn-sm" data-action="add" data-id="${kid.id}">+ Betrag hinzufügen</button>
+            <button type="button" class="btn btn-sm" data-action="pay" data-id="${kid.id}">– Auszahlen</button>
+          ` : `
+            <button type="button" class="btn btn-sm" data-action="req-convert" data-id="${kid.id}" ${points <= 0 ? "disabled" : ""}>Punkte-Umwandlung anfragen</button>
+            <button type="button" class="btn btn-sm" data-action="req-pay" data-id="${kid.id}">Auszahlung anfragen</button>
+          `}
+        </div>
         <div class="allowance-history" id="hist-${kid.id}"></div>
       `;
       container.appendChild(card);
@@ -5178,7 +5310,7 @@ body.menu-open { overflow: hidden; }
         <div class="widget-row"><span class="wr-title">${escapeHtml(e.reason || (e.amount >= 0 ? "Gutschrift" : "Auszahlung"))}</span><span class="wr-meta" style="color:${e.amount >= 0 ? "#3FA796" : "#C0453B"};">${e.amount >= 0 ? "+" : ""}${fmtEuro(e.amount)}</span></div>
       `).join("") : `<div class="widget-empty">Noch keine Bewegungen.</div>`;
 
-      if (isParentForAllowance) {
+      if (isParentView) {
         card.querySelector('[data-action="convert"]').onclick = () => {
           if (points <= 0) return;
           ledgerAdd(kid.id, -points, "In Taschengeld umgewandelt");
@@ -5198,6 +5330,22 @@ body.menu-open { overflow: hidden; }
           if (Math.abs(amount) > balance) { if (!confirm("Betrag ist höher als das Guthaben — trotzdem auszahlen?")) return; }
           const reason = prompt("Wofür? (optional)") || "Ausgezahlt";
           allowanceAdd(kid.id, -Math.abs(amount), reason);
+          render();
+        };
+      } else {
+        const convertBtn = card.querySelector('[data-action="req-convert"]');
+        if (convertBtn) convertBtn.onclick = () => {
+          if (points <= 0) return;
+          requestAllowanceAction(kid.id, "convert", points, "");
+          showToast("Anfrage an die Eltern geschickt.");
+          render();
+        };
+        card.querySelector('[data-action="req-pay"]').onclick = () => {
+          const amount = parseFloat((prompt("Wie viel möchtest du ausgezahlt bekommen? (€)") || "").replace(",", "."));
+          if (!amount || isNaN(amount)) return;
+          const note = prompt("Wofür? (optional)") || "";
+          requestAllowanceAction(kid.id, "payout", Math.abs(amount), note);
+          showToast("Anfrage an die Eltern geschickt.");
           render();
         };
       }
@@ -5752,6 +5900,8 @@ body.menu-open { overflow: hidden; }
     state.wishlist = state.wishlist.filter(isLive);
     state.checklistTemplates = (state.checklistTemplates || []).filter(isLive);
     state.taskTemplates = (state.taskTemplates || []).filter(isLive);
+    state.allowanceRequests = (state.allowanceRequests || []).filter(isLive);
+    state.allowanceRecurring = (state.allowanceRecurring || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
@@ -5781,6 +5931,8 @@ body.menu-open { overflow: hidden; }
     state.rewards = mergeByIdNewest(state.rewards, remote.rewards);
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
     state.allowanceLedger = unionById(state.allowanceLedger || [], remote.allowanceLedger);
+    state.allowanceRequests = mergeByIdNewest(state.allowanceRequests || [], remote.allowanceRequests);
+    state.allowanceRecurring = mergeByIdNewest(state.allowanceRecurring || [], remote.allowanceRecurring);
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
@@ -7522,7 +7674,7 @@ body.menu-open { overflow: hidden; }
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
         ? `🏖️ Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis Schulbeginn (${ferienForTicker.name})`
-        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name}` });
+        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name} · letzter Schultag ${formatDateStrShort(ferienForTicker.lastSchoolDay)}` });
     }
     if (weatherCache.data) {
       const cw = weatherCache.data.current_weather;
@@ -7656,6 +7808,7 @@ body.menu-open { overflow: hidden; }
       b.classList.toggle("active", b.dataset.view === currentView);
     });
     resetRecurringTasksIfNeeded();
+    runDueRecurringAllowances();
     render();
     registerServiceWorker();
     if (state.push.subscribed) cachePushConfig();
