@@ -69,14 +69,115 @@ a { color: var(--accent); }
   --pattern: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
 }
 /* 4. Bauhaus — primary geometry */
+/* 4. Tagebuch — zartes Rosé, Handschrift, Papierstruktur und goldene Akzente */
 .theme-bauhaus {
-  --bg: #F2EFE6; --surface: #FFFFFF; --surface2: #EAE5D6;
-  --text: #1A1A1A; --text-muted: #555049;
-  --accent: #D0263B; --accent2: #1D4E9B;
-  --border: #1A1A1A; --shadow: 4px 4px 0 #1A1A1A;
-  --font-display: 'Archivo Black', sans-serif; --font-body: 'Work Sans', sans-serif;
-  --radius: 0px; --pattern: none;
+  --bg: #FBF1F0; --surface: #FFFAF9; --surface2: #F6E4E2;
+  --text: #3E2A2E; --text-muted: #94737A;
+  --accent: #D98A9E; --accent2: #C9A24B;
+  --border: #EBD2D2; --shadow: 0 6px 20px rgba(190, 130, 145, .16), 0 1px 3px rgba(190, 130, 145, .12);
+  --font-display: 'Kalam', cursive; --font-body: 'Lora', serif;
+  --radius: 14px; --pattern: none;
 }
+/* Feines Papier: warme Faserstruktur plus zarte Linien wie in einem Notizbuch */
+body.theme-bauhaus {
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(217, 138, 158, .13) 31px 32px),
+    radial-gradient(circle at 18% 12%, rgba(217, 138, 158, .10), transparent 42%),
+    radial-gradient(circle at 84% 78%, rgba(201, 162, 75, .09), transparent 46%);
+}
+/* Roter Rand wie beim Schulheft, dazu ein Hauch Buchrücken-Schatten */
+.theme-bauhaus .sidebar {
+  background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface2) 55%, var(--surface)));
+  border-right: 2px solid var(--border);
+  box-shadow: inset -8px 0 18px -14px rgba(190, 130, 145, .55);
+  position: relative;
+}
+.theme-bauhaus .sidebar::after {
+  content: ""; position: absolute; top: 0; bottom: 0; right: 14px; width: 1.5px;
+  background: rgba(217, 138, 158, .38); pointer-events: none;
+}
+.theme-bauhaus .topbar {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1.5px solid var(--border);
+}
+.theme-bauhaus .brand-text, .theme-bauhaus .view-title {
+  font-family: 'Kalam', cursive; letter-spacing: .01em;
+  color: #6E4A55;
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+}
+.theme-bauhaus .view-title { position: relative; display: inline-block; }
+/* Handgezogener Unterstrich, wie mit einem Fineliner nachgezogen */
+.theme-bauhaus .view-title::after {
+  content: ""; position: absolute; left: 0; right: -6px; bottom: -6px; height: 6px;
+  background: radial-gradient(ellipse 60% 100% at 50% 0%, rgba(217, 138, 158, .55), transparent 70%);
+  border-radius: 50%;
+}
+.theme-bauhaus .btn { border-radius: 999px; border-color: var(--border); }
+.theme-bauhaus .btn-accent {
+  background: linear-gradient(135deg, #E2A0B1, #D07E95);
+  color: #fff; border: none;
+  box-shadow: 0 4px 14px rgba(208, 126, 149, .38);
+}
+.theme-bauhaus .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 7px 20px rgba(208, 126, 149, .5); }
+/* Karten wie eingeklebte Zettel — leicht schief, mit Washi-Tape oben */
+.theme-bauhaus .card, .theme-bauhaus .widget-card, .theme-bauhaus .calendar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.theme-bauhaus .widget-card::before {
+  content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%) rotate(-1.6deg);
+  width: 76px; height: 17px; border-radius: 2px; z-index: 2;
+  background: repeating-linear-gradient(-45deg, rgba(217, 138, 158, .55) 0 6px, rgba(240, 205, 212, .55) 6px 12px);
+  box-shadow: 0 1px 3px rgba(160, 110, 125, .28);
+}
+.theme-bauhaus .card:hover, .theme-bauhaus .widget-card:hover {
+  transform: translateY(-3px) rotate(-.35deg);
+  box-shadow: 0 14px 30px rgba(190, 130, 145, .24);
+}
+.theme-bauhaus .card-title { font-family: 'Kalam', cursive; font-size: 17px; }
+.theme-bauhaus .nav-item.active {
+  background: linear-gradient(135deg, #E7AEBC, #D98A9E);
+  color: #fff; border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(208, 126, 149, .35);
+}
+.theme-bauhaus .nav-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; }
+.theme-bauhaus .avatar, .theme-bauhaus .mini-avatar {
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px rgba(217, 138, 158, .55);
+}
+.theme-bauhaus .avatar.active { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent2), 0 4px 12px rgba(201, 162, 75, .35); }
+.theme-bauhaus .mm-node { border-radius: 14px; border-color: var(--border); background: var(--surface); box-shadow: var(--shadow); }
+.theme-bauhaus .mm-node.root {
+  background: linear-gradient(135deg, #E7AEBC, #D07E95); color: #fff; border: none;
+  border-radius: 50%; box-shadow: 0 6px 22px rgba(208, 126, 149, .45);
+}
+.theme-bauhaus .tag-chip { border-radius: 999px; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); border-color: transparent; }
+.theme-bauhaus ::selection { background: rgba(217, 138, 158, .35); color: var(--text); }
+.theme-bauhaus input, .theme-bauhaus select, .theme-bauhaus textarea {
+  border-radius: 12px !important; border-color: var(--border) !important; background: var(--surface) !important;
+}
+.theme-bauhaus input:focus, .theme-bauhaus select:focus, .theme-bauhaus textarea:focus {
+  outline: none; border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(217, 138, 158, .18);
+}
+.theme-bauhaus .global-ticker {
+  background: color-mix(in srgb, var(--surface2) 62%, var(--surface));
+  border-bottom: 1.5px solid var(--border);
+}
+.theme-bauhaus .global-ticker-dot { background: var(--accent); box-shadow: 0 0 8px rgba(217, 138, 158, .6); }
+.theme-bauhaus .widget-head h3 { font-family: 'Kalam', cursive; font-size: 16px; color: #6E4A55; }
+.theme-bauhaus .cal-day-cell { border-radius: 12px; }
+.theme-bauhaus .cal-day-cell.is-today {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(217, 138, 158, .18);
+}
+.theme-bauhaus .card-progress-bar { background: linear-gradient(90deg, #E7AEBC, #C9A24B); }
+.theme-bauhaus .nav-item.active { color: #fff; }
 /* 5. Wald — deep forest */
 .theme-wald {
   --bg: #172A20; --surface: #203627; --surface2: #294432;
@@ -808,6 +909,78 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
 .allowance-entry-date { font-size: 10.5px; color: var(--text-muted); font-weight: 400; }
 
+.pool-card { margin-bottom: 14px; }
+.pool-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.pool-name { font-weight: 700; font-size: 15px; }
+.pool-amount { font-family: var(--font-display); font-size: 24px; margin-top: 2px; }
+.pool-goal { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); }
+.pool-contributors { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pool-contrib-chip {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px;
+  padding: 3px 10px 3px 4px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--border);
+}
+.pool-contrib-chip .mini-avatar { width: 17px; height: 17px; font-size: 10px; }
+
+.grade-rate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+.grade-money-badge {
+  font-size: 13px; padding: 6px 12px; border-radius: 999px;
+  background: color-mix(in srgb, #C9A24B 18%, var(--surface2)); border: 1px solid #C9A24B;
+}
+.grade-subject-row { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.grade-subject-row:last-of-type { border-bottom: none; }
+.grade-subject-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+.grade-avg { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+.grade-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.grade-chip {
+  display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+  min-width: 30px; height: 30px; padding: 0 8px; border-radius: 8px;
+  font-weight: 700; font-size: 14px; color: #fff; cursor: pointer;
+}
+.grade-1 { background: #3FA796; }
+.grade-2 { background: #86B35A; }
+.grade-3 { background: #D9A441; }
+.grade-4 { background: #E08A4A; }
+.grade-5 { background: #C0453B; }
+.grade-6 { background: #8B2E28; }
+
+/* Ferienstimmung: dezent, edel, nicht ablenkend — warmer Lichtschimmer oben,
+   goldene Zierlinie unter dem Ticker und langsam treibende Lichtpunkte. */
+body.holiday-mood::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 3;
+  background:
+    radial-gradient(ellipse 140% 60% at 50% -18%, rgba(255, 205, 130, .16), transparent 60%),
+    radial-gradient(ellipse 90% 40% at 88% 105%, rgba(120, 200, 220, .10), transparent 62%);
+}
+body.holiday-mood .app-header-sticky::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; z-index: 7;
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 75, .85), rgba(255, 215, 160, .95), rgba(201, 162, 75, .85), transparent);
+  background-size: 220% 100%;
+  animation: holidayShimmer 7s ease-in-out infinite;
+}
+@keyframes holidayShimmer {
+  0%, 100% { background-position: 0% 50%; opacity: .75; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}
+body.holiday-mood .holiday-sparkles {
+  position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden;
+}
+body.holiday-mood .holiday-sparkles span {
+  position: absolute; bottom: -12px; width: 5px; height: 5px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 228, 175, .95), rgba(255, 205, 130, 0) 70%);
+  animation: holidayDrift linear infinite;
+}
+@keyframes holidayDrift {
+  0% { transform: translateY(0) translateX(0) scale(.7); opacity: 0; }
+  12% { opacity: .85; }
+  85% { opacity: .5; }
+  100% { transform: translateY(-102vh) translateX(28px) scale(1.15); opacity: 0; }
+}
+body:not(.holiday-mood) .holiday-sparkles { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  body.holiday-mood .holiday-sparkles, body.holiday-mood .app-header-sticky::after { animation: none; }
+}
+.vacation-tag { background: #BFE3EA !important; color: #24555E !important; }
+
 .retro-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
 .retro-game-card {
   display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 12px;
@@ -1150,6 +1323,13 @@ body.menu-open { overflow: hidden; }
 .draw-layer-vis { display: flex; align-items: center; gap: 5px; cursor: pointer; }
 .draw-layer-vis input { width: 15px; height: 15px; accent-color: var(--accent); }
 
+.sortable-dragging {
+  opacity: .85; transform: scale(1.02); box-shadow: 0 10px 26px rgba(0,0,0,.28) !important;
+  position: relative; z-index: 20; cursor: grabbing;
+}
+body.sortable-active { user-select: none; }
+body.sortable-active * { cursor: grabbing !important; }
+
 /* tags view */
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
 .tag-pill {
@@ -1381,6 +1561,7 @@ body.menu-open { overflow: hidden; }
   </aside>
 
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="holiday-sparkles" id="holidaySparkles" aria-hidden="true"></div>
 
   <!-- Main -->
   <div class="main">
@@ -1418,14 +1599,14 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 96;
+  const APP_BUILD_NUMBER = 99;
   const APP_BUILD_DATE = "2026-07-29";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
     { id: "mitternacht",name: "Mitternacht",     sub: "Tief & golden",     dots: ["#C9A24B", "#3F9C99", "#10142A"] },
     { id: "skizze",     name: "Skizzenblock",    sub: "Karopapier",        dots: ["#3A5A9B", "#C0453B", "#E7ECF2"] },
-    { id: "bauhaus",    name: "Bauhaus",         sub: "Geometrisch",       dots: ["#D0263B", "#1D4E9B", "#F2EFE6"] },
+    { id: "bauhaus",    name: "Tagebuch",       sub: "Rosé & Handschrift 🌸", dots: ["#D98A9E", "#C9A24B", "#FBF1F0"] },
     { id: "wald",       name: "Wald",            sub: "Tiefgrün & Moos",   dots: ["#86B35A", "#D9A441", "#172A20"] },
     { id: "ozean",      name: "Ozean",           sub: "Ruhig & weit",      dots: ["#FF9270", "#F2D6A2", "#0E3B43"] },
     { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
@@ -1473,6 +1654,9 @@ body.menu-open { overflow: hidden; }
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
+      savingsPools: [], poolLedger: [],
+      grades: [], reportCardRates: { 1: 10, 2: 5, 3: 2, 4: 0, 5: 0, 6: 0 },
+      vacations: [],
       hue: { bridgeUrl: "", username: "", lights: [] },
       budget: { income: [], costs: [], loans: [] },
       kinship: { enabled: false, circleId: "", serverUrl: "", familyLabel: "" },
@@ -1509,6 +1693,7 @@ body.menu-open { overflow: hidden; }
             categories: { ...base.push.categories, ...((parsed.push || {}).categories || {}) }
           },
           kinship: { ...base.kinship, ...(parsed.kinship || {}) },
+          reportCardRates: { ...base.reportCardRates, ...(parsed.reportCardRates || {}) },
           hue: { ...base.hue, ...(parsed.hue || {}) },
           budget: { ...base.budget, ...(parsed.budget || {}) }
         };
@@ -1547,7 +1732,7 @@ body.menu-open { overflow: hidden; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1939,6 +2124,7 @@ body.menu-open { overflow: hidden; }
     if (currentView === "allowance") return renderAllowanceView(c);
     if (currentView === "budget") return renderHouseholdBudgetView(c);
     if (currentView === "retrogames") return renderRetroGamesView(c);
+    if (currentView === "grades") return renderGradesView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -2194,6 +2380,12 @@ body.menu-open { overflow: hidden; }
                 : `🏖️ Noch ${countSchoolDays(todayStr, ferienStatus.lastSchoolDay)} Schultage bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
+      const vacStatus = getVacationStatus();
+      const vacationPart = vacStatus
+        ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${vacStatus.type === "current"
+            ? `${vacStatus.emoji} Urlaub: ${escapeHtml(vacStatus.name)} — noch ${vacStatus.days} Tag${vacStatus.days === 1 ? "" : "e"}`
+            : `${vacStatus.emoji} Noch ${vacStatus.days} Tag${vacStatus.days === 1 ? "" : "e"} bis ${escapeHtml(vacStatus.name)}`}</div>`
+        : "";
       let custodyPart = "";
       if (hasCustody) {
         const rows = state.custodySchedules.map(s => {
@@ -2228,7 +2420,7 @@ body.menu-open { overflow: hidden; }
       try { clockSide = localStorage.getItem("dapp_clock_side") || "left"; } catch (e) {}
       dashCard.className = "widget-card dashboard-card" + (clockSide === "right" ? " clock-right" : "");
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + custodyPart + mealPart + auroraPart + warnPart + pollenPart;
+      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + auroraPart + warnPart + pollenPart;
       dashCard.innerHTML = `
         <button type="button" class="clock-side-toggle" id="clockSideToggle" title="Uhr links/rechts">⇄ Uhr ${clockSide === "left" ? "rechts" : "links"}</button>
         <div class="dash-clock" id="dashClock"></div>
@@ -2429,7 +2621,7 @@ body.menu-open { overflow: hidden; }
         </div>
         <div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div>
         ${isExpanded ? `<div class="inline-checklist card-pin">${(it.items || []).map(c => `
-          <label class="inline-checklist-row">
+          <label class="inline-checklist-row" data-sort-id="${c.id}">
             <input type="checkbox" data-item-id="${c.id}" ${c.done ? "checked" : ""}>
             <span${c.done ? ' style="text-decoration:line-through;color:var(--text-muted);"' : ""}>${escapeHtml(c.text || "")}${it.hwMode && c.subject ? ` <span class="tag-chip" style="font-size:10px;">${escapeHtml(c.subject)}</span>` : ""}</span>
           </label>`).join("")}</div>` : ""}
@@ -2474,6 +2666,16 @@ body.menu-open { overflow: hidden; }
         render();
       };
     });
+    const inlineList = card.querySelector(".inline-checklist");
+    if (inlineList) {
+      makeListSortable(inlineList, ".inline-checklist-row", (order) => {
+        const reordered = order.map(id => it.items.find(r => r.id === id)).filter(Boolean);
+        const rest = it.items.filter(r => !order.includes(r.id));
+        it.items = [...reordered, ...rest];
+        it.updatedAt = Date.now();
+        saveState();
+      });
+    }
     return card;
   }
 
@@ -2794,6 +2996,7 @@ body.menu-open { overflow: hidden; }
         const overdue = hw && row.dueDate && !row.done && row.dueDate < todayStrEditor;
         const r = document.createElement("div");
         r.className = "checklist-row";
+        if (row.id) r.dataset.sortId = row.id;
         if (hw) r.classList.add("checklist-row-hw");
         r.innerHTML = hw ? `
           <input type="checkbox" ${row.done ? "checked" : ""}>
@@ -2834,6 +3037,11 @@ body.menu-open { overflow: hidden; }
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
         }
         wrap.appendChild(r);
+      });
+      makeListSortable(wrap, ".checklist-row[data-sort-id]", (order) => {
+        const reordered = order.map(id => draft.items.find(x => x.id === id)).filter(Boolean);
+        const rest = draft.items.filter(x => !order.includes(x.id));
+        draft.items = [...reordered, ...rest];
       });
     }
     if (type === "checklist") {
@@ -3876,6 +4084,7 @@ body.menu-open { overflow: hidden; }
     sortBar.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;";
     sortBar.innerHTML = `<span class="hint" style="margin:0;">Sortieren:</span>
       <select id="taskSortSelect" class="hue-assign-select">
+        <option value="manual" ${taskSortMode === "manual" ? "selected" : ""}>Eigene Reihenfolge (verschiebbar)</option>
         <option value="status" ${taskSortMode === "status" ? "selected" : ""}>Offen zuerst</option>
         <option value="due" ${taskSortMode === "due" ? "selected" : ""}>Fälligkeit</option>
         <option value="person" ${taskSortMode === "person" ? "selected" : ""}>Person</option>
@@ -3886,6 +4095,7 @@ body.menu-open { overflow: hidden; }
     sortBar.querySelector("#taskSortSelect").onchange = (e) => { taskSortMode = e.target.value; render(); };
 
     function sortTasks(list) {
+      if (taskSortMode === "manual") return list.slice();
       const byName = (t) => { const p = getProfile(t.assignedTo); return p ? p.name : "zzz"; };
       return list.slice().sort((a, b) => {
         if (taskSortMode === "due") return (a.done - b.done) || (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
@@ -3912,6 +4122,7 @@ body.menu-open { overflow: hidden; }
         const card = document.createElement("div");
         card.className = "card";
         card.style.cursor = "default";
+        card.dataset.sortId = t.id;
         if (overdue) card.style.borderColor = "#C0453B";
         card.innerHTML = `
           <div class="card-top">
@@ -3948,6 +4159,14 @@ body.menu-open { overflow: hidden; }
         hwList.appendChild(card);
       });
       hwSection.appendChild(hwList);
+      makeListSortable(hwList, ".card[data-sort-id]", (order) => {
+        taskSortMode = "manual";
+        const rest = state.tasks.filter(t => !order.includes(t.id));
+        const reordered = order.map(id => state.tasks.find(t => t.id === id)).filter(Boolean);
+        state.tasks = [...rest, ...reordered];
+        reordered.forEach(t => { t.updatedAt = Date.now(); });
+        saveState();
+      });
     }
 
     // Task list (Haushalt)
@@ -3966,6 +4185,7 @@ body.menu-open { overflow: hidden; }
         const card = document.createElement("div");
         card.className = "card";
         card.style.cursor = "default";
+        card.dataset.sortId = t.id;
         card.innerHTML = `
           <div class="card-top">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -4005,6 +4225,14 @@ body.menu-open { overflow: hidden; }
         list.appendChild(card);
       });
       taskSection.appendChild(list);
+      makeListSortable(list, ".card[data-sort-id]", (order) => {
+        taskSortMode = "manual";
+        const rest = state.tasks.filter(t => !order.includes(t.id));
+        const reordered = order.map(id => state.tasks.find(t => t.id === id)).filter(Boolean);
+        state.tasks = [...rest, ...reordered];
+        reordered.forEach(t => { t.updatedAt = Date.now(); });
+        saveState();
+      });
     }
 
     // Rewards catalog
@@ -4335,6 +4563,22 @@ body.menu-open { overflow: hidden; }
     while (isWeekendStr(d)) d = addDays(d, 1);
     return d;
   }
+  function getVacationForDate(dateStr) {
+    return (state.vacations || []).find(v => dateStr >= v.start && dateStr <= v.end) || null;
+  }
+  function getVacationStatus() {
+    const today = new Date().toISOString().slice(0, 10);
+    const current = getVacationForDate(today);
+    if (current) {
+      return { type: "current", name: current.name, emoji: current.emoji || "🏝️", days: dateStrToDayNumber(current.end) - dateStrToDayNumber(today) + 1 };
+    }
+    const upcoming = (state.vacations || []).filter(v => v.start > today).sort((a, b) => a.start.localeCompare(b.start))[0];
+    if (upcoming) {
+      return { type: "next", name: upcoming.name, emoji: upcoming.emoji || "🏝️", days: dateStrToDayNumber(upcoming.start) - dateStrToDayNumber(today), start: upcoming.start };
+    }
+    return null;
+  }
+
   function getFerienStatus() {
     const list = state.schoolHolidays[state.federalState];
     if (!list || !list.length) return null;
@@ -4664,6 +4908,8 @@ body.menu-open { overflow: hidden; }
         ${dayNumHtml}<span style="display:flex;align-items:center;gap:3px;">${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}${custodyDotsHtml}</span>
       </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
     const ferienHtml = ferien ? `<div class="week-meal-tag" style="background:#F2D6A2;color:#6B4A22;" title="${escapeHtml(ferien)}">🏖️ ${escapeHtml(ferien)}</div>` : "";
+    const vacation = getVacationForDate(dateStr);
+    const vacationHtml = vacation ? `<div class="week-meal-tag vacation-tag" title="${escapeHtml(vacation.name)}">${vacation.emoji || "🏝️"} ${escapeHtml(vacation.name)}</div>` : "";
     const eventChips = dayEvents.slice(0, maxEvents).map(ev => {
       const visible = canSeeEventDetails(ev);
       const p = getProfile((ev.profileIds || [])[0]);
@@ -4684,7 +4930,7 @@ body.menu-open { overflow: hidden; }
         ${eventChips}${homeworkChips}${kinshipChips}
         ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
       </div>
-      ${ferienHtml}
+      ${ferienHtml}${vacationHtml}
       ${(!showHeader && custody.length) ? `<div class="cal-custody-row" style="position:static;margin-top:6px;">${custodyDotsHtml}</div>` : ""}`;
   }
 
@@ -4804,6 +5050,7 @@ body.menu-open { overflow: hidden; }
       </div>
       <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
       <button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>
+      <button class="btn btn-sm" id="calVacation">🏝️ Urlaub</button>
       <button class="btn btn-sm" id="calImport" title="Termine aus anderer Quelle hinzufügen (JSON oder ICS)">⊕ Termine importieren</button>
       <input type="file" id="calImportFile" accept=".json,.ics" style="display:none">
       <button class="btn btn-sm btn-accent" id="calAdd" style="margin-left:auto;">+ Termin</button>
@@ -4943,6 +5190,7 @@ body.menu-open { overflow: hidden; }
     toolbar.querySelector("#calToday").onclick = () => { calendarCursorStr = new Date().toISOString().slice(0, 10); render(); };
     toolbar.querySelector("#calAdd").onclick = () => openEventEditor(null, todayStr);
     toolbar.querySelector("#calCustody").onclick = () => openCustodyManager();
+    toolbar.querySelector("#calVacation").onclick = () => openVacationManager();
     toolbar.querySelector("#calMeal").onclick = () => setView("mealplan");
     toolbar.querySelector("#calModeMonth").onclick = () => { calendarViewMode = "month"; render(); };
     toolbar.querySelector("#calModeWeek").onclick = () => { calendarViewMode = "week"; render(); };
@@ -5039,7 +5287,7 @@ body.menu-open { overflow: hidden; }
       const iVoted = activeId && (o.votes || []).includes(activeId);
       const avgRating = mealAverageRating(o);
       const myRating = (o.ratings || {})[activeId] || 0;
-      return `<div class="meal-option-card${isConfirmed ? " confirmed" : ""}">
+      return `<div class="meal-option-card${isConfirmed ? " confirmed" : ""}" data-sort-id="${o.id}">
         <div class="meal-option-top">
           <span class="meal-option-title">${escapeHtml(o.text)}</span>
           <div class="meal-option-actions">
@@ -5059,7 +5307,8 @@ body.menu-open { overflow: hidden; }
 
     function renderMealDay(dayWrap, dateStr, label) {
       const entry = getMealEntry(dateStr);
-      const sortFn = (a, b) => (b.votes || []).length - (a.votes || []).length;
+      // Keine automatische Sortierung mehr — die Reihenfolge lässt sich jetzt selbst festlegen.
+      const sortFn = () => 0;
       const generalOpts = entry.options.filter(o => !optionForWhomIds(o).length).sort(sortFn);
       const personGroups = state.profiles
         .map(p => ({ p, opts: entry.options.filter(o => optionForWhomIds(o).includes(p.id)).sort(sortFn) }))
@@ -5142,6 +5391,16 @@ body.menu-open { overflow: hidden; }
       };
       addBtn.onclick = doAdd;
       addInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doAdd(); } });
+      dayWrap.querySelectorAll(".meal-group").forEach(groupEl => {
+        makeListSortable(groupEl, ".meal-option-card[data-sort-id]", (order) => {
+          const entryNow = getMealEntry(dateStr);
+          const reordered = order.map(id => entryNow.options.find(o => o.id === id)).filter(Boolean);
+          const rest = entryNow.options.filter(o => !order.includes(o.id));
+          entryNow.options = [...reordered, ...rest];
+          state.mealPlan[dateStr] = entryNow;
+          saveState();
+        });
+      });
     }
 
     days.forEach((d, i) => {
@@ -5738,6 +5997,29 @@ body.menu-open { overflow: hidden; }
     }
     saveState();
   }
+  function poolBalance(poolId) {
+    return state.poolLedger.filter(l => l.poolId === poolId).reduce((sum, l) => sum + l.amount, 0);
+  }
+  function poolContributionBy(poolId, profileId) {
+    return state.poolLedger.filter(l => l.poolId === poolId && l.profileId === profileId).reduce((sum, l) => sum + l.amount, 0);
+  }
+  function poolAdd(poolId, profileId, amount, source, note) {
+    state.poolLedger.push({
+      id: uid(), poolId, profileId: profileId || null, amount, source: source || "money",
+      note: note || "", at: Date.now(), updatedAt: Date.now()
+    });
+    saveState();
+  }
+  function createSavingsPool(name, emoji, goalAmount) {
+    const pool = {
+      id: uid(), name, emoji: emoji || "🎯", goalAmount: goalAmount || 0,
+      createdBy: state.activeProfileId || null, createdAt: Date.now(), updatedAt: Date.now()
+    };
+    state.savingsPools.push(pool);
+    saveState();
+    return pool;
+  }
+
   function runDueRecurringAllowances() {
     const now = Date.now();
     let any = false;
@@ -5842,6 +6124,8 @@ body.menu-open { overflow: hidden; }
       };
     }
 
+    renderSavingsPools(container, isParentView, viewingEntity);
+
     const kids = isParentView ? state.profiles.filter(p => p.role === "child") : [viewingEntity];
     kids.forEach(kid => {
       const balance = allowanceBalance(kid.id);
@@ -5861,6 +6145,10 @@ body.menu-open { overflow: hidden; }
         </div>
         <div class="today-sub-stat">⭐ ${points} Punkte offen (≈ ${fmtEuro(pointsValue)} bei aktuellem Kurs)</div>
         ${!isParentView && myPendingReqs.length ? `<div class="today-sub-stat">⏳ ${myPendingReqs.length} Anfrage(n) warten auf die Eltern</div>` : ""}
+        ${(() => {
+          const rcMoney = reportCardMoney(kid.id);
+          return rcMoney > 0 ? `<div class="today-sub-stat">🎓 Zeugnisgeld in Aussicht: <strong>${fmtEuro(rcMoney)}</strong> — wird von den Eltern freigegeben</div>` : "";
+        })()}
         <div class="news-composer-actions" style="margin-top:12px;">
           ${isParentView ? `
             <button type="button" class="btn btn-sm" data-action="convert" data-id="${kid.id}" ${points <= 0 ? "disabled" : ""}>Punkte umwandeln</button>
@@ -5935,6 +6223,255 @@ body.menu-open { overflow: hidden; }
       empty.innerHTML = `<span class="empty-icon">💰</span>Noch keine Kinderprofile angelegt.`;
       container.appendChild(empty);
     }
+  }
+
+  /* ============ NOTENSPIEGEL & ZEUGNISGELD ============ */
+  const GRADE_TYPES = { exam: "Schulaufgabe", test: "Kurzarbeit/Test", oral: "Mündlich", report: "🎓 Zeugnisnote" };
+  function gradesFor(profileId) { return state.grades.filter(g => g.profileId === profileId); }
+  function gradeAverage(list) {
+    if (!list.length) return null;
+    return list.reduce((s, g) => s + Number(g.value || 0), 0) / list.length;
+  }
+  function reportCardMoney(profileId) {
+    const reports = gradesFor(profileId).filter(g => g.type === "report");
+    return reports.reduce((sum, g) => sum + (Number(state.reportCardRates[g.value]) || 0), 0);
+  }
+
+  function renderGradesView(container) {
+    const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
+    if (!viewingEntity || personalAreaUnlockedFor !== viewingEntity.id) {
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">📓</span>Der Notenspiegel ist nur im jeweiligen persönlichen Bereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
+      container.querySelector("#goToHubBtn").onclick = () => setView("admin");
+      return;
+    }
+    const isParentView = viewingEntity.role === "parent";
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">📓 Notenspiegel</h1><p class="view-sub">${isParentView ? "Noten aller Kinder und die Zeugnisgeld-Sätze." : "Deine Noten und dein voraussichtliches Zeugnisgeld."}</p></div>
+      ${!isParentView ? `<button class="btn btn-accent" id="addGradeBtn">+ Note eintragen</button>` : ""}`;
+    container.appendChild(header);
+
+    if (isParentView) {
+      const rateSection = document.createElement("div");
+      rateSection.className = "settings-section";
+      rateSection.innerHTML = `<h3>🎓 Zeugnisgeld-Sätze</h3>
+        <p class="hint">Betrag pro Note im Zeugnis — wird automatisch aus den eingetragenen Zeugnisnoten berechnet.</p>
+        <div class="grade-rate-grid">
+          ${[1, 2, 3, 4, 5, 6].map(n => `
+            <div class="field"><label>Note ${n}</label>
+              <input type="text" class="grade-rate-input" data-grade="${n}" value="${state.reportCardRates[n] ?? 0}" inputmode="decimal">
+            </div>`).join("")}
+        </div>`;
+      container.appendChild(rateSection);
+      rateSection.querySelectorAll(".grade-rate-input").forEach(inp => {
+        inp.addEventListener("change", (e) => {
+          const v = parseFloat((e.target.value || "0").replace(",", "."));
+          state.reportCardRates[inp.dataset.grade] = isNaN(v) ? 0 : v;
+          saveState(); showToast("Zeugnisgeld-Satz gespeichert.");
+          render();
+        });
+      });
+    }
+
+    const people = isParentView ? state.profiles.filter(p => p.role === "child") : [viewingEntity];
+    people.forEach(person => {
+      const all = gradesFor(person.id);
+      const reports = all.filter(g => g.type === "report");
+      const others = all.filter(g => g.type !== "report");
+      const bySubject = {};
+      all.forEach(g => { (bySubject[g.subject || "Ohne Fach"] ||= []).push(g); });
+      const money = reportCardMoney(person.id);
+
+      const card = document.createElement("div");
+      card.className = "calendar-card";
+      card.style.marginBottom = "18px";
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+          <span class="mini-avatar" style="background:${person.color};width:40px;height:40px;font-size:18px;">${person.emoji || person.name.charAt(0)}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:15px;">${escapeHtml(person.name)}</div>
+            <div style="font-size:12.5px;color:var(--text-muted);">${all.length} Note${all.length === 1 ? "" : "n"}${gradeAverage(all) ? ` · Schnitt ${gradeAverage(all).toFixed(2)}` : ""}</div>
+          </div>
+          ${reports.length ? `<div class="grade-money-badge">🎓 Zeugnisgeld: <strong>${fmtEuro(money)}</strong></div>` : ""}
+        </div>
+        ${Object.keys(bySubject).length ? Object.entries(bySubject).map(([subject, list]) => {
+          const avg = gradeAverage(list);
+          return `<div class="grade-subject-row">
+            <div class="grade-subject-head"><span>${escapeHtml(subject)}</span><span class="grade-avg">⌀ ${avg.toFixed(2)}</span></div>
+            <div class="grade-chips">
+              ${list.map(g => `<span class="grade-chip grade-${Math.round(g.value)}" title="${escapeHtml(GRADE_TYPES[g.type] || "")}${g.date ? " · " + formatDateStrShort(g.date) : ""}" data-grade-id="${g.id}">${g.type === "report" ? "🎓" : ""}${g.value}</span>`).join("")}
+            </div>
+          </div>`;
+        }).join("") : `<div class="widget-empty">Noch keine Noten eingetragen.</div>`}
+        ${!isParentView && reports.length ? `<div class="today-sub-stat">Dein Zeugnisgeld wird nach Freigabe durch die Eltern gutgeschrieben.</div>` : ""}
+        ${isParentView && reports.length ? `<div class="news-composer-actions" style="margin-top:12px;">
+          <button type="button" class="btn btn-sm" data-payout-report="${person.id}" ${money <= 0 ? "disabled" : ""}>🎓 Zeugnisgeld auszahlen (${fmtEuro(money)})</button>
+        </div>` : ""}
+      `;
+      container.appendChild(card);
+
+      card.querySelectorAll("[data-grade-id]").forEach(chip => {
+        chip.onclick = () => {
+          if (!confirm("Diese Note löschen?")) return;
+          markDeleted(chip.dataset.gradeId);
+          state.grades = state.grades.filter(g => g.id !== chip.dataset.gradeId);
+          saveState(); render();
+        };
+      });
+
+      const payoutBtn = card.querySelector(`[data-payout-report="${person.id}"]`);
+      if (payoutBtn) payoutBtn.onclick = () => {
+        if (!confirm(`${fmtEuro(money)} Zeugnisgeld an ${person.name} auszahlen?`)) return;
+        allowanceAdd(person.id, money, "🎓 Zeugnisgeld");
+        // Zeugnisnoten als ausgezahlt markieren, damit das Geld nicht doppelt gutgeschrieben wird.
+        gradesFor(person.id).filter(g => g.type === "report").forEach(g => { g.type = "report-paid"; g.updatedAt = Date.now(); });
+        saveState(); render();
+        showToast("Zeugnisgeld gutgeschrieben! 🎓");
+      };
+    });
+
+    const addBtn = header.querySelector("#addGradeBtn");
+    if (addBtn) addBtn.onclick = () => {
+      const subject = prompt("Fach (z. B. Mathe, Deutsch):");
+      if (!subject || !subject.trim()) return;
+      const valRaw = prompt("Note (1–6):");
+      const value = parseInt(valRaw, 10);
+      if (isNaN(value) || value < 1 || value > 6) { showToast("Bitte eine Note zwischen 1 und 6 eingeben."); return; }
+      const isReport = confirm("Ist das eine Zeugnisnote?\n\nOK = Zeugnisnote · Abbrechen = normale Note");
+      state.grades.push({
+        id: uid(), profileId: viewingEntity.id, subject: subject.trim(), value,
+        type: isReport ? "report" : "exam", date: new Date().toISOString().slice(0, 10),
+        createdAt: Date.now(), updatedAt: Date.now()
+      });
+      saveState(); render();
+    };
+  }
+
+  /* ============ SPAR-POOLS ============ */
+  function renderSavingsPools(container, isParentView, viewingEntity) {
+    const section = document.createElement("div");
+    section.className = "settings-section";
+    section.innerHTML = `<h3>🏦 Spar-Pools</h3>`;
+    const body = document.createElement("div");
+    body.innerHTML = `<p class="hint">Gemeinsam auf etwas sparen — Kinder zahlen aus ihrem Taschengeld oder mit Punkten ein, Eltern und Verwandte können beisteuern.</p>`;
+
+    if (!state.savingsPools.length) {
+      body.innerHTML += `<div class="widget-empty">Noch kein Spar-Pool angelegt.</div>`;
+    } else {
+      state.savingsPools.forEach(pool => {
+        const balance = poolBalance(pool.id);
+        const goal = pool.goalAmount || 0;
+        const pct = goal > 0 ? Math.min(100, (balance / goal) * 100) : 0;
+        const contributors = state.profiles
+          .map(p => ({ p, amount: poolContributionBy(pool.id, p.id) }))
+          .filter(c => c.amount !== 0);
+        const gifts = state.poolLedger.filter(l => l.poolId === pool.id && !l.profileId).reduce((s, l) => s + l.amount, 0);
+        const card = document.createElement("div");
+        card.className = "calendar-card pool-card";
+        card.innerHTML = `
+          <div class="pool-head">
+            <div>
+              <div class="pool-name">${pool.emoji || "🎯"} ${escapeHtml(pool.name)}</div>
+              <div class="pool-amount">${fmtEuro(balance)}${goal > 0 ? ` <span class="pool-goal">von ${fmtEuro(goal)}</span>` : ""}</div>
+            </div>
+            ${isParentView ? `<button type="button" class="card-pin" data-pool-del="${pool.id}" title="Pool löschen">✕</button>` : ""}
+          </div>
+          ${goal > 0 ? `<div class="card-progress"><div class="card-progress-bar" style="width:${pct.toFixed(1)}%;background:#3FA796;"></div></div>
+            <div class="today-sub-stat" style="border:none;padding:4px 0;">${pct >= 100 ? "🎉 Sparziel erreicht!" : `Noch ${fmtEuro(Math.max(0, goal - balance))} bis zum Ziel`}</div>` : ""}
+          ${contributors.length || gifts ? `<div class="pool-contributors">
+            ${contributors.map(c => `<span class="pool-contrib-chip"><span class="mini-avatar" style="background:${c.p.color};">${c.p.emoji || c.p.name.charAt(0)}</span>${escapeHtml(c.p.name)}: ${fmtEuro(c.amount)}</span>`).join("")}
+            ${gifts ? `<span class="pool-contrib-chip">🎁 Geschenkt: ${fmtEuro(gifts)}</span>` : ""}
+          </div>` : ""}
+          <div class="news-composer-actions" style="margin-top:12px;">
+            ${!isParentView ? `
+              <button type="button" class="btn btn-sm" data-pool-money="${pool.id}">💶 Taschengeld einzahlen</button>
+              <button type="button" class="btn btn-sm" data-pool-points="${pool.id}">⭐ Punkte einzahlen</button>
+            ` : `
+              <button type="button" class="btn btn-sm" data-pool-gift="${pool.id}">🎁 Beisteuern</button>
+              <button type="button" class="btn btn-sm" data-pool-payout="${pool.id}" ${balance <= 0 ? "disabled" : ""}>Auszahlen / auflösen</button>
+            `}
+          </div>
+        `;
+        body.appendChild(card);
+
+        const delBtn = card.querySelector(`[data-pool-del="${pool.id}"]`);
+        if (delBtn) delBtn.onclick = () => {
+          if (!confirm(`Pool „${pool.name}" wirklich löschen? Das Guthaben von ${fmtEuro(balance)} geht dabei verloren — vorher besser auszahlen.`)) return;
+          markDeleted(pool.id);
+          state.savingsPools = state.savingsPools.filter(p => p.id !== pool.id);
+          state.poolLedger.filter(l => l.poolId === pool.id).forEach(l => markDeleted(l.id));
+          state.poolLedger = state.poolLedger.filter(l => l.poolId !== pool.id);
+          saveState(); render();
+        };
+
+        const moneyBtn = card.querySelector(`[data-pool-money="${pool.id}"]`);
+        if (moneyBtn) moneyBtn.onclick = () => {
+          const myBalance = allowanceBalance(viewingEntity.id);
+          if (myBalance <= 0) { showToast("Du hast gerade kein Taschengeld zum Einzahlen."); return; }
+          const raw = prompt(`Wie viel einzahlen? (€, maximal ${fmtEuro(myBalance)})`);
+          if (!raw) return;
+          let amount = parseFloat(raw.replace(",", "."));
+          if (!amount || isNaN(amount) || amount <= 0) return;
+          if (amount > myBalance) { amount = myBalance; showToast(`Auf dein Guthaben begrenzt.`); }
+          allowanceAdd(viewingEntity.id, -amount, `In Spar-Pool „${pool.name}"`);
+          poolAdd(pool.id, viewingEntity.id, amount, "money", "");
+          render();
+        };
+
+        const pointsBtn = card.querySelector(`[data-pool-points="${pool.id}"]`);
+        if (pointsBtn) pointsBtn.onclick = () => {
+          const pts = pointsBalance(viewingEntity.id);
+          if (pts <= 0) { showToast("Du hast gerade keine Punkte."); return; }
+          const raw = prompt(`Wie viele Punkte einzahlen? (maximal ${pts}, 1 Punkt = ${fmtEuro(state.pointsToMoneyRate)})`, String(pts));
+          if (raw === null) return;
+          let usePts = parseInt(raw, 10);
+          if (isNaN(usePts) || usePts <= 0) return;
+          if (usePts > pts) { usePts = pts; showToast(`Auf ${pts} Punkte begrenzt.`); }
+          ledgerAdd(viewingEntity.id, -usePts, `In Spar-Pool „${pool.name}"`);
+          poolAdd(pool.id, viewingEntity.id, +(usePts * state.pointsToMoneyRate).toFixed(2), "points", `${usePts} Punkte`);
+          render();
+        };
+
+        const giftBtn = card.querySelector(`[data-pool-gift="${pool.id}"]`);
+        if (giftBtn) giftBtn.onclick = () => {
+          const raw = prompt("Betrag zum Beisteuern (€):");
+          if (!raw) return;
+          const amount = parseFloat(raw.replace(",", "."));
+          if (!amount || isNaN(amount) || amount <= 0) return;
+          const from = prompt("Von wem? (z. B. Oma, Papa) — leer lassen für „Geschenkt“") || "";
+          poolAdd(pool.id, null, amount, "gift", from);
+          showToast("Beigesteuert! 🎁");
+          render();
+        };
+
+        const payoutBtn = card.querySelector(`[data-pool-payout="${pool.id}"]`);
+        if (payoutBtn) payoutBtn.onclick = () => {
+          if (!confirm(`${fmtEuro(balance)} aus „${pool.name}" auszahlen? Der Pool wird dabei auf 0 gesetzt.`)) return;
+          poolAdd(pool.id, null, -balance, "payout", "Ausgezahlt");
+          showToast("Ausgezahlt.");
+          render();
+        };
+      });
+    }
+
+    const addBtn = document.createElement("button");
+    addBtn.className = "btn btn-sm";
+    addBtn.style.marginTop = "10px";
+    addBtn.textContent = "+ Neuen Spar-Pool anlegen";
+    addBtn.onclick = () => {
+      const name = prompt("Wofür wird gespart? (z. B. Trampolin, Urlaubskasse)");
+      if (!name || !name.trim()) return;
+      const emoji = prompt("Symbol (optional, z. B. 🚲):", "🎯") || "🎯";
+      const goalRaw = prompt("Sparziel in € (optional, leer lassen für kein Ziel):", "");
+      const goal = goalRaw ? parseFloat(goalRaw.replace(",", ".")) : 0;
+      createSavingsPool(name.trim(), emoji.trim(), isNaN(goal) ? 0 : goal);
+      render();
+    };
+    body.appendChild(addBtn);
+
+    section.appendChild(body);
+    container.appendChild(section);
+    makeCollapsible(section, "allowance-pools", true);
   }
 
   /* ============ HAUSHALTSBUCH ============ */
@@ -6290,6 +6827,62 @@ body.menu-open { overflow: hidden; }
   }
 
   /* ============ WECHSELMODELL (Betreuungs-Rotation) ============ */
+  function openVacationManager() {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:520px;">
+      <div class="modal-header"><h2>🏝️ Familienurlaub</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <p class="hint">Urlaubszeiträume werden im Kalender und im Ticker angezeigt — während des Urlaubs bekommt die App eine festliche Note.</p>
+      <div id="vacList"></div>
+      <div class="size-grid" style="grid-template-columns:1.4fr 1fr 1fr .6fr;align-items:end;margin-top:14px;">
+        <div class="field"><label>Wohin / Anlass</label><input type="text" id="vacName" placeholder="z. B. Nordsee"></div>
+        <div class="field"><label>Von</label><input type="date" id="vacStart"></div>
+        <div class="field"><label>Bis</label><input type="date" id="vacEnd"></div>
+        <div class="field"><label>Symbol</label><input type="text" id="vacEmoji" value="🏝️" maxlength="4"></div>
+      </div>
+      <button class="btn btn-accent btn-sm" id="vacAddBtn">+ Urlaub eintragen</button>
+      <div class="modal-footer"><div></div><div class="modal-footer-right"><button class="btn btn-ghost" id="vacClose">Fertig</button></div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); render(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#vacClose").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    function paintList() {
+      const listEl = overlay.querySelector("#vacList");
+      const vacs = (state.vacations || []).slice().sort((a, b) => a.start.localeCompare(b.start));
+      listEl.innerHTML = vacs.length ? vacs.map(v => `
+        <div class="widget-row">
+          <span class="wr-title">${v.emoji || "🏝️"} ${escapeHtml(v.name)}</span>
+          <span class="wr-meta">${formatDateStrShort(v.start)} – ${formatDateStrShort(v.end)}</span>
+          <button class="card-pin" data-vac-del="${v.id}" title="Entfernen" style="margin-left:8px;">✕</button>
+        </div>`).join("") : `<div class="widget-empty">Noch kein Urlaub eingetragen.</div>`;
+      listEl.querySelectorAll("[data-vac-del]").forEach(btn => {
+        btn.onclick = () => {
+          markDeleted(btn.dataset.vacDel);
+          state.vacations = state.vacations.filter(v => v.id !== btn.dataset.vacDel);
+          saveState(); paintList();
+        };
+      });
+    }
+    paintList();
+
+    overlay.querySelector("#vacAddBtn").onclick = () => {
+      const name = overlay.querySelector("#vacName").value.trim();
+      const start = overlay.querySelector("#vacStart").value;
+      const end = overlay.querySelector("#vacEnd").value;
+      const emoji = overlay.querySelector("#vacEmoji").value.trim() || "🏝️";
+      if (!name || !start || !end) { showToast("Bitte Anlass, Von und Bis ausfüllen."); return; }
+      if (end < start) { showToast("Das Enddatum liegt vor dem Startdatum."); return; }
+      state.vacations.push({ id: uid(), name, start, end, emoji, createdAt: Date.now(), updatedAt: Date.now() });
+      saveState();
+      overlay.querySelector("#vacName").value = "";
+      paintList();
+      showToast("Urlaub eingetragen! 🏝️");
+    };
+  }
+
   function openCustodyManager() {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
@@ -6546,9 +7139,10 @@ body.menu-open { overflow: hidden; }
         shirt: "👕 Oberteil", pants: "👖 Hose", shoes: "👟 Schuhe",
         jacket: "🧥 Jacke", head: "🧢 Kopfumfang", gloves: "🧤 Handschuhe", bra: "👙 BH"
       };
-      listItems.slice().sort((a, b) => a.done - b.done).forEach(item => {
+      listItems.forEach(item => {
         const row = document.createElement("div");
         row.className = "shopping-row" + (item.done ? " done" : "");
+        row.dataset.sortId = item.id;
         const forWhomProfile = item.forWhom ? getProfile(item.forWhom) : null;
         const sizeHint = (item.category && CLOTHING_CATS[item.category] && forWhomProfile && forWhomProfile.sizes && forWhomProfile.sizes[item.category])
           ? `<span class="s-size-hint" title="Hinterlegte Größe von ${escapeHtml(forWhomProfile.name)}">Größe ${escapeHtml(forWhomProfile.sizes[item.category])}</span>` : "";
@@ -6611,6 +7205,13 @@ body.menu-open { overflow: hidden; }
       });
     }
     container.appendChild(card);
+    makeListSortable(card, ".shopping-row:not(.shopping-row-head)", (order) => {
+      const rest = state.shoppingList.filter(i => !order.includes(i.id));
+      const reordered = order.map(id => state.shoppingList.find(i => i.id === id)).filter(Boolean);
+      state.shoppingList = [...rest, ...reordered];
+      reordered.forEach(i => { i.updatedAt = Date.now(); });
+      saveState();
+    });
 
     if (listItems.some(i => i.done)) {
       const clearBtn = document.createElement("button");
@@ -6774,6 +7375,10 @@ body.menu-open { overflow: hidden; }
       state.budget.loans = (state.budget.loans || []).filter(isLive);
     }
     state.allowanceRecurring = (state.allowanceRecurring || []).filter(isLive);
+    state.savingsPools = (state.savingsPools || []).filter(isLive);
+    state.grades = (state.grades || []).filter(isLive);
+    state.vacations = (state.vacations || []).filter(isLive);
+    state.poolLedger = (state.poolLedger || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
@@ -6825,6 +7430,11 @@ body.menu-open { overflow: hidden; }
       state.budget.loans = mergeByIdNewest(state.budget.loans || [], remote.budget.loans);
     }
     state.allowanceRecurring = mergeByIdNewest(state.allowanceRecurring || [], remote.allowanceRecurring);
+    state.savingsPools = mergeByIdNewest(state.savingsPools || [], remote.savingsPools);
+    state.grades = mergeByIdNewest(state.grades || [], remote.grades);
+    state.vacations = mergeByIdNewest(state.vacations || [], remote.vacations);
+    state.reportCardRates = { ...state.reportCardRates, ...(remote.reportCardRates || {}) };
+    state.poolLedger = unionById(state.poolLedger || [], remote.poolLedger);
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
@@ -6974,11 +7584,97 @@ body.menu-open { overflow: hidden; }
   /* ============ SETTINGS ============ */
   function applyTheme(themeId) {
     if (themeId === "terminal") themeId = "vaultterm"; // Terminal-Theme entfernt, nächstverwandtes Theme übernehmen
+    // Zusatz-Klassen (Echo-Show-Modus, Ferienstimmung) beim Theme-Wechsel erhalten.
+    const keep = ["echo-show-mode", "holiday-mood"].filter(c => document.body.classList.contains(c));
     document.body.className = "theme-" + themeId;
+    keep.forEach(c => document.body.classList.add(c));
     state.theme = themeId;
   }
 
+  function applyHolidayMood() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const inVacation = !!getVacationForDate(todayStr);
+    const ferien = getFerienStatus();
+    const inFerien = ferien && ferien.type === "current";
+    const on = inVacation || !!inFerien;
+    document.body.classList.toggle("holiday-mood", on);
+    const wrap = document.getElementById("holidaySparkles");
+    if (!wrap) return;
+    if (!on) { wrap.innerHTML = ""; return; }
+    if (wrap.childElementCount) return; // schon erzeugt — nicht bei jedem Rendern neu aufbauen
+    let html = "";
+    for (let i = 0; i < 14; i++) {
+      const left = Math.random() * 100;
+      const dur = 16 + Math.random() * 16;
+      const delay = Math.random() * 18;
+      const size = 3 + Math.random() * 4;
+      html += `<span style="left:${left.toFixed(1)}%;width:${size.toFixed(1)}px;height:${size.toFixed(1)}px;animation-duration:${dur.toFixed(1)}s;animation-delay:-${delay.toFixed(1)}s;"></span>`;
+    }
+    wrap.innerHTML = html;
+  }
+
   let collapsedSections = new Set();
+  // Generisches Verschieben von Listeneinträgen: langes Drücken (Touch) bzw. Ziehen mit
+  // gedrückter Maustaste hebt den Eintrag an, danach lässt er sich an eine neue Stelle ziehen.
+  function makeListSortable(containerEl, itemSelector, onReorder) {
+    let dragEl = null, pressTimer = null, startY = 0, isDragging = false;
+    const LONG_PRESS_MS = 320;
+
+    function itemsOf() { return Array.from(containerEl.querySelectorAll(itemSelector)); }
+
+    function beginDrag(el) {
+      isDragging = true;
+      dragEl = el;
+      el.classList.add("sortable-dragging");
+      document.body.classList.add("sortable-active");
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) { /* nicht unterstützt */ } }
+    }
+    function endDrag() {
+      clearTimeout(pressTimer);
+      if (dragEl) dragEl.classList.remove("sortable-dragging");
+      document.body.classList.remove("sortable-active");
+      if (isDragging && dragEl) {
+        const order = itemsOf().map(el => el.dataset.sortId).filter(Boolean);
+        if (order.length) onReorder(order);
+      }
+      isDragging = false;
+      dragEl = null;
+    }
+    function onMove(e) {
+      if (!isDragging || !dragEl) return;
+      e.preventDefault();
+      const y = e.clientY;
+      const others = itemsOf().filter(el => el !== dragEl);
+      for (const el of others) {
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (y < mid && el.compareDocumentPosition(dragEl) & Node.DOCUMENT_POSITION_FOLLOWING) {
+          el.parentNode.insertBefore(dragEl, el);
+          break;
+        }
+        if (y > mid && el.compareDocumentPosition(dragEl) & Node.DOCUMENT_POSITION_PRECEDING) {
+          el.parentNode.insertBefore(dragEl, el.nextSibling);
+          break;
+        }
+      }
+    }
+
+    containerEl.addEventListener("pointerdown", (e) => {
+      // Bedienelemente (Knöpfe, Eingaben) nicht als Ziehen missverstehen.
+      if (e.target.closest("button, input, select, textarea, a")) return;
+      const el = e.target.closest(itemSelector);
+      if (!el || !containerEl.contains(el)) return;
+      startY = e.clientY;
+      pressTimer = setTimeout(() => beginDrag(el), LONG_PRESS_MS);
+    });
+    containerEl.addEventListener("pointermove", (e) => {
+      if (!isDragging && pressTimer && Math.abs(e.clientY - startY) > 12) { clearTimeout(pressTimer); pressTimer = null; }
+      onMove(e);
+    });
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
+  }
+
   function makeCollapsible(sectionEl, key, defaultOpen) {
     const h3 = sectionEl.querySelector(":scope > h3");
     if (!h3) return;
@@ -8007,6 +8703,7 @@ body.menu-open { overflow: hidden; }
     quickLinks.innerHTML = `
       <button type="button" class="personal-quick-link" data-goto="mindmap">🕸️ Mind-Map</button>
       <button type="button" class="personal-quick-link" data-goto="allowance">💰 Taschengeld</button>
+      <button type="button" class="personal-quick-link" data-goto="grades">📓 Notenspiegel</button>
     `;
     container.appendChild(quickLinks);
     quickLinks.querySelectorAll("[data-goto]").forEach(btn => { btn.onclick = () => setView(btn.dataset.goto); });
@@ -8806,6 +9503,12 @@ body.menu-open { overflow: hidden; }
         }
       });
     }
+    const vacForTicker = getVacationStatus();
+    if (vacForTicker) {
+      messages.push({ view: "calendar", text: vacForTicker.type === "current"
+        ? `${vacForTicker.emoji} Urlaub: ${vacForTicker.name} — noch ${vacForTicker.days} Tag${vacForTicker.days === 1 ? "" : "e"}`
+        : `${vacForTicker.emoji} Noch ${vacForTicker.days} Tag${vacForTicker.days === 1 ? "" : "e"} bis ${vacForTicker.name}` });
+    }
     const ferienForTicker = getFerienStatus();
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
@@ -8955,6 +9658,7 @@ body.menu-open { overflow: hidden; }
       b.classList.toggle("active", b.dataset.view === currentView);
     });
     resetRecurringTasksIfNeeded();
+    applyHolidayMood();
     runDueRecurringAllowances();
     render();
     registerServiceWorker();
@@ -8972,6 +9676,7 @@ body.menu-open { overflow: hidden; }
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
       resetRecurringTasksIfNeeded();
+      applyHolidayMood();
       render();
       if (state.kinship.enabled && state.kinship.circleId) { pullKinshipData(true).then(() => render()); }
       const net = state.connectors.network;
