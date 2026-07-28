@@ -733,6 +733,15 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .hue-bri { width: 100%; accent-color: #E8A33D; }
 .hue-color { width: 100%; height: 26px; border: 1px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; padding: 2px; }
 .hue-assign-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 8px; font-size: 12.5px; }
+.hue-sub-heading { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 0 0 8px; }
+.hue-person-group { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
+.hue-person-group:last-child { border-bottom: none; }
+.hue-person-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.hue-accordion-toggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; text-align: left;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 14px; font-size: 13px; color: var(--text); cursor: pointer;
+}
 
 .budget-sum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 16px; }
 .budget-sum-grid > div { display: flex; flex-direction: column; gap: 2px; }
@@ -1358,7 +1367,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 90;
+  const APP_BUILD_NUMBER = 92;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1502,6 +1511,7 @@ body.menu-open { overflow: hidden; }
   let autoPushDebounce = null;
   let activeTagFilter = null;
   let settingsSectionsOpen = new Set();
+  let hueUnassignedOpen = false;
   let syncSettingsUnlocked = false;
   let expandedChecklists = new Set();
   let mmSelectedNode = null;
@@ -2163,6 +2173,16 @@ body.menu-open { overflow: hidden; }
       setupDashboardClock();
     }
 
+    // --- Familien-News ---
+    const recentNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
+    widget("📰", "Familien-News", "#B15CDE",
+      recentNews.length ? recentNews.map(post => {
+        const author = post.createdBy ? getProfile(post.createdBy) : null;
+        const preview = post.text ? escapeHtml(post.text).slice(0, 60) : (post.photo ? "📷 Foto" : post.audio ? "🎤 Sprachnachricht" : "");
+        return `<div class="widget-row">${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span>` : ""}<span class="wr-title">${preview}</span></div>`;
+      }).join("") : `<div class="widget-empty">Noch keine News geteilt.</div>`,
+      "news", "Alle News ›");
+
     // --- Nächste Termine ---
     const upcoming = state.events.filter(ev => ev.date >= todayStr).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""))).slice(0, 5);
     widget("📅", "Nächste Termine", "#3A5A9B",
@@ -2254,16 +2274,6 @@ body.menu-open { overflow: hidden; }
         row.querySelector(".hue-color").addEventListener("change", (e) => setHueLightState(l.id, { on: true, ...hexToHueSat(e.target.value) }));
       });
     }
-
-    // --- Familien-News ---
-    const recentNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
-    widget("📰", "Familien-News", "#B15CDE",
-      recentNews.length ? recentNews.map(post => {
-        const author = post.createdBy ? getProfile(post.createdBy) : null;
-        const preview = post.text ? escapeHtml(post.text).slice(0, 60) : (post.photo ? "📷 Foto" : post.audio ? "🎤 Sprachnachricht" : "");
-        return `<div class="widget-row">${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span>` : ""}<span class="wr-title">${preview}</span></div>`;
-      }).join("") : `<div class="widget-empty">Noch keine News geteilt.</div>`,
-      "news", "Alle News ›");
 
     // --- Zuletzt bearbeitet ---
     const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
@@ -6529,21 +6539,45 @@ body.menu-open { overflow: hidden; }
       const hueSection = document.createElement("div");
       hueSection.className = "settings-section";
       const h = state.hue;
+      const assignedLights = (h.lights || []).filter(l => l.assignedTo);
+      const unassignedLights = (h.lights || []).filter(l => !l.assignedTo);
+      const assignedByPerson = state.profiles
+        .map(p => ({ p, lights: assignedLights.filter(l => l.assignedTo === p.id) }))
+        .filter(g => g.lights.length);
+      const lightRow = (l) => `
+        <div class="widget-row">
+          <span class="wr-title">💡 ${escapeHtml(l.name)}</span>
+          <select data-assign-light="${l.id}" class="hue-assign-select" style="margin-left:auto;">
+            <option value="">Niemandem zugeordnet</option>
+            ${state.profiles.map(p => `<option value="${p.id}" ${l.assignedTo === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
+          </select>
+        </div>`;
       hueSection.innerHTML = `
         <h3>💡 Philips Hue</h3>
         <p class="hint">Steuert Lampen im selben WLAN über die Hue Bridge — läuft direkt zwischen Gerät und Bridge, kein Cloud-Konto nötig.</p>
         ${h.bridgeUrl && h.username ? `
           <p class="hint">Verbunden mit: <code>${escapeHtml(h.bridgeUrl)}</code></p>
           <div class="backup-row"><button class="btn btn-sm" id="hueRefreshBtn">🔄 Lampen neu suchen</button><button class="btn btn-sm btn-danger" id="hueDisconnectBtn">Trennen</button></div>
-          <div style="margin-top:12px;">${(h.lights || []).length ? h.lights.map(l => `
-            <div class="widget-row">
-              <span class="wr-title">💡 ${escapeHtml(l.name)}</span>
-              <select data-assign-light="${l.id}" class="hue-assign-select" style="margin-left:auto;">
-                <option value="">Niemandem zugeordnet</option>
-                ${state.profiles.map(p => `<option value="${p.id}" ${l.assignedTo === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
-              </select>
+          ${assignedByPerson.length ? `
+            <div style="margin-top:14px;">
+              <h4 class="hue-sub-heading">Zugeordnete Lampen</h4>
+              ${assignedByPerson.map(g => `
+                <div class="hue-person-group">
+                  <div class="hue-person-head"><span class="mini-avatar" style="background:${g.p.color};">${g.p.emoji || g.p.name.charAt(0)}</span>${escapeHtml(g.p.name)}</div>
+                  ${g.lights.map(lightRow).join("")}
+                </div>
+              `).join("")}
             </div>
-          `).join("") : `<div class="widget-empty">Keine Lampen gefunden.</div>`}</div>
+          ` : ""}
+          <div style="margin-top:14px;">
+            <button type="button" class="hue-accordion-toggle" id="hueUnassignedToggle">
+              <span>Gefundene Lampen (${unassignedLights.length} nicht zugeordnet)</span>
+              <span class="settings-accordion-arrow">${hueUnassignedOpen ? "▾" : "▸"}</span>
+            </button>
+            <div id="hueUnassignedBody" style="display:${hueUnassignedOpen ? "" : "none"};margin-top:8px;">
+              ${unassignedLights.length ? unassignedLights.map(lightRow).join("") : `<div class="widget-empty">Alle gefundenen Lampen sind bereits zugeordnet.</div>`}
+            </div>
+          </div>
         ` : `
           <div class="field" style="max-width:280px;"><label>Adresse der Hue Bridge</label><input type="text" id="hueBridgeUrl" placeholder="http://192.168.1.23"></div>
           <p class="hint">Vor dem Verbinden einmal den runden Knopf auf der Bridge drücken, dann innerhalb von ca. 30 Sekunden hier „Verbinden" klicken.</p>
@@ -6558,11 +6592,20 @@ body.menu-open { overflow: hidden; }
           state.hue = { bridgeUrl: "", username: "", lights: [] };
           saveState(); render();
         };
+        const unassignedToggle = hueSection.querySelector("#hueUnassignedToggle");
+        if (unassignedToggle) {
+          unassignedToggle.onclick = () => {
+            hueUnassignedOpen = !hueUnassignedOpen;
+            const body = hueSection.querySelector("#hueUnassignedBody");
+            body.style.display = hueUnassignedOpen ? "" : "none";
+            unassignedToggle.querySelector(".settings-accordion-arrow").textContent = hueUnassignedOpen ? "▾" : "▸";
+          };
+        }
         hueSection.querySelectorAll("[data-assign-light]").forEach(sel => {
           sel.onchange = (e) => {
             const light = state.hue.lights.find(l => l.id === sel.dataset.assignLight);
             if (light) { light.assignedTo = e.target.value || null; light.updatedAt = Date.now(); }
-            saveState();
+            saveState(); render();
           };
         });
       } else {
