@@ -102,6 +102,7 @@ $stateNames = [
   'ST'=>'Sachsen-Anhalt','SH'=>'Schleswig-Holstein','TH'=>'Thüringen',
 ];
 $stateName = $stateNames[$federalStateCode] ?? null;
+$warnRegionFilter = mb_strtolower(trim($state['warnRegionFilter'] ?? ''));
 if ($stateName) {
   $ctx = stream_context_create(['http' => ['timeout' => 8]]);
   $raw = @file_get_contents('https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json', false, $ctx);
@@ -112,7 +113,8 @@ if ($stateName) {
     if (is_array($parsed) && isset($parsed['warnings'])) {
       foreach ($parsed['warnings'] as $cellWarnings) {
         foreach ($cellWarnings as $w) {
-          if (($w['state'] ?? '') === $stateName && ($w['level'] ?? 0) >= 3) {
+          $regionMatches = $warnRegionFilter === '' || strpos(mb_strtolower($w['regionName'] ?? ''), $warnRegionFilter) !== false;
+          if (($w['state'] ?? '') === $stateName && $regionMatches && ($w['level'] ?? 0) >= 3) {
             $wid = md5(($w['headline'] ?? '') . ($w['regionName'] ?? '') . ($w['start'] ?? ''));
             $currentWarningIds[] = $wid;
             if (!in_array($wid, $lastWarningIds, true)) {

@@ -549,6 +549,11 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .theme-bauhaus .nav-item.active { color: #fff; }
 .nav-icon { font-size: 16px; width: 18px; text-align: center; }
 .nav-divider { height: 1px; background: var(--border); margin: 8px 4px; }
+.nav-submenu-arrow { margin-left: auto; font-size: 11px; color: var(--text-muted); transition: transform .15s ease; }
+.nav-submenu { display: flex; flex-direction: column; gap: 4px; overflow: hidden; max-height: 0; transition: max-height .2s ease; }
+.nav-submenu.open { max-height: 220px; }
+.nav-subitem { padding-left: 34px; font-size: 13px; }
+.nav-subitem .nav-icon { font-size: 15px; }
 
 /* ============ PROFILE BAR ============ */
 .profile-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 6px 16px; }
@@ -801,6 +806,32 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .news-post-audio { width: 100%; height: 40px; }
 .news-post-kinship { border-color: #B15CDE; background: color-mix(in srgb, #B15CDE 8%, var(--surface)); }
 .allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.allowance-entry-date { font-size: 10.5px; color: var(--text-muted); font-weight: 400; }
+
+.retro-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+.retro-game-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; font-size: 14px; color: var(--text); transition: transform .12s ease, border-color .15s ease;
+}
+.retro-game-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.retro-game-icon { font-size: 34px; }
+.retro-game-wrap { display: flex; flex-direction: column; align-items: center; max-width: 420px; }
+.retro-game-score { font-family: var(--font-display); font-size: 15px; margin-bottom: 10px; }
+.retro-canvas { background: #14181B; border-radius: var(--radius); border: 1px solid var(--border); max-width: 100%; touch-action: none; }
+.retro-touch-pad { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 12px; }
+.retro-touch-row { display: flex; gap: 8px; }
+.retro-touch-pad button {
+  width: 52px; height: 44px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); font-size: 16px; cursor: pointer;
+}
+.retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 14px; }
+.retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 340px; }
+.retro-memory-card {
+  aspect-ratio: 1 / 1; font-size: 22px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.retro-memory-card.flipped { background: var(--surface); border-color: var(--accent); }
 
 .dashboard-card { position: relative; }
 .dash-clock { position: absolute; top: 20px; right: 22px; width: 64px; height: 64px; }
@@ -834,6 +865,8 @@ body.echo-show-mode #app {
 }
 body.echo-show-mode .sidebar { height: 100%; width: 320px; }
 body.echo-show-mode .nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+body.echo-show-mode #toolsToggle, body.echo-show-mode .nav-submenu { grid-column: 1 / -1; }
+body.echo-show-mode .nav-submenu.open { display: grid; grid-template-columns: repeat(2, 1fr); max-height: none; }
 body.echo-show-mode .nav-item { flex-direction: column; text-align: center; padding: 14px 6px; gap: 6px; }
 body.echo-show-mode .nav-label { font-size: 11.5px; line-height: 1.15; }
 body.echo-show-mode .nav-icon { font-size: 22px; }
@@ -1282,48 +1315,55 @@ body.menu-open { overflow: hidden; }
       <button class="nav-item active" data-view="home">
         <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
       </button>
-      <button class="nav-item" data-view="notes">
-        <span class="nav-icon">📝</span><span class="nav-label">Notizen</span>
-      </button>
-      <button class="nav-item" data-view="checklists">
-        <span class="nav-icon">☑️</span><span class="nav-label">Checklisten</span>
-      </button>
-      <button class="nav-item" data-view="images">
-        <span class="nav-icon">🖼️</span><span class="nav-label">Bilder &amp; Malen</span>
-      </button>
-      <button class="nav-item" data-view="tags">
-        <span class="nav-icon">🏷️</span><span class="nav-label">Tags</span>
-      </button>
-      <div class="nav-divider"></div>
-      <button class="nav-item" data-view="tasks">
-        <span class="nav-icon">⭐</span><span class="nav-label">Aufgaben &amp; Belohnungen</span>
-      </button>
-      <button class="nav-item" data-view="calendar">
-        <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
-      </button>
-      <button class="nav-item" data-view="shopping">
-        <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
-      </button>
-      <button class="nav-item" data-view="mealplan">
-        <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
-      </button>
-      <button class="nav-item" data-view="toothbrush">
-        <span class="nav-icon">🦷</span><span class="nav-label">Zahnputz-Timer</span>
+      <button class="nav-item" data-view="admin">
+        <span class="nav-icon">🔒</span><span class="nav-label">Mein Bereich</span>
       </button>
       <button class="nav-item" data-view="news">
         <span class="nav-icon">📰</span><span class="nav-label">Familien-News</span>
       </button>
+      <button class="nav-item" data-view="checklists">
+        <span class="nav-icon">☑️</span><span class="nav-label">Checklisten</span>
+      </button>
+      <button class="nav-item" data-view="tasks">
+        <span class="nav-icon">⭐</span><span class="nav-label">Aufgaben &amp; Belohnungen</span>
+      </button>
+      <button class="nav-item" data-view="mealplan">
+        <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
+      </button>
+      <button class="nav-item" data-view="shopping">
+        <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
+      </button>
+      <button class="nav-item" data-view="calendar">
+        <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
+      </button>
+      <button class="nav-item" id="toolsToggle" type="button">
+        <span class="nav-icon">🧰</span><span class="nav-label">Tools</span><span class="nav-submenu-arrow" id="toolsArrow">▸</span>
+      </button>
+      <div class="nav-submenu" id="toolsSubmenu">
+        <button class="nav-item nav-subitem" data-view="toothbrush">
+          <span class="nav-icon">🦷</span><span class="nav-label">Zahnputz-Timer</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="notes">
+          <span class="nav-icon">📝</span><span class="nav-label">Notizen</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="images">
+          <span class="nav-icon">🖼️</span><span class="nav-label">Bilder &amp; Malen</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="retrogames">
+          <span class="nav-icon">🎮</span><span class="nav-label">Retro-Spiele</span>
+        </button>
+      </div>
     </nav>
 
     <div class="sidebar-bottom">
       <button class="nav-item" id="installBtn" style="display:none;">
         <span class="nav-icon">⬇️</span><span class="nav-label">App installieren</span>
       </button>
+      <button class="nav-item" data-view="tags">
+        <span class="nav-icon">🏷️</span><span class="nav-label">Tags</span>
+      </button>
       <button class="nav-item" data-view="settings">
         <span class="nav-icon">⚙️</span><span class="nav-label">Einstellungen</span>
-      </button>
-      <button class="nav-item" data-view="admin">
-        <span class="nav-icon">🔒</span><span class="nav-label">Mein Bereich</span>
       </button>
       <div class="build-tag" id="buildTag"></div>
     </div>
@@ -1367,7 +1407,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 92;
+  const APP_BUILD_NUMBER = 95;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1413,6 +1453,7 @@ body.menu-open { overflow: hidden; }
       wishlist: [],
       schoolHolidays: {},
       federalState: "",
+      warnRegionFilter: "",
       weatherLocation: { name: "", lat: null, lon: null },
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
@@ -1495,7 +1536,7 @@ body.menu-open { overflow: hidden; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1838,12 +1879,20 @@ body.menu-open { overflow: hidden; }
 
   function setView(view) {
     if (toothbrushTimerHandle && view !== "toothbrush") { clearInterval(toothbrushTimerHandle); toothbrushTimerHandle = null; }
+    if (retroGameHandle && view !== "retrogames") { clearInterval(retroGameHandle); retroGameHandle = null; }
+    if (view !== "retrogames") activeRetroGame = null;
     if (dashClockInterval && view !== "home") { clearInterval(dashClockInterval); dashClockInterval = null; }
     currentView = view;
     try { localStorage.setItem(LAST_VIEW_KEY, view); } catch (e) { /* Speicher evtl. voll — kein Problem, dann startet die App eben auf Home */ }
     document.querySelectorAll(".nav-item[data-view]").forEach(b => {
       b.classList.toggle("active", b.dataset.view === view);
     });
+    const toolsSubmenuEl = document.getElementById("toolsSubmenu");
+    if (toolsSubmenuEl && ["toothbrush", "notes", "images", "retrogames"].includes(view)) {
+      toolsSubmenuEl.classList.add("open");
+      const arrowEl = document.getElementById("toolsArrow");
+      if (arrowEl) arrowEl.textContent = "▾";
+    }
     setSidebarOpen(false);
     render();
   }
@@ -1865,6 +1914,7 @@ body.menu-open { overflow: hidden; }
     if (currentView === "news") return renderNewsView(c);
     if (currentView === "allowance") return renderAllowanceView(c);
     if (currentView === "budget") return renderHouseholdBudgetView(c);
+    if (currentView === "retrogames") return renderRetroGamesView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -1948,6 +1998,12 @@ body.menu-open { overflow: hidden; }
     el.innerHTML = `<span>${light} Pollen heute: ${POLLEN_NAMES[best.type] || best.type} (${POLLEN_LABELS[best.raw] || best.raw})</span>${tomorrowHtml}`;
   }
 
+  function warningMatchesRegion(w, stateName) {
+    if (w.state !== stateName) return false;
+    const filter = (state.warnRegionFilter || "").trim().toLowerCase();
+    if (!filter) return true;
+    return (w.regionName || "").toLowerCase().includes(filter);
+  }
   async function updateWarnWidget() {
     const el = document.getElementById("warnBadgeBody");
     if (!el) return;
@@ -1974,9 +2030,9 @@ body.menu-open { overflow: hidden; }
       el.innerHTML = `⚪ ${escapeHtml(warnCache.error)}`;
       return;
     }
-    const relevant = (warnCache.data || []).filter(w => w.state === stateName);
+    const relevant = (warnCache.data || []).filter(w => warningMatchesRegion(w, stateName));
     if (!relevant.length) {
-      el.innerHTML = `🟢 Keine aktuellen Wetterwarnungen für ${escapeHtml(stateName)}`;
+      el.innerHTML = `🟢 Keine aktuellen Wetterwarnungen für ${escapeHtml(state.warnRegionFilter ? state.warnRegionFilter : stateName)}`;
       return;
     }
     relevant.sort((a, b) => b.level - a.level);
@@ -2610,6 +2666,16 @@ body.menu-open { overflow: hidden; }
                 <option value="7" selected>Mittel</option>
                 <option value="16">Dick</option>
               </select>
+              <select id="drawShapeTool" title="Werkzeug">
+                <option value="pen">✏️ Stift</option>
+                <option value="line">📏 Linie</option>
+                <option value="rect">⬜ Rechteck</option>
+                <option value="rectFill">⬛ Rechteck gefüllt</option>
+                <option value="circle">⭕ Kreis</option>
+                <option value="circleFill">🔴 Kreis gefüllt</option>
+                <option value="fill">🪣 Füllen</option>
+                <option value="text">🔤 Text</option>
+              </select>
               <button type="button" class="btn btn-sm" id="drawEraser">🧹 Radierer</button>
               <button type="button" class="btn btn-sm" id="drawUndo">↩︎ Rückgängig</button>
               <button type="button" class="btn btn-sm" id="drawClear">Leeren</button>
@@ -2875,27 +2941,96 @@ body.menu-open { overflow: hidden; }
       });
 
       let drawing = false;
+      let shapeStart = null;
+      let shapeSnapshot = null;
       function pos(e) {
         const rect = canvas.getBoundingClientRect();
         return { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
       }
+      function currentTool() { return overlay.querySelector("#drawShapeTool").value; }
+      function floodFill(startX, startY, fillColor) {
+        startX = Math.round(startX); startY = Math.round(startY);
+        const w = canvas.width, h = canvas.height;
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+        const idx = (x, y) => (y * w + x) * 4;
+        const startIdx = idx(startX, startY);
+        if (startX < 0 || startY < 0 || startX >= w || startY >= h) return;
+        const targetR = data[startIdx], targetG = data[startIdx + 1], targetB = data[startIdx + 2], targetA = data[startIdx + 3];
+        const fr = parseInt(fillColor.slice(1, 3), 16), fg = parseInt(fillColor.slice(3, 5), 16), fb = parseInt(fillColor.slice(5, 7), 16);
+        if (targetR === fr && targetG === fg && targetB === fb && targetA === 255) return;
+        const matches = (i) => Math.abs(data[i] - targetR) < 24 && Math.abs(data[i + 1] - targetG) < 24 && Math.abs(data[i + 2] - targetB) < 24 && Math.abs(data[i + 3] - targetA) < 24;
+        const stack = [[startX, startY]];
+        let guard = 0;
+        while (stack.length && guard < 400000) {
+          guard++;
+          const [x, y] = stack.pop();
+          if (x < 0 || y < 0 || x >= w || y >= h) continue;
+          const i = idx(x, y);
+          if (!matches(i)) continue;
+          data[i] = fr; data[i + 1] = fg; data[i + 2] = fb; data[i + 3] = 255;
+          stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+      function drawShapePreview(tool, start, end, color, lineWidth) {
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lineWidth;
+        const x = Math.min(start.x, end.x), y = Math.min(start.y, end.y);
+        const w = Math.abs(end.x - start.x), h = Math.abs(end.y - start.y);
+        if (tool === "line") { ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke(); }
+        else if (tool === "rect") { ctx.strokeRect(x, y, w, h); }
+        else if (tool === "rectFill") { ctx.fillRect(x, y, w, h); }
+        else if (tool === "circle" || tool === "circleFill") {
+          const rx = w / 2, ry = h / 2;
+          ctx.beginPath(); ctx.ellipse(x + rx, y + ry, rx, ry, 0, 0, Math.PI * 2);
+          if (tool === "circleFill") ctx.fill(); else ctx.stroke();
+        }
+      }
       canvas.addEventListener("pointerdown", (e) => {
+        const tool = currentTool();
+        const p = pos(e);
+        if (tool === "fill") {
+          pushUndo();
+          floodFill(p.x, p.y, erasing ? "#FFFFFF" : currentColor);
+          return;
+        }
+        if (tool === "text") {
+          const txt = prompt("Text eingeben:");
+          if (!txt) return;
+          pushUndo();
+          const size = parseInt(overlay.querySelector("#drawSize").value, 10);
+          ctx.fillStyle = erasing ? "#FFFFFF" : currentColor;
+          ctx.font = `${16 + size * 2}px "Inter", sans-serif`;
+          ctx.textBaseline = "top";
+          ctx.fillText(txt, p.x, p.y);
+          return;
+        }
         pushUndo();
         drawing = true;
         canvas.setPointerCapture(e.pointerId);
-        const p = pos(e);
-        ctx.beginPath(); ctx.moveTo(p.x, p.y);
         ctx.lineWidth = parseInt(overlay.querySelector("#drawSize").value, 10);
         ctx.strokeStyle = erasing ? "#FFFFFF" : currentColor;
-        ctx.lineTo(p.x + 0.1, p.y + 0.1); ctx.stroke();
+        if (tool === "pen") {
+          ctx.beginPath(); ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + 0.1, p.y + 0.1); ctx.stroke();
+        } else {
+          shapeStart = p;
+          shapeSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
       });
       canvas.addEventListener("pointermove", (e) => {
         if (!drawing) return;
+        const tool = currentTool();
         const p = pos(e);
-        ctx.lineTo(p.x, p.y); ctx.stroke();
+        if (tool === "pen") {
+          ctx.lineTo(p.x, p.y); ctx.stroke();
+        } else if (shapeSnapshot) {
+          ctx.putImageData(shapeSnapshot, 0, 0);
+          drawShapePreview(tool, shapeStart, p, erasing ? "#FFFFFF" : currentColor, parseInt(overlay.querySelector("#drawSize").value, 10));
+        }
       });
-      canvas.addEventListener("pointerup", () => { drawing = false; });
-      canvas.addEventListener("pointerleave", () => { drawing = false; });
+      canvas.addEventListener("pointerup", () => { drawing = false; shapeSnapshot = null; });
+      canvas.addEventListener("pointerleave", () => { drawing = false; shapeSnapshot = null; });
 
       overlay.querySelector("#drawUse").onclick = () => {
         draft.dataUrl = canvas.toDataURL("image/png");
@@ -5064,6 +5199,225 @@ body.menu-open { overflow: hidden; }
     paint();
   }
 
+  let retroGameHandle = null;
+  const RETRO_GAMES = [
+    { id: "snake", icon: "🐍", name: "Snake" },
+    { id: "pong", icon: "🏓", name: "Pong" },
+    { id: "memory", icon: "🃏", name: "Memory" },
+  ];
+  let activeRetroGame = null;
+
+  function renderRetroGamesView(container) {
+    if (retroGameHandle) { clearInterval(retroGameHandle); retroGameHandle = null; }
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">🎮 Retro-Spiele</h1><p class="view-sub">Eigene, lizenzfreie Nachbauten von Spiele-Klassikern — mehr kommen nach und nach dazu.</p></div>`;
+    container.appendChild(header);
+
+    if (!activeRetroGame) {
+      const grid = document.createElement("div");
+      grid.className = "retro-game-grid";
+      grid.innerHTML = RETRO_GAMES.map(g => `<button type="button" class="retro-game-card" data-game="${g.id}"><span class="retro-game-icon">${g.icon}</span><span>${g.name}</span></button>`).join("");
+      container.appendChild(grid);
+      grid.querySelectorAll("[data-game]").forEach(btn => {
+        btn.onclick = () => { activeRetroGame = btn.dataset.game; render(); };
+      });
+      return;
+    }
+
+    const backBtn = document.createElement("button");
+    backBtn.className = "btn btn-sm";
+    backBtn.style.marginBottom = "14px";
+    backBtn.textContent = "‹ Spieleübersicht";
+    backBtn.onclick = () => { activeRetroGame = null; if (retroGameHandle) { clearInterval(retroGameHandle); retroGameHandle = null; } render(); };
+    container.appendChild(backBtn);
+
+    if (activeRetroGame === "snake") renderSnakeGame(container);
+    else if (activeRetroGame === "pong") renderPongGame(container);
+    else if (activeRetroGame === "memory") renderMemoryGame(container);
+  }
+
+  function renderSnakeGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="snakeScore">0</strong></div>
+      <canvas id="snakeCanvas" width="360" height="360" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad" id="snakePad">
+        <button data-dir="up">▲</button>
+        <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten oder die Knöpfe unten. Apfel essen, nicht in sich selbst oder die Wand fahren.</p>
+    `;
+    container.appendChild(wrap);
+
+    const canvas = wrap.querySelector("#snakeCanvas");
+    const ctx = canvas.getContext("2d");
+    const cell = 18, cols = canvas.width / cell, rows = canvas.height / cell;
+    let snake = [{ x: 8, y: 8 }];
+    let dir = { x: 1, y: 0 };
+    let nextDir = { x: 1, y: 0 };
+    let food = { x: 12, y: 8 };
+    let score = 0;
+    let gameOver = false;
+
+    function placeFood() {
+      food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+      if (snake.some(s => s.x === food.x && s.y === food.y)) placeFood();
+    }
+    function paint() {
+      ctx.fillStyle = "#14181B"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#E8A33D";
+      ctx.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
+      snake.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? "#3FA796" : "#2E8B84";
+        ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2);
+      });
+      if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 10);
+        ctx.font = "14px sans-serif";
+        ctx.fillText("Erneut klicken zum Neustart", canvas.width / 2, canvas.height / 2 + 16);
+      }
+    }
+    function tick() {
+      if (gameOver) return;
+      dir = nextDir;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
+        gameOver = true; paint(); return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        wrap.querySelector("#snakeScore").textContent = score;
+        placeFood();
+      } else {
+        snake.pop();
+      }
+      paint();
+    }
+    function setDir(x, y) { if (dir.x === -x && dir.y === -y) return; nextDir = { x, y }; }
+    function keyHandler(e) {
+      if (e.key === "ArrowUp") setDir(0, -1);
+      else if (e.key === "ArrowDown") setDir(0, 1);
+      else if (e.key === "ArrowLeft") setDir(-1, 0);
+      else if (e.key === "ArrowRight") setDir(1, 0);
+    }
+    document.addEventListener("keydown", keyHandler);
+    wrap.querySelectorAll("[data-dir]").forEach(btn => {
+      btn.onclick = () => {
+        const d = btn.dataset.dir;
+        if (d === "up") setDir(0, -1); else if (d === "down") setDir(0, 1);
+        else if (d === "left") setDir(-1, 0); else if (d === "right") setDir(1, 0);
+      };
+    });
+    canvas.onclick = () => {
+      if (!gameOver) return;
+      snake = [{ x: 8, y: 8 }]; dir = { x: 1, y: 0 }; nextDir = { x: 1, y: 0 };
+      score = 0; wrap.querySelector("#snakeScore").textContent = "0";
+      gameOver = false; placeFood(); paint();
+    };
+    const cleanup = () => document.removeEventListener("keydown", keyHandler);
+    const observer = new MutationObserver(() => { if (!document.body.contains(canvas)) { cleanup(); observer.disconnect(); } });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+
+    paint();
+    retroGameHandle = setInterval(tick, 130);
+  }
+
+  function renderPongGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Du: <strong id="pongScoreP">0</strong> · Computer: <strong id="pongScoreC">0</strong></div>
+      <canvas id="pongCanvas" width="360" height="300" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad"><div class="retro-touch-row"><button data-dir="up">▲ Schläger</button><button data-dir="down">▼ Schläger</button></div></div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten hoch/runter oder die Knöpfe. Erster bis 5 Punkte gewinnt.</p>
+    `;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#pongCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    let playerY = H / 2 - 25, compY = H / 2 - 25;
+    const paddleH = 50, paddleW = 8;
+    let ballX = W / 2, ballY = H / 2, ballVX = 3.2, ballVY = 2.2;
+    let scoreP = 0, scoreC = 0;
+    let moveUp = false, moveDown = false;
+    function keyDown(e) { if (e.key === "ArrowUp") moveUp = true; if (e.key === "ArrowDown") moveDown = true; }
+    function keyUp(e) { if (e.key === "ArrowUp") moveUp = false; if (e.key === "ArrowDown") moveDown = false; }
+    document.addEventListener("keydown", keyDown);
+    document.addEventListener("keyup", keyUp);
+    wrap.querySelector('[data-dir="up"]').addEventListener("pointerdown", () => moveUp = true);
+    wrap.querySelector('[data-dir="up"]').addEventListener("pointerup", () => moveUp = false);
+    wrap.querySelector('[data-dir="down"]').addEventListener("pointerdown", () => moveDown = true);
+    wrap.querySelector('[data-dir="down"]').addEventListener("pointerup", () => moveDown = false);
+    function tick() {
+      if (moveUp) playerY -= 5; if (moveDown) playerY += 5;
+      playerY = Math.max(0, Math.min(H - paddleH, playerY));
+      const compCenter = compY + paddleH / 2;
+      if (compCenter < ballY - 10) compY += 3.2; else if (compCenter > ballY + 10) compY -= 3.2;
+      compY = Math.max(0, Math.min(H - paddleH, compY));
+      ballX += ballVX; ballY += ballVY;
+      if (ballY <= 0 || ballY >= H) ballVY *= -1;
+      if (ballX <= paddleW + 4 && ballY >= playerY && ballY <= playerY + paddleH) ballVX = Math.abs(ballVX);
+      if (ballX >= W - paddleW - 4 && ballY >= compY && ballY <= compY + paddleH) ballVX = -Math.abs(ballVX);
+      if (ballX < 0) { scoreC++; wrap.querySelector("#pongScoreC").textContent = scoreC; resetBall(); }
+      if (ballX > W) { scoreP++; wrap.querySelector("#pongScoreP").textContent = scoreP; resetBall(); }
+      paint();
+    }
+    function resetBall() { ballX = W / 2; ballY = H / 2; ballVX = (Math.random() > 0.5 ? 1 : -1) * 3.2; ballVY = (Math.random() - 0.5) * 4; }
+    function paint() {
+      ctx.fillStyle = "#14181B"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#3FA796";
+      ctx.fillRect(4, playerY, paddleW, paddleH);
+      ctx.fillRect(W - paddleW - 4, compY, paddleW, paddleH);
+      ctx.fillStyle = "#E8A33D";
+      ctx.beginPath(); ctx.arc(ballX, ballY, 6, 0, Math.PI * 2); ctx.fill();
+    }
+    const cleanup = () => { document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp); };
+    const observer = new MutationObserver(() => { if (!document.body.contains(canvas)) { cleanup(); observer.disconnect(); } });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 20);
+  }
+
+  function renderMemoryGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    const emojis = ["🍎", "🚀", "⭐", "🎈", "🐶", "🌈", "⚽", "🎵"];
+    const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+    let flipped = [];
+    let matched = new Set();
+    let moves = 0;
+    wrap.innerHTML = `<div class="retro-game-score">Züge: <strong id="memMoves">0</strong></div><div class="retro-memory-grid" id="memGrid"></div>`;
+    container.appendChild(wrap);
+    const grid = wrap.querySelector("#memGrid");
+    function paint() {
+      grid.innerHTML = cards.map((c, i) => `<button type="button" class="retro-memory-card ${flipped.includes(i) || matched.has(i) ? "flipped" : ""}" data-idx="${i}">${flipped.includes(i) || matched.has(i) ? c : "❓"}</button>`).join("");
+      grid.querySelectorAll("[data-idx]").forEach(btn => {
+        btn.onclick = () => {
+          const i = Number(btn.dataset.idx);
+          if (flipped.length >= 2 || flipped.includes(i) || matched.has(i)) return;
+          flipped.push(i);
+          if (flipped.length === 2) {
+            moves++; wrap.querySelector("#memMoves").textContent = moves;
+            if (cards[flipped[0]] === cards[flipped[1]]) {
+              matched.add(flipped[0]); matched.add(flipped[1]);
+              flipped = []; paint();
+              if (matched.size === cards.length) setTimeout(() => showToast("🎉 Geschafft!"), 200);
+            } else {
+              paint();
+              setTimeout(() => { flipped = []; paint(); }, 700);
+            }
+          } else { paint(); }
+        };
+      });
+    }
+    paint();
+  }
+
   let newsRecorder = null;
   let newsRecordedChunks = [];
   let newsRecordedBlobUrl = null;
@@ -5388,7 +5742,7 @@ body.menu-open { overflow: hidden; }
       const histEl = card.querySelector(`#hist-${kid.id}`);
       const entries = state.allowanceLedger.filter(l => l.profileId === kid.id).sort((a, b) => b.at - a.at).slice(0, 8);
       histEl.innerHTML = entries.length ? entries.map(e => `
-        <div class="widget-row"><span class="wr-title">${escapeHtml(e.reason || (e.amount >= 0 ? "Gutschrift" : "Auszahlung"))}</span><span class="wr-meta" style="color:${e.amount >= 0 ? "#3FA796" : "#C0453B"};">${e.amount >= 0 ? "+" : ""}${fmtEuro(e.amount)}</span></div>
+        <div class="widget-row"><span class="wr-title">${escapeHtml(e.reason || (e.amount >= 0 ? "Gutschrift" : "Auszahlung"))}<br><span class="allowance-entry-date">${fmtDate(e.at)}</span></span><span class="wr-meta" style="color:${e.amount >= 0 ? "#3FA796" : "#C0453B"};">${e.amount >= 0 ? "+" : ""}${fmtEuro(e.amount)}</span></div>
       `).join("") : `<div class="widget-empty">Noch keine Bewegungen.</div>`;
 
       if (isParentView) {
@@ -5417,13 +5771,21 @@ body.menu-open { overflow: hidden; }
         const convertBtn = card.querySelector('[data-action="req-convert"]');
         if (convertBtn) convertBtn.onclick = () => {
           if (points <= 0) return;
-          requestAllowanceAction(kid.id, "convert", points, "");
+          const raw = prompt(`Wie viele Punkte umwandeln? (maximal ${points})`, String(points));
+          if (raw === null) return;
+          let amount = parseInt(raw, 10);
+          if (isNaN(amount) || amount <= 0) return;
+          if (amount > points) { amount = points; showToast(`Auf maximal ${points} Punkte begrenzt.`); }
+          requestAllowanceAction(kid.id, "convert", amount, "");
           showToast("Anfrage an die Eltern geschickt.");
           render();
         };
         card.querySelector('[data-action="req-pay"]').onclick = () => {
-          const amount = parseFloat((prompt("Wie viel möchtest du ausgezahlt bekommen? (€)") || "").replace(",", "."));
-          if (!amount || isNaN(amount)) return;
+          const raw = prompt(`Wie viel möchtest du ausgezahlt bekommen? (€, maximal ${fmtEuro(balance)})`);
+          if (!raw) return;
+          let amount = parseFloat(raw.replace(",", "."));
+          if (!amount || isNaN(amount) || amount <= 0) return;
+          if (amount > balance) { amount = balance; showToast(`Auf euer Guthaben von ${fmtEuro(balance)} begrenzt.`); }
           const note = prompt("Wofür? (optional)") || "";
           requestAllowanceAction(kid.id, "payout", Math.abs(amount), note);
           showToast("Anfrage an die Eltern geschickt.");
@@ -6760,6 +7122,10 @@ body.menu-open { overflow: hidden; }
             : "Kein Bundesland ausgewählt."
         }</div>
       </div>
+      <div class="field" style="max-width:320px;"><label>Regionale Eingrenzung für Wetterwarnungen (optional)</label>
+        <input type="text" id="warnRegionInput" value="${escapeHtml(state.warnRegionFilter || "")}" placeholder="z. B. Neuburg-Schrobenhausen">
+        <p class="hint" style="margin-top:6px;">Ohne Eingabe werden alle Warnungen für das ganze Bundesland angezeigt — bei Unwetterlagen können das viele sein. Trag hier einen Teil eures Landkreis-/Regionsnamens ein, um nur passende Warnungen zu sehen.</p>
+      </div>
       <div class="field" style="max-width:320px;"><label>Ort für Wetter</label>
         <div style="display:flex;gap:8px;">
           <input type="text" id="weatherCityInput" value="${escapeHtml(state.weatherLocation.name)}" placeholder="z. B. Köln">
@@ -6819,6 +7185,12 @@ body.menu-open { overflow: hidden; }
       } catch (err) { statusEl.textContent = "Suche fehlgeschlagen — Netzwerk prüfen."; }
     };
 
+    calWeatherSection.querySelector("#warnRegionInput").addEventListener("change", (e) => {
+      state.warnRegionFilter = e.target.value.trim();
+      saveState();
+      updateWarnWidget();
+      showToast("Regionale Eingrenzung gespeichert.");
+    });
     calWeatherSection.querySelector("#weatherGeoBtn").onclick = () => {
       const statusEl = calWeatherSection.querySelector("#weatherStatus");
       if (!navigator.geolocation) { statusEl.textContent = "Standortabfrage wird von diesem Browser nicht unterstützt."; return; }
@@ -8302,7 +8674,7 @@ body.menu-open { overflow: hidden; }
     }
     if (state.federalState && warnCache.data) {
       const stateNameForTicker = (GERMAN_STATES.find(s => s.code === state.federalState) || {}).name;
-      const severeWarn = warnCache.data.filter(w => w.state === stateNameForTicker && w.level >= 3)[0];
+      const severeWarn = warnCache.data.filter(w => warningMatchesRegion(w, stateNameForTicker) && w.level >= 3)[0];
       if (severeWarn) {
         messages.push({ view: "home", text: `⚠️ ${(severeWarn.headline || "Unwetterwarnung").replace(/^Amtliche /, "")} — ${severeWarn.regionName || ""}` });
       }
@@ -8385,6 +8757,17 @@ body.menu-open { overflow: hidden; }
     document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
       btn.onclick = () => setView(btn.dataset.view);
     });
+    const toolsSubmenu = document.getElementById("toolsSubmenu");
+    const toolsArrow = document.getElementById("toolsArrow");
+    const toolsChildViews = ["toothbrush", "notes", "images", "retrogames"];
+    if (toolsChildViews.includes(currentView)) {
+      toolsSubmenu.classList.add("open");
+      toolsArrow.textContent = "▾";
+    }
+    document.getElementById("toolsToggle").onclick = () => {
+      const open = toolsSubmenu.classList.toggle("open");
+      toolsArrow.textContent = open ? "▾" : "▸";
+    };
     document.getElementById("newItemBtn").onclick = (e) => openQuickAddMenu(e.currentTarget);
 
     let searchTimer;
