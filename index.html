@@ -774,16 +774,22 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   .dash-clock-digital { font-size: 14px; line-height: 46px; }
 }
 
-/* Echo Show 15 / große Ambient-Displays: Menüleiste, Ticker und die erste (Dashboard-)Kachel
-   werden bildschirmfüllend gezoomt, alle anderen Kacheln ausgeblendet — gedacht für ein
-   dauerhaft an der Wand hängendes Gerät, nicht zum Durchklicken. */
-body.echo-show-mode .sidebar,
-body.echo-show-mode .app-header-sticky {
-  zoom: 1.35;
+/* Echo Show 15 / große Ambient-Displays: die ganze App wird als ein Block skaliert und
+   zentriert (statt einzelner Elemente — das griff kaum), alle Kacheln außer der ersten
+   ausgeblendet, damit Menüleiste, Ticker und Dashboard-Kachel den Bildschirm wirklich
+   ausfüllen, mit dezentem Vignetten-Hintergrund für einen edleren Ambient-Look. */
+body.echo-show-mode { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--bg) 92%, var(--accent) 8%), var(--bg) 75%); }
+body.echo-show-mode #app {
+  width: 71.5vw; height: 71.5vh; min-height: 0; overflow: hidden;
+  transform: scale(1.4);
+  position: fixed; top: 50%; left: 50%;
+  margin: -35.75vh 0 0 -35.75vw;
+  box-shadow: 0 40px 100px rgba(0,0,0,.5);
 }
+body.echo-show-mode .sidebar { height: 100%; }
 body.echo-show-mode .grid > .widget-card:not(.dashboard-card) { display: none; }
 body.echo-show-mode .dashboard-card {
-  zoom: 1.35; padding: 30px; min-height: 56vh;
+  padding: 30px; min-height: 56vh;
   display: flex; flex-wrap: wrap; align-items: center; align-content: center; gap: 18px;
 }
 body.echo-show-mode .dashboard-greeting { flex: 1 1 200px; padding-right: 0; order: 1; }
@@ -1300,7 +1306,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 80;
+  const APP_BUILD_NUMBER = 81;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
