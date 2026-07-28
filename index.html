@@ -732,6 +732,18 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .hue-toggle input:checked + span::before { transform: translateX(16px); }
 .hue-bri { width: 100%; accent-color: #E8A33D; }
 .hue-color { width: 100%; height: 26px; border: 1px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; padding: 2px; }
+
+.budget-sum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 16px; }
+.budget-sum-grid > div { display: flex; flex-direction: column; gap: 2px; }
+.budget-sum-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+.budget-sum-value { font-family: var(--font-display); font-size: 22px; }
+.budget-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface2); }
+.budget-bar-seg { height: 100%; transition: width .3s ease; }
+.budget-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 11.5px; color: var(--text-muted); }
+.budget-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.budget-overview-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.budget-overview-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.budget-overview-col h3 { font-size: 13px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
 .meal-options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
 .meal-group-head { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .meal-group-head .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
@@ -1342,7 +1354,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 87;
+  const APP_BUILD_NUMBER = 88;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1397,6 +1409,7 @@ body.menu-open { overflow: hidden; }
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
       hue: { bridgeUrl: "", username: "", lights: [] },
+      budget: { income: [], costs: [], loans: [] },
       kinship: { enabled: false, circleId: "", serverUrl: "", familyLabel: "" },
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
@@ -1431,7 +1444,8 @@ body.menu-open { overflow: hidden; }
             categories: { ...base.push.categories, ...((parsed.push || {}).categories || {}) }
           },
           kinship: { ...base.kinship, ...(parsed.kinship || {}) },
-          hue: { ...base.hue, ...(parsed.hue || {}) }
+          hue: { ...base.hue, ...(parsed.hue || {}) },
+          budget: { ...base.budget, ...(parsed.budget || {}) }
         };
         // Migration: alte Einzel-Mindmap (state.mindmap) → neue Sammlung state.mindmaps
         if (parsed.mindmap && parsed.mindmap.nodes && parsed.mindmap.nodes.length && (!parsed.mindmaps || !parsed.mindmaps.length)) {
@@ -1468,7 +1482,7 @@ body.menu-open { overflow: hidden; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -1835,6 +1849,7 @@ body.menu-open { overflow: hidden; }
     if (currentView === "toothbrush") return renderToothbrushView(c);
     if (currentView === "news") return renderNewsView(c);
     if (currentView === "allowance") return renderAllowanceView(c);
+    if (currentView === "budget") return renderHouseholdBudgetView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -5393,6 +5408,292 @@ body.menu-open { overflow: hidden; }
     }
   }
 
+  /* ============ HAUSHALTSBUCH ============ */
+  const BUDGET_CATEGORIES = [
+    "🏠 Wohnen & Nebenkosten", "👶 Kinder & Schule", "🛒 Lebensmittel & Haushalt",
+    "🚗 Mobilität & Auto", "🛡️ Versicherungen", "🏥 Gesundheit",
+    "🎉 Freizeit & Hobbys", "📱 Abos & Streaming", "💳 Sonstiges"
+  ];
+  function budgetToMonthly(amount, frequency) {
+    const v = Number(amount) || 0;
+    if (frequency === "yearly") return v / 12;
+    if (frequency === "once") return 0;
+    return v;
+  }
+  function budgetFrequencyLabel(f) {
+    return { monthly: "monatlich", yearly: "jährlich", once: "einmalig" }[f] || f;
+  }
+  function computeBudgetTotals() {
+    const b = state.budget;
+    const monthlyIncome = b.income.reduce((s, i) => s + budgetToMonthly(i.amount, i.frequency), 0);
+    const monthlyCosts = b.costs.reduce((s, i) => s + budgetToMonthly(i.amount, i.frequency), 0);
+    const monthlyLoans = b.loans.reduce((s, l) => s + (Number(l.monthlyPayment) || 0), 0);
+    return { monthlyIncome, monthlyCosts, monthlyLoans, net: monthlyIncome - monthlyCosts - monthlyLoans };
+  }
+  function estimateLoanMonthsLeft(loan) {
+    if (!loan.monthlyPayment || loan.monthlyPayment <= 0) return null;
+    const monthlyRate = (loan.interestRate || 0) / 100 / 12;
+    if (monthlyRate <= 0) return Math.ceil(loan.remainingAmount / loan.monthlyPayment);
+    const payment = loan.monthlyPayment, balance = loan.remainingAmount;
+    if (payment <= balance * monthlyRate) return null;
+    return Math.ceil(Math.log(payment / (payment - balance * monthlyRate)) / Math.log(1 + monthlyRate));
+  }
+
+  let budgetSubTab = "uebersicht";
+  function renderHouseholdBudgetView(container) {
+    const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
+    if (!viewingEntity || viewingEntity.id !== "shared-parent" || personalAreaUnlockedFor !== "shared-parent") {
+      container.innerHTML = `<div class="empty-state"><span class="empty-icon">📒</span>Das Haushaltsbuch ist nur im gemeinsamen Elternbereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
+      container.querySelector("#goToHubBtn").onclick = () => setView("admin");
+      return;
+    }
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">📒 Haushaltsbuch</h1><p class="view-sub">Einnahmen, laufende Kosten und Rückzahlungen der Familie — nur hier im Elternbereich sichtbar.</p></div>`;
+    container.appendChild(header);
+
+    const tabRow = document.createElement("div");
+    tabRow.className = "shopping-list-tabs";
+    const tabs = [["uebersicht", "Übersicht"], ["einnahmen", "Einnahmen"], ["kosten", "Laufende Kosten"], ["rueckzahlung", "Rückzahlungen"]];
+    tabRow.innerHTML = tabs.map(([id, label]) => `<button class="shopping-list-tab ${budgetSubTab === id ? "active" : ""}" data-tab="${id}">${label}</button>`).join("");
+    container.appendChild(tabRow);
+    tabRow.querySelectorAll("[data-tab]").forEach(btn => { btn.onclick = () => { budgetSubTab = btn.dataset.tab; render(); }; });
+
+    if (budgetSubTab === "uebersicht") renderBudgetOverview(container);
+    else if (budgetSubTab === "einnahmen") renderBudgetIncome(container);
+    else if (budgetSubTab === "kosten") renderBudgetCosts(container);
+    else renderBudgetLoans(container);
+  }
+
+  function renderBudgetOverview(container) {
+    const t = computeBudgetTotals();
+    const sumCard = document.createElement("div");
+    sumCard.className = "calendar-card";
+    sumCard.style.marginBottom = "18px";
+    const base = t.monthlyIncome > 0 ? t.monthlyIncome : (t.monthlyCosts + t.monthlyLoans) || 1;
+    const costPct = Math.min(100, (t.monthlyCosts / base) * 100);
+    const loanPct = Math.min(100 - costPct, (t.monthlyLoans / base) * 100);
+    const freePct = Math.max(0, 100 - costPct - loanPct);
+    sumCard.innerHTML = `
+      <div class="budget-sum-grid">
+        <div><span class="budget-sum-label">Einnahmen</span><span class="budget-sum-value" style="color:#3FA796;">${fmtEuro(t.monthlyIncome)}</span></div>
+        <div><span class="budget-sum-label">Kosten</span><span class="budget-sum-value" style="color:#C0453B;">${fmtEuro(t.monthlyCosts)}</span></div>
+        <div><span class="budget-sum-label">Rückzahlungen</span><span class="budget-sum-value" style="color:#3A5A9B;">${fmtEuro(t.monthlyLoans)}</span></div>
+        <div><span class="budget-sum-label">Verfügbar</span><span class="budget-sum-value" style="color:${t.net < 0 ? "#C0453B" : "var(--accent)"};">${fmtEuro(t.net)}</span></div>
+      </div>
+      <div class="budget-bar"><div class="budget-bar-seg" style="width:${costPct}%;background:#C0453B;"></div><div class="budget-bar-seg" style="width:${loanPct}%;background:#3A5A9B;"></div><div class="budget-bar-seg" style="width:${freePct}%;background:#3FA796;"></div></div>
+      <div class="budget-legend"><span><i style="background:#C0453B;"></i>Kosten</span><span><i style="background:#3A5A9B;"></i>Rückzahlungen</span><span><i style="background:#3FA796;"></i>Frei</span></div>
+    `;
+    container.appendChild(sumCard);
+
+    const cols = document.createElement("div");
+    cols.className = "budget-overview-cols";
+    const mkList = (title, items, kind) => `
+      <div class="budget-overview-col">
+        <h3>${title} <span class="tag-chip">${items.length}</span></h3>
+        ${items.length ? items.slice(0, 6).map(i => `<div class="widget-row"><span class="wr-title">${escapeHtml(i.name)}</span><span class="wr-meta">${fmtEuro(budgetToMonthly(i.amount, i.frequency))}</span></div>`).join("") : `<div class="widget-empty">Keine Einträge.</div>`}
+      </div>`;
+    cols.innerHTML =
+      mkList("Einnahmen", state.budget.income, "income") +
+      mkList("Laufende Kosten", state.budget.costs, "cost") +
+      mkList("Rückzahlungen", state.budget.loans.map(l => ({ name: l.name, amount: l.monthlyPayment, frequency: "monthly" })), "loan");
+    container.appendChild(cols);
+  }
+
+  function renderBudgetIncome(container) {
+    let editId = null;
+    const wrap = document.createElement("div");
+    container.appendChild(wrap);
+    function paint() {
+      const editing = editId ? state.budget.income.find(i => i.id === editId) : null;
+      wrap.innerHTML = `
+        <div class="calendar-card" style="margin-bottom:18px;">
+          <div class="size-grid" style="grid-template-columns:2fr 1fr 1fr;align-items:end;">
+            <div class="field"><label>Bezeichnung</label><input type="text" id="bIncName" value="${editing ? escapeHtml(editing.name) : ""}" placeholder="z. B. Gehalt"></div>
+            <div class="field"><label>Betrag</label><input type="text" id="bIncAmount" value="${editing ? editing.amount : ""}" inputmode="decimal"></div>
+            <div class="field"><label>Rhythmus</label>
+              <select id="bIncFreq">
+                <option value="monthly" ${!editing || editing.frequency === "monthly" ? "selected" : ""}>monatlich</option>
+                <option value="yearly" ${editing && editing.frequency === "yearly" ? "selected" : ""}>jährlich</option>
+                <option value="once" ${editing && editing.frequency === "once" ? "selected" : ""}>einmalig</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-accent" id="bIncSaveBtn" style="margin-top:10px;">${editing ? "Änderung speichern" : "+ Hinzufügen"}</button>
+          ${editing ? `<button class="btn btn-sm" id="bIncCancelBtn" style="margin-top:10px;margin-left:8px;">Abbrechen</button>` : ""}
+        </div>
+        <div class="card" style="cursor:default;padding:6px 16px;">
+          ${state.budget.income.length ? state.budget.income.map(i => `
+            <div class="widget-row">
+              <span class="wr-title">${escapeHtml(i.name)}</span>
+              <span class="wr-meta">${budgetFrequencyLabel(i.frequency)}</span>
+              <span class="wr-meta" style="color:#3FA796;">${fmtEuro(i.amount)}</span>
+              <button class="card-pin" data-edit="${i.id}" title="Bearbeiten" style="margin-left:8px;">✏️</button>
+              <button class="card-pin" data-del="${i.id}" title="Entfernen">✕</button>
+            </div>
+          `).join("") : `<div class="empty-state" style="padding:20px;">Noch keine Einnahmen erfasst.</div>`}
+        </div>
+      `;
+      wrap.querySelector("#bIncSaveBtn").onclick = () => {
+        const name = wrap.querySelector("#bIncName").value.trim();
+        const amount = parseFloat(wrap.querySelector("#bIncAmount").value.replace(",", "."));
+        const frequency = wrap.querySelector("#bIncFreq").value;
+        if (!name || isNaN(amount) || amount < 0) return;
+        if (editId) {
+          const item = state.budget.income.find(i => i.id === editId);
+          Object.assign(item, { name, amount, frequency, updatedAt: Date.now() });
+        } else {
+          state.budget.income.push({ id: uid(), name, amount, frequency, updatedAt: Date.now() });
+        }
+        editId = null; saveState(); paint();
+      };
+      const cancelBtn = wrap.querySelector("#bIncCancelBtn");
+      if (cancelBtn) cancelBtn.onclick = () => { editId = null; paint(); };
+      wrap.querySelectorAll("[data-edit]").forEach(btn => { btn.onclick = () => { editId = btn.dataset.edit; paint(); }; });
+      wrap.querySelectorAll("[data-del]").forEach(btn => {
+        btn.onclick = () => {
+          markDeleted(btn.dataset.del);
+          state.budget.income = state.budget.income.filter(i => i.id !== btn.dataset.del);
+          saveState(); paint();
+        };
+      });
+    }
+    paint();
+  }
+
+  function renderBudgetCosts(container) {
+    let editId = null;
+    const wrap = document.createElement("div");
+    container.appendChild(wrap);
+    function paint() {
+      const editing = editId ? state.budget.costs.find(i => i.id === editId) : null;
+      wrap.innerHTML = `
+        <div class="calendar-card" style="margin-bottom:18px;">
+          <div class="size-grid" style="grid-template-columns:1.6fr 1.4fr 1fr 1fr;align-items:end;">
+            <div class="field"><label>Bezeichnung</label><input type="text" id="bCostName" value="${editing ? escapeHtml(editing.name) : ""}" placeholder="z. B. Miete"></div>
+            <div class="field"><label>Kategorie</label>
+              <select id="bCostCategory">${BUDGET_CATEGORIES.map(c => `<option value="${c}" ${editing && editing.category === c ? "selected" : ""}>${c}</option>`).join("")}</select>
+            </div>
+            <div class="field"><label>Betrag</label><input type="text" id="bCostAmount" value="${editing ? editing.amount : ""}" inputmode="decimal"></div>
+            <div class="field"><label>Rhythmus</label>
+              <select id="bCostFreq">
+                <option value="monthly" ${!editing || editing.frequency === "monthly" ? "selected" : ""}>monatlich</option>
+                <option value="yearly" ${editing && editing.frequency === "yearly" ? "selected" : ""}>jährlich</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-accent" id="bCostSaveBtn" style="margin-top:10px;">${editing ? "Änderung speichern" : "+ Hinzufügen"}</button>
+          ${editing ? `<button class="btn btn-sm" id="bCostCancelBtn" style="margin-top:10px;margin-left:8px;">Abbrechen</button>` : ""}
+        </div>
+        <div class="card" style="cursor:default;padding:6px 16px;">
+          ${state.budget.costs.length ? state.budget.costs.map(i => `
+            <div class="widget-row">
+              <span class="wr-title">${escapeHtml(i.name)}</span>
+              <span class="wr-meta">${i.category ? escapeHtml(i.category) + " · " : ""}${budgetFrequencyLabel(i.frequency)}</span>
+              <span class="wr-meta" style="color:#C0453B;">${fmtEuro(i.amount)}</span>
+              <button class="card-pin" data-edit="${i.id}" title="Bearbeiten" style="margin-left:8px;">✏️</button>
+              <button class="card-pin" data-del="${i.id}" title="Entfernen">✕</button>
+            </div>
+          `).join("") : `<div class="empty-state" style="padding:20px;">Noch keine laufenden Kosten erfasst.</div>`}
+        </div>
+      `;
+      wrap.querySelector("#bCostSaveBtn").onclick = () => {
+        const name = wrap.querySelector("#bCostName").value.trim();
+        const category = wrap.querySelector("#bCostCategory").value;
+        const amount = parseFloat(wrap.querySelector("#bCostAmount").value.replace(",", "."));
+        const frequency = wrap.querySelector("#bCostFreq").value;
+        if (!name || isNaN(amount) || amount < 0) return;
+        if (editId) {
+          const item = state.budget.costs.find(i => i.id === editId);
+          Object.assign(item, { name, category, amount, frequency, updatedAt: Date.now() });
+        } else {
+          state.budget.costs.push({ id: uid(), name, category, amount, frequency, updatedAt: Date.now() });
+        }
+        editId = null; saveState(); paint();
+      };
+      const cancelBtn = wrap.querySelector("#bCostCancelBtn");
+      if (cancelBtn) cancelBtn.onclick = () => { editId = null; paint(); };
+      wrap.querySelectorAll("[data-edit]").forEach(btn => { btn.onclick = () => { editId = btn.dataset.edit; paint(); }; });
+      wrap.querySelectorAll("[data-del]").forEach(btn => {
+        btn.onclick = () => {
+          markDeleted(btn.dataset.del);
+          state.budget.costs = state.budget.costs.filter(i => i.id !== btn.dataset.del);
+          saveState(); paint();
+        };
+      });
+    }
+    paint();
+  }
+
+  function renderBudgetLoans(container) {
+    let editId = null;
+    const wrap = document.createElement("div");
+    container.appendChild(wrap);
+    function paint() {
+      const editing = editId ? state.budget.loans.find(i => i.id === editId) : null;
+      wrap.innerHTML = `
+        <div class="calendar-card" style="margin-bottom:18px;">
+          <div class="size-grid" style="grid-template-columns:1.6fr 1fr 1fr;">
+            <div class="field"><label>Bezeichnung</label><input type="text" id="bLoanName" value="${editing ? escapeHtml(editing.name) : ""}" placeholder="z. B. Autokredit"></div>
+            <div class="field"><label>Gesamtsumme</label><input type="text" id="bLoanTotal" value="${editing ? editing.totalAmount : ""}" inputmode="decimal"></div>
+            <div class="field"><label>Restschuld</label><input type="text" id="bLoanRemaining" value="${editing ? editing.remainingAmount : ""}" inputmode="decimal"></div>
+            <div class="field"><label>Zinssatz % p.a.</label><input type="text" id="bLoanRate" value="${editing ? (editing.interestRate || "") : ""}" inputmode="decimal"></div>
+            <div class="field"><label>Monatliche Rate</label><input type="text" id="bLoanMonthly" value="${editing ? editing.monthlyPayment : ""}" inputmode="decimal"></div>
+          </div>
+          <button class="btn btn-accent" id="bLoanSaveBtn" style="margin-top:10px;">${editing ? "Änderung speichern" : "+ Kredit hinzufügen"}</button>
+          ${editing ? `<button class="btn btn-sm" id="bLoanCancelBtn" style="margin-top:10px;margin-left:8px;">Abbrechen</button>` : ""}
+        </div>
+        <div class="grid">
+          ${state.budget.loans.length ? state.budget.loans.map(loan => {
+            const paid = Math.max(0, loan.totalAmount - loan.remainingAmount);
+            const progress = loan.totalAmount > 0 ? Math.min(100, (paid / loan.totalAmount) * 100) : 0;
+            const monthsLeft = estimateLoanMonthsLeft(loan);
+            let monthsLabel = "—";
+            if (monthsLeft !== null) {
+              const years = Math.floor(monthsLeft / 12), months = monthsLeft % 12;
+              monthsLabel = years > 0 ? `${years} J. ${months} Mon.` : `${months} Mon.`;
+            }
+            return `<div class="card" style="cursor:default;">
+              <div class="card-top"><h3 class="card-title" style="margin:0;">${escapeHtml(loan.name)}</h3>
+                <div style="display:flex;gap:4px;"><button class="card-pin" data-edit="${loan.id}" title="Bearbeiten">✏️</button><button class="card-pin" data-del="${loan.id}" title="Entfernen">✕</button></div>
+              </div>
+              <div class="today-sub-stat" style="border:none;padding:4px 0;">Restschuld <strong>${fmtEuro(loan.remainingAmount)}</strong> von <strong>${fmtEuro(loan.totalAmount)}</strong></div>
+              <div class="card-progress"><div class="card-progress-bar" style="width:${progress.toFixed(1)}%;background:#3A5A9B;"></div></div>
+              <div class="today-sub-stat" style="border:none;padding:4px 0;">Rate <strong>${fmtEuro(loan.monthlyPayment)}</strong>/Mon. · Zins <strong>${(loan.interestRate || 0).toLocaleString("de-DE")}%</strong></div>
+              <div class="today-sub-stat" style="border:none;padding:4px 0;">Voraussichtlich abbezahlt in <strong>${monthsLabel}</strong></div>
+            </div>`;
+          }).join("") : `<div class="empty-state" style="padding:20px;">Noch keine Rückzahlungen erfasst.</div>`}
+        </div>
+      `;
+      wrap.querySelector("#bLoanSaveBtn").onclick = () => {
+        const name = wrap.querySelector("#bLoanName").value.trim();
+        const totalAmount = parseFloat(wrap.querySelector("#bLoanTotal").value.replace(",", "."));
+        const remainingAmount = parseFloat(wrap.querySelector("#bLoanRemaining").value.replace(",", "."));
+        const interestRate = parseFloat((wrap.querySelector("#bLoanRate").value || "0").replace(",", ".")) || 0;
+        const monthlyPayment = parseFloat(wrap.querySelector("#bLoanMonthly").value.replace(",", "."));
+        if (!name || isNaN(totalAmount) || isNaN(remainingAmount) || isNaN(monthlyPayment)) return;
+        if (editId) {
+          const item = state.budget.loans.find(i => i.id === editId);
+          Object.assign(item, { name, totalAmount, remainingAmount, interestRate, monthlyPayment, updatedAt: Date.now() });
+        } else {
+          state.budget.loans.push({ id: uid(), name, totalAmount, remainingAmount, interestRate, monthlyPayment, updatedAt: Date.now() });
+        }
+        editId = null; saveState(); paint();
+      };
+      const cancelBtn = wrap.querySelector("#bLoanCancelBtn");
+      if (cancelBtn) cancelBtn.onclick = () => { editId = null; paint(); };
+      wrap.querySelectorAll("[data-edit]").forEach(btn => { btn.onclick = () => { editId = btn.dataset.edit; paint(); }; });
+      wrap.querySelectorAll("[data-del]").forEach(btn => {
+        btn.onclick = () => {
+          markDeleted(btn.dataset.del);
+          state.budget.loans = state.budget.loans.filter(i => i.id !== btn.dataset.del);
+          saveState(); paint();
+        };
+      });
+    }
+    paint();
+  }
+
   function openEventEditor(existing, defaultDate) {
     const draft = existing ? { ...existing, profileIds: [...(existing.profileIds || [])] } : {
       id: uid(), title: "", date: defaultDate || new Date().toISOString().slice(0, 10), time: "", profileIds: [],
@@ -5936,6 +6237,11 @@ body.menu-open { overflow: hidden; }
     state.checklistTemplates = (state.checklistTemplates || []).filter(isLive);
     state.taskTemplates = (state.taskTemplates || []).filter(isLive);
     state.allowanceRequests = (state.allowanceRequests || []).filter(isLive);
+    if (state.budget) {
+      state.budget.income = (state.budget.income || []).filter(isLive);
+      state.budget.costs = (state.budget.costs || []).filter(isLive);
+      state.budget.loans = (state.budget.loans || []).filter(isLive);
+    }
     state.allowanceRecurring = (state.allowanceRecurring || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
@@ -5967,6 +6273,11 @@ body.menu-open { overflow: hidden; }
     state.pointsLedger = unionById(state.pointsLedger, remote.pointsLedger);
     state.allowanceLedger = unionById(state.allowanceLedger || [], remote.allowanceLedger);
     state.allowanceRequests = mergeByIdNewest(state.allowanceRequests || [], remote.allowanceRequests);
+    if (remote.budget) {
+      state.budget.income = mergeByIdNewest(state.budget.income || [], remote.budget.income);
+      state.budget.costs = mergeByIdNewest(state.budget.costs || [], remote.budget.costs);
+      state.budget.loans = mergeByIdNewest(state.budget.loans || [], remote.budget.loans);
+    }
     state.allowanceRecurring = mergeByIdNewest(state.allowanceRecurring || [], remote.allowanceRecurring);
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
@@ -7064,6 +7375,24 @@ body.menu-open { overflow: hidden; }
         </div>
       `;
       container.appendChild(info);
+
+      {
+        const bTotals = computeBudgetTotals();
+        const budgetCard = document.createElement("div");
+        budgetCard.className = "calendar-card";
+        budgetCard.style.marginBottom = "18px";
+        budgetCard.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:700;font-size:15px;">📒 Haushaltsbuch</div>
+              <div class="today-sub-stat" style="border:none;padding:0;margin:4px 0 0;">Verfügbarer Saldo: <strong style="color:${bTotals.net < 0 ? "#C0453B" : "#3FA796"};">${fmtEuro(bTotals.net)}</strong> / Monat</div>
+            </div>
+            <button type="button" class="btn btn-accent" id="openBudgetBtn">Öffnen ›</button>
+          </div>
+        `;
+        container.appendChild(budgetCard);
+        budgetCard.querySelector("#openBudgetBtn").onclick = () => setView("budget");
+      }
 
       const kidsForSizes = state.profiles.filter(p => p.role === "child" && p.sizes && Object.values(p.sizes).some(v => v));
       if (kidsForSizes.length) {
