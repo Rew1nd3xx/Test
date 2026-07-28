@@ -786,7 +786,11 @@ body.echo-show-mode #app {
   margin: -35.75vh 0 0 -35.75vw;
   box-shadow: 0 40px 100px rgba(0,0,0,.5);
 }
-body.echo-show-mode .sidebar { height: 100%; }
+body.echo-show-mode .sidebar { height: 100%; width: 320px; }
+body.echo-show-mode .nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+body.echo-show-mode .nav-item { flex-direction: column; text-align: center; padding: 14px 6px; gap: 6px; }
+body.echo-show-mode .nav-label { font-size: 11.5px; line-height: 1.15; }
+body.echo-show-mode .nav-icon { font-size: 22px; }
 body.echo-show-mode .grid > .widget-card:not(.dashboard-card) { display: none; }
 body.echo-show-mode .dashboard-card {
   padding: 30px; min-height: 56vh;
@@ -803,6 +807,15 @@ body.echo-show-mode .dash-clock {
 body.echo-show-mode .dashboard-card .widget-body { flex-basis: 100%; order: 2; }
 body.echo-show-mode .dash-clock-digital { font-size: 15vw; line-height: 1; display: flex; align-items: center; justify-content: center; height: 100%; }
 @media (min-width: 700px) { body.echo-show-mode .dash-clock-digital { font-size: 3.2vw; } }
+.clock-side-toggle { display: none; }
+body.echo-show-mode .clock-side-toggle {
+  display: block; position: absolute; top: 14px; right: 16px; z-index: 2;
+  font-size: 11px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-muted); cursor: pointer;
+}
+body.echo-show-mode .dashboard-card.clock-right .dash-clock { order: 2; }
+body.echo-show-mode .dashboard-card.clock-right .dashboard-greeting { order: 1; }
+body.echo-show-mode .dashboard-card.clock-right .widget-body { order: 3; }
 .meal-add-row input { flex: 1; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); }
 
 /* Papa-Bereich (admin) */
@@ -1306,7 +1319,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 81;
+  const APP_BUILD_NUMBER = 82;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -2060,10 +2073,13 @@ body.menu-open { overflow: hidden; }
         ? `<div class="today-sub-stat dash-clickable" data-goto="settings" id="pollenWidgetBody">Lade Pollenflug …</div>`
         : "";
       const dashCard = document.createElement("div");
-      dashCard.className = "widget-card dashboard-card";
+      let clockSide = "left";
+      try { clockSide = localStorage.getItem("dapp_clock_side") || "left"; } catch (e) {}
+      dashCard.className = "widget-card dashboard-card" + (clockSide === "right" ? " clock-right" : "");
       dashCard.style.setProperty("--widget-accent", "#0057A6");
       const dashBody = weatherPart + ferienPart + custodyPart + mealPart + auroraPart + warnPart + pollenPart;
       dashCard.innerHTML = `
+        <button type="button" class="clock-side-toggle" id="clockSideToggle" title="Uhr links/rechts">⇄ Uhr ${clockSide === "left" ? "rechts" : "links"}</button>
         <div class="dash-clock" id="dashClock"></div>
         <div class="dashboard-greeting">
           <h1>${salutation}${activeProfile ? ", " + escapeHtml(activeProfile.name) : ""}!</h1>
@@ -2072,6 +2088,11 @@ body.menu-open { overflow: hidden; }
         ${dashBody ? `<div class="widget-body">${dashBody}</div>` : ""}
       `;
       grid.appendChild(dashCard);
+      dashCard.querySelector("#clockSideToggle").onclick = () => {
+        const next = clockSide === "left" ? "right" : "left";
+        try { localStorage.setItem("dapp_clock_side", next); } catch (e) {}
+        render();
+      };
       dashCard.querySelectorAll("[data-goto]").forEach(el => {
         el.onclick = () => setView(el.dataset.goto);
       });
