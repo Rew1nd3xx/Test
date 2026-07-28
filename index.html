@@ -816,19 +816,19 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 .retro-game-card:hover { transform: translateY(-3px); border-color: var(--accent); }
 .retro-game-icon { font-size: 34px; }
-.retro-game-wrap { display: flex; flex-direction: column; align-items: center; max-width: 420px; }
-.retro-game-score { font-family: var(--font-display); font-size: 15px; margin-bottom: 10px; }
-.retro-canvas { background: #14181B; border-radius: var(--radius); border: 1px solid var(--border); max-width: 100%; touch-action: none; }
-.retro-touch-pad { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 12px; }
-.retro-touch-row { display: flex; gap: 8px; }
+.retro-game-wrap { display: flex; flex-direction: column; align-items: center; max-width: 640px; width: 100%; }
+.retro-game-score { font-family: var(--font-display); font-size: 17px; margin-bottom: 10px; }
+.retro-canvas { background: #14181B; border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 560px; height: auto; touch-action: none; }
+.retro-touch-pad { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; width: 100%; max-width: 360px; }
+.retro-touch-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
 .retro-touch-pad button {
-  width: 52px; height: 44px; border-radius: var(--radius); border: 1px solid var(--border);
-  background: var(--surface2); color: var(--text); font-size: 16px; cursor: pointer;
+  min-width: 74px; height: 60px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); font-size: 20px; cursor: pointer;
 }
-.retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 14px; }
-.retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 340px; }
+.retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 18px; font-size: 15px; }
+.retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 460px; }
 .retro-memory-card {
-  aspect-ratio: 1 / 1; font-size: 22px; border-radius: var(--radius); border: 1px solid var(--border);
+  aspect-ratio: 1 / 1; font-size: 30px; border-radius: var(--radius); border: 1px solid var(--border);
   background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 .retro-memory-card.flipped { background: var(--surface); border-color: var(--accent); }
@@ -1091,9 +1091,14 @@ body.menu-open { overflow: hidden; }
   font-size: 12.5px; width: 100%;
 }
 .s-size-hint {
-  display: inline-block; margin-left: 6px; font-size: 10.5px; padding: 1px 7px; border-radius: 999px;
+  display: inline-block; margin-left: 6px; font-size: 12px; padding: 2px 9px; border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 16%, var(--surface2)); color: var(--accent); font-weight: 600;
 }
+.s-person-chip {
+  display: inline-flex; align-items: center; gap: 5px; margin-left: 6px; font-size: 12px; font-weight: 600;
+  padding: 2px 9px 2px 3px; border-radius: 999px; border: 1.5px solid var(--border); vertical-align: middle;
+}
+.s-person-chip .mini-avatar { width: 18px; height: 18px; font-size: 11px; }
 @media (max-width: 640px) {
   .shopping-row {
     grid-template-columns: 20px 1fr 26px 24px; grid-template-areas: "cb text photo del" "sel cat loc loc"; row-gap: 4px; padding: 6px 0;
@@ -1138,6 +1143,12 @@ body.menu-open { overflow: hidden; }
 .draw-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
 #drawEraser.active-tool { background: var(--accent); color: var(--surface); border-color: var(--accent); }
 .draw-canvas { width: 100%; max-width: 100%; height: auto; aspect-ratio: 600 / 380; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; touch-action: none; cursor: crosshair; }
+.draw-layer-stack { position: relative; width: 100%; aspect-ratio: 600 / 380; }
+.draw-layer-stack .draw-layer { position: absolute; inset: 0; height: 100%; background: transparent; }
+.draw-layer-stack .draw-layer:first-child { background: #fff; }
+.draw-layer-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; font-size: 12.5px; }
+.draw-layer-vis { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.draw-layer-vis input { width: 15px; height: 15px; accent-color: var(--accent); }
 
 /* tags view */
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -1407,8 +1418,8 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 95;
-  const APP_BUILD_DATE = "2026-07-27";
+  const APP_BUILD_NUMBER = 96;
+  const APP_BUILD_DATE = "2026-07-29";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -1553,6 +1564,7 @@ body.menu-open { overflow: hidden; }
   let activeTagFilter = null;
   let settingsSectionsOpen = new Set();
   let hueUnassignedOpen = false;
+  let taskSortMode = "status";
   let syncSettingsUnlocked = false;
   let expandedChecklists = new Set();
   let mmSelectedNode = null;
@@ -1842,6 +1854,7 @@ body.menu-open { overflow: hidden; }
       draft.name = overlay.querySelector("#p-name").value.trim() || "Familie";
       draft.role = overlay.querySelector("#p-role").value;
       draft.gender = overlay.querySelector("#p-gender").value;
+      draft.updatedAt = Date.now();
       draft.sizes = {
         shirt: overlay.querySelector("#p-size-shirt").value.trim(),
         pants: overlay.querySelector("#p-size-pants").value.trim(),
@@ -1874,7 +1887,13 @@ body.menu-open { overflow: hidden; }
     sidebarEl.classList.toggle("open", open);
     document.getElementById("sidebarBackdrop").classList.toggle("show", open);
     document.body.classList.toggle("menu-open", open);
-    if (open) sidebarEl.scrollTop = 0;
+    if (open) {
+      sidebarEl.scrollTop = 0;
+      // Manche Browser stellen die alte Scrollposition erst nach dem Einblenden wieder her —
+      // deshalb nochmal nachsetzen, sonst startet das Menü nicht zuverlässig oben.
+      requestAnimationFrame(() => { sidebarEl.scrollTop = 0; });
+      setTimeout(() => { sidebarEl.scrollTop = 0; }, 260);
+    }
   }
 
   function setView(view) {
@@ -1895,6 +1914,11 @@ body.menu-open { overflow: hidden; }
     }
     setSidebarOpen(false);
     render();
+    // Nach jedem Menüwechsel oben starten — sonst behält der Browser die Scrollposition
+    // der vorherigen Ansicht bei und man landet mitten im neuen Bereich.
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const vc = document.getElementById("viewContainer");
+    if (vc) vc.scrollTop = 0;
   }
 
   function render() {
@@ -2680,7 +2704,21 @@ body.menu-open { overflow: hidden; }
               <button type="button" class="btn btn-sm" id="drawUndo">↩︎ Rückgängig</button>
               <button type="button" class="btn btn-sm" id="drawClear">Leeren</button>
             </div>
-            <canvas id="drawCanvas" class="draw-canvas" width="600" height="380"></canvas>
+            <div class="draw-layer-bar">
+              <span class="hint" style="margin:0;">Ebene:</span>
+              <select id="drawLayerSelect" class="hue-assign-select">
+                <option value="0">1 (unten)</option>
+                <option value="1">2 (mitte)</option>
+                <option value="2">3 (oben)</option>
+              </select>
+              <label class="draw-layer-vis"><input type="checkbox" id="drawLayerVisible" checked> sichtbar</label>
+              <button type="button" class="btn btn-sm" id="drawLayerClear">Ebene leeren</button>
+            </div>
+            <div class="draw-layer-stack" id="drawLayerStack">
+              <canvas id="drawCanvas" class="draw-canvas draw-layer" width="600" height="380"></canvas>
+              <canvas id="drawCanvas1" class="draw-canvas draw-layer" width="600" height="380"></canvas>
+              <canvas id="drawCanvas2" class="draw-canvas draw-layer" width="600" height="380"></canvas>
+            </div>
             <button type="button" class="btn btn-accent btn-sm" id="drawUse" style="margin-top:10px;">In Bild übernehmen</button>
           </div>
           ${draft.dataUrl ? `<img class="image-preview" id="imgPreview" src="${draft.dataUrl}">` : `<img class="image-preview" id="imgPreview" style="display:none">`}
@@ -2879,12 +2917,51 @@ body.menu-open { overflow: hidden; }
       });
 
       // drawing pad
-      const canvas = overlay.querySelector("#drawCanvas");
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      const layerCanvases = [
+        overlay.querySelector("#drawCanvas"),
+        overlay.querySelector("#drawCanvas1"),
+        overlay.querySelector("#drawCanvas2"),
+      ];
+      const layerCtxs = layerCanvases.map(c => {
+        const cx = c.getContext("2d");
+        cx.lineCap = "round"; cx.lineJoin = "round";
+        return cx;
+      });
+      // Nur die unterste Ebene bekommt einen weißen Grund — die oberen bleiben durchsichtig,
+      // damit man tatsächlich über bereits Gemaltes zeichnen kann.
+      layerCtxs[0].fillStyle = "#FFFFFF";
+      layerCtxs[0].fillRect(0, 0, layerCanvases[0].width, layerCanvases[0].height);
+      // Bereits vorhandenes Bild als Basis laden, statt mit leerem Blatt zu starten.
+      if (draft.dataUrl) {
+        const baseImg = new Image();
+        baseImg.onload = () => {
+          layerCtxs[0].drawImage(baseImg, 0, 0, layerCanvases[0].width, layerCanvases[0].height);
+        };
+        baseImg.src = draft.dataUrl;
+      }
+      let activeLayer = 0;
+      let canvas = layerCanvases[0];
+      let ctx = layerCtxs[0];
+      function setActiveLayer(i) {
+        activeLayer = i;
+        canvas = layerCanvases[i];
+        ctx = layerCtxs[i];
+        layerCanvases.forEach((c, idx) => { c.style.pointerEvents = idx === i ? "auto" : "none"; });
+        overlay.querySelector("#drawLayerVisible").checked = layerCanvases[i].style.display !== "none";
+      }
+      overlay.querySelector("#drawLayerSelect").onchange = (e) => setActiveLayer(Number(e.target.value));
+      overlay.querySelector("#drawLayerVisible").onchange = (e) => {
+        layerCanvases[activeLayer].style.display = e.target.checked ? "" : "none";
+      };
+      overlay.querySelector("#drawLayerClear").onclick = () => {
+        pushUndo();
+        layerCtxs[activeLayer].clearRect(0, 0, canvas.width, canvas.height);
+        if (activeLayer === 0) {
+          layerCtxs[0].fillStyle = "#FFFFFF";
+          layerCtxs[0].fillRect(0, 0, canvas.width, canvas.height);
+        }
+      };
+      setActiveLayer(0);
 
       const DRAW_COLORS = ["#2B2621", "#C0453B", "#3A5A9B", "#86B35A", "#C9A24B", "#B15CDE", "#FF9270", "#FFFFFF"];
       const colorsWrap = overlay.querySelector("#drawColors");
@@ -2915,28 +2992,34 @@ body.menu-open { overflow: hidden; }
 
       let undoStack = [];
       function pushUndo() {
-        undoStack.push(canvas.toDataURL());
+        undoStack.push({ layer: activeLayer, data: layerCanvases[activeLayer].toDataURL() });
         if (undoStack.length > 20) undoStack.shift();
       }
       overlay.querySelector("#drawUndo").onclick = () => {
         if (!undoStack.length) return;
-        const imgData = undoStack.pop();
+        const snap = undoStack.pop();
+        const targetCtx = layerCtxs[snap.layer];
+        const targetCanvas = layerCanvases[snap.layer];
         const img = new Image();
-        img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
-        img.src = imgData;
+        img.onload = () => { targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height); targetCtx.drawImage(img, 0, 0); };
+        img.src = snap.data;
       };
       overlay.querySelector("#drawClear").onclick = () => {
         pushUndo();
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // "Leeren" räumt alle Ebenen ab — für einzelne Ebenen gibt es "Ebene leeren".
+        layerCtxs.forEach((cx, i) => {
+          cx.clearRect(0, 0, layerCanvases[i].width, layerCanvases[i].height);
+          if (i === 0) { cx.fillStyle = "#FFFFFF"; cx.fillRect(0, 0, layerCanvases[i].width, layerCanvases[i].height); }
+        });
       };
       overlay.querySelector("#drawTemplate").addEventListener("change", (e) => {
         const tplId = e.target.value;
         if (!tplId) return;
         pushUndo();
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawColoringTemplate(ctx, tplId);
+        // Vorlage kommt immer auf die unterste Ebene — darüber kann dann frei gemalt werden.
+        layerCtxs[0].fillStyle = "#FFFFFF";
+        layerCtxs[0].fillRect(0, 0, layerCanvases[0].width, layerCanvases[0].height);
+        drawColoringTemplate(layerCtxs[0], tplId);
         e.target.value = "";
       });
 
@@ -2986,7 +3069,7 @@ body.menu-open { overflow: hidden; }
           if (tool === "circleFill") ctx.fill(); else ctx.stroke();
         }
       }
-      canvas.addEventListener("pointerdown", (e) => {
+      layerCanvases.forEach(lc => lc.addEventListener("pointerdown", (e) => {
         const tool = currentTool();
         const p = pos(e);
         if (tool === "fill") {
@@ -3017,8 +3100,8 @@ body.menu-open { overflow: hidden; }
           shapeStart = p;
           shapeSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
-      });
-      canvas.addEventListener("pointermove", (e) => {
+      }));
+      layerCanvases.forEach(lc => lc.addEventListener("pointermove", (e) => {
         if (!drawing) return;
         const tool = currentTool();
         const p = pos(e);
@@ -3028,12 +3111,20 @@ body.menu-open { overflow: hidden; }
           ctx.putImageData(shapeSnapshot, 0, 0);
           drawShapePreview(tool, shapeStart, p, erasing ? "#FFFFFF" : currentColor, parseInt(overlay.querySelector("#drawSize").value, 10));
         }
-      });
-      canvas.addEventListener("pointerup", () => { drawing = false; shapeSnapshot = null; });
-      canvas.addEventListener("pointerleave", () => { drawing = false; shapeSnapshot = null; });
+      }));
+      layerCanvases.forEach(lc => lc.addEventListener("pointerup", () => { drawing = false; shapeSnapshot = null; }));
+      layerCanvases.forEach(lc => lc.addEventListener("pointerleave", () => { drawing = false; shapeSnapshot = null; }));
 
       overlay.querySelector("#drawUse").onclick = () => {
-        draft.dataUrl = canvas.toDataURL("image/png");
+        // Alle sichtbaren Ebenen von unten nach oben zu einem Bild zusammenrechnen.
+        const flat = document.createElement("canvas");
+        flat.width = layerCanvases[0].width;
+        flat.height = layerCanvases[0].height;
+        const fctx = flat.getContext("2d");
+        fctx.fillStyle = "#FFFFFF";
+        fctx.fillRect(0, 0, flat.width, flat.height);
+        layerCanvases.forEach(lc => { if (lc.style.display !== "none") fctx.drawImage(lc, 0, 0); });
+        draft.dataUrl = flat.toDataURL("image/png");
         preview.src = draft.dataUrl; preview.style.display = "block";
         overlay.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
         overlay.querySelector('.img-tab[data-tab="upload"]').classList.add("active");
@@ -3781,6 +3872,30 @@ body.menu-open { overflow: hidden; }
     const homework = state.tasks.filter(t => t.category === "homework" && t.approved !== false);
     const chores = state.tasks.filter(t => t.category !== "homework" && t.approved !== false);
 
+    const sortBar = document.createElement("div");
+    sortBar.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;";
+    sortBar.innerHTML = `<span class="hint" style="margin:0;">Sortieren:</span>
+      <select id="taskSortSelect" class="hue-assign-select">
+        <option value="status" ${taskSortMode === "status" ? "selected" : ""}>Offen zuerst</option>
+        <option value="due" ${taskSortMode === "due" ? "selected" : ""}>Fälligkeit</option>
+        <option value="person" ${taskSortMode === "person" ? "selected" : ""}>Person</option>
+        <option value="points" ${taskSortMode === "points" ? "selected" : ""}>Punkte (hoch → niedrig)</option>
+        <option value="title" ${taskSortMode === "title" ? "selected" : ""}>Bezeichnung</option>
+      </select>`;
+    container.appendChild(sortBar);
+    sortBar.querySelector("#taskSortSelect").onchange = (e) => { taskSortMode = e.target.value; render(); };
+
+    function sortTasks(list) {
+      const byName = (t) => { const p = getProfile(t.assignedTo); return p ? p.name : "zzz"; };
+      return list.slice().sort((a, b) => {
+        if (taskSortMode === "due") return (a.done - b.done) || (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+        if (taskSortMode === "person") return (a.done - b.done) || byName(a).localeCompare(byName(b), "de");
+        if (taskSortMode === "points") return (a.done - b.done) || ((b.points || 0) - (a.points || 0));
+        if (taskSortMode === "title") return (a.done - b.done) || (a.title || "").localeCompare(b.title || "", "de");
+        return (a.done - b.done) || (a.dueDate || "").localeCompare(b.dueDate || "");
+      });
+    }
+
     const hwSection = document.createElement("div");
     hwSection.innerHTML = `<h3 style="font-family:var(--font-display);font-size:19px;margin-bottom:10px;">📚 Hausaufgaben</h3>`;
     container.appendChild(hwSection);
@@ -3790,7 +3905,7 @@ body.menu-open { overflow: hidden; }
     } else {
       const hwList = document.createElement("div");
       hwList.className = "grid";
-      homework.slice().sort((a, b) => (a.done - b.done) || (a.dueDate || "").localeCompare(b.dueDate || "")).forEach(t => {
+      sortTasks(homework).forEach(t => {
         const owner = getProfile(t.assignedTo);
         const overdue = !t.done && t.dueDate && t.dueDate < todayStr;
         const dueToday = !t.done && t.dueDate === todayStr;
@@ -3846,7 +3961,7 @@ body.menu-open { overflow: hidden; }
     } else {
       const list = document.createElement("div");
       list.className = "grid";
-      chores.slice().sort((a, b) => a.done - b.done).forEach(t => {
+      sortTasks(chores).forEach(t => {
         const owner = getProfile(t.assignedTo);
         const card = document.createElement("div");
         card.className = "card";
@@ -4001,6 +4116,10 @@ body.menu-open { overflow: hidden; }
 
     header.querySelector("#addTaskBtn").onclick = () => openTaskEditor();
     header.querySelector("#addRewardBtn").onclick = () => openRewardEditor();
+
+    makeCollapsible(hwSection, "tasks-homework", true);
+    makeCollapsible(taskSection, "tasks-chores", true);
+    makeCollapsible(rewardSection, "tasks-rewards", true);
   }
 
   function openTaskEditor(existing) {
@@ -4534,8 +4653,15 @@ body.menu-open { overflow: hidden; }
     const holiday = getHolidayName(dateStr);
     const ferien = getSchoolHolidayName(dateStr);
     const dayNumHtml = holiday ? `<span style="color:#C0453B;font-weight:700;font-family:var(--font-display);" title="${escapeHtml(holiday)}">${day} 🎉</span>` : `<span style="font-family:var(--font-display);font-weight:600;">${day}</span>`;
-    const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;">
-        ${dayNumHtml}${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}
+    const custodyDotsHtml = custody.map(({ schedule, result }) => {
+      const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
+      const label = (parents.map(p => p.name).join(" & ") || "frei") + (result.isSwitchDay ? " · Wechseltag" : "");
+      const title = `${escapeHtml(schedule.name)}: ${escapeHtml(label)}`;
+      if (!parents.length) return `<span class="custody-dot custody-dot-empty" title="${title}">–</span>`;
+      return parents.map(p => `<span class="custody-dot${result.isSwitchDay ? " custody-switch" : ""}" style="background:${p.color};" title="${title}">${result.isSwitchDay ? "⇄" : (p.emoji || p.name.charAt(0))}</span>`).join("");
+    }).join("");
+    const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        ${dayNumHtml}<span style="display:flex;align-items:center;gap:3px;">${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}${custodyDotsHtml}</span>
       </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
     const ferienHtml = ferien ? `<div class="week-meal-tag" style="background:#F2D6A2;color:#6B4A22;" title="${escapeHtml(ferien)}">🏖️ ${escapeHtml(ferien)}</div>` : "";
     const eventChips = dayEvents.slice(0, maxEvents).map(ev => {
@@ -4559,13 +4685,7 @@ body.menu-open { overflow: hidden; }
         ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
       </div>
       ${ferienHtml}
-      ${custody.length ? `<div class="cal-custody-row" style="position:${showHeader ? "absolute" : "static"};margin-top:6px;">${custody.map(({ schedule, result }) => {
-        const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
-        const label = (parents.map(p => p.name).join(" & ") || "frei") + (result.isSwitchDay ? " · Wechseltag" : "");
-        const title = `${escapeHtml(schedule.name)}: ${escapeHtml(label)}`;
-        if (!parents.length) return `<span class="custody-dot custody-dot-empty" title="${title}">–</span>`;
-        return parents.map(p => `<span class="custody-dot${result.isSwitchDay ? " custody-switch" : ""}" style="background:${p.color};" title="${title}">${result.isSwitchDay ? "⇄" : (p.emoji || p.name.charAt(0))}</span>`).join("");
-      }).join("")}</div>` : ""}`;
+      ${(!showHeader && custody.length) ? `<div class="cal-custody-row" style="position:static;margin-top:6px;">${custodyDotsHtml}</div>` : ""}`;
   }
 
   function wireDayCell(cell, dateStr) {
@@ -4924,6 +5044,7 @@ body.menu-open { overflow: hidden; }
           <span class="meal-option-title">${escapeHtml(o.text)}</span>
           <div class="meal-option-actions">
             ${isParentForMeal ? `<button type="button" class="meal-confirm-btn" data-opt="${o.id}" title="Als finalen Plan freigeben">${isConfirmed ? "✓ Freigegeben" : "Freigeben"}</button>` : (isConfirmed ? `<span class="tag-chip">✓ Freigegeben</span>` : "")}
+            <button type="button" class="card-pin meal-edit-btn" data-opt="${o.id}" title="Bearbeiten">✏️</button>
             <button type="button" class="card-pin meal-del-btn" data-opt="${o.id}" title="Löschen">✕</button>
           </div>
         </div>
@@ -4988,6 +5109,21 @@ body.menu-open { overflow: hidden; }
       });
       dayWrap.querySelectorAll(".meal-confirm-btn").forEach(btn => {
         btn.onclick = () => { confirmMealOption(dateStr, btn.dataset.opt); renderMealDay(dayWrap, dateStr, label); };
+      });
+      dayWrap.querySelectorAll(".meal-edit-btn").forEach(btn => {
+        btn.onclick = () => {
+          const entryNow = getMealEntry(dateStr);
+          const opt = entryNow.options.find(o => o.id === btn.dataset.opt);
+          if (!opt) return;
+          const newText = prompt("Vorschlag bearbeiten:", opt.text);
+          if (newText === null || !newText.trim()) return;
+          opt.text = newText.trim();
+          opt.updatedAt = Date.now();
+          state.mealPlan[dateStr] = entryNow;
+          saveState();
+          if (opt.kinship) pushKinshipData(true);
+          renderMealDay(dayWrap, dateStr, label);
+        };
       });
       dayWrap.querySelectorAll(".meal-del-btn").forEach(btn => {
         btn.onclick = () => { removeMealOption(dateStr, btn.dataset.opt); renderMealDay(dayWrap, dateStr, label); };
@@ -6416,9 +6552,11 @@ body.menu-open { overflow: hidden; }
         const forWhomProfile = item.forWhom ? getProfile(item.forWhom) : null;
         const sizeHint = (item.category && CLOTHING_CATS[item.category] && forWhomProfile && forWhomProfile.sizes && forWhomProfile.sizes[item.category])
           ? `<span class="s-size-hint" title="Hinterlegte Größe von ${escapeHtml(forWhomProfile.name)}">Größe ${escapeHtml(forWhomProfile.sizes[item.category])}</span>` : "";
+        const forWhomChip = forWhomProfile
+          ? `<span class="s-person-chip" style="background:color-mix(in srgb, ${forWhomProfile.color} 22%, var(--surface2));border-color:${forWhomProfile.color};"><span class="mini-avatar" style="background:${forWhomProfile.color};">${forWhomProfile.emoji || forWhomProfile.name.charAt(0)}</span>${escapeHtml(forWhomProfile.name)}</span>` : "";
         row.innerHTML = `
           <input type="checkbox" ${item.done ? "checked" : ""} class="s-done">
-          <label class="s-text">${escapeHtml(item.text)}${sizeHint}</label>
+          <label class="s-text">${escapeHtml(item.text)}${forWhomChip}${sizeHint}</label>
           <select class="s-category">
             <option value="">–</option>
             ${Object.entries(CLOTHING_CATS).map(([key, label]) => `<option value="${key}" ${item.category === key ? "selected" : ""}>${label}</option>`).join("")}
@@ -6645,13 +6783,21 @@ body.menu-open { overflow: hidden; }
       if (local && remoteMatch && remoteMatch.updatedAt > local.updatedAt) return remoteMatch;
       return it;
     });
-    state.profiles = unionById(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: p.pinHash || "" })));
-    state.profiles.forEach(p => {
-      if (!p.pinHash) {
-        const remoteMatch = (remote.profiles || []).find(r => r.id === p.id);
-        if (remoteMatch && remoteMatch.pinHash) p.pinHash = remoteMatch.pinHash;
-      }
-    });
+    // Profile: bisher wurden nur NEUE Profile übernommen, Änderungen an bestehenden
+    // (z. B. Kleidergrößen) kamen nie an. Jetzt gewinnt die neuere Version — die lokal
+    // gesetzte PIN bleibt dabei immer erhalten.
+    {
+      const localPinMap = new Map(state.profiles.map(p => [p.id, p.pinHash || ""]));
+      state.profiles = mergeByIdNewest(state.profiles, (remote.profiles || []).map(p => ({ ...p, pinHash: p.pinHash || "" })));
+      state.profiles.forEach(p => {
+        const localPin = localPinMap.get(p.id);
+        if (localPin) p.pinHash = localPin;
+        if (!p.pinHash) {
+          const remoteMatch = (remote.profiles || []).find(r => r.id === p.id);
+          if (remoteMatch && remoteMatch.pinHash) p.pinHash = remoteMatch.pinHash;
+        }
+      });
+    }
     if (!state.adminPasswordHash && remote.adminPasswordHash) state.adminPasswordHash = remote.adminPasswordHash;
     if (remote.sharedAreas) {
       if (!state.sharedAreas.parent.pinHash && remote.sharedAreas.parent && remote.sharedAreas.parent.pinHash) {
@@ -6830,6 +6976,29 @@ body.menu-open { overflow: hidden; }
     if (themeId === "terminal") themeId = "vaultterm"; // Terminal-Theme entfernt, nächstverwandtes Theme übernehmen
     document.body.className = "theme-" + themeId;
     state.theme = themeId;
+  }
+
+  let collapsedSections = new Set();
+  function makeCollapsible(sectionEl, key, defaultOpen) {
+    const h3 = sectionEl.querySelector(":scope > h3");
+    if (!h3) return;
+    if (!collapsedSections.has(key) && !defaultOpen) collapsedSections.add(key);
+    const isOpen = !collapsedSections.has(key);
+    const bodyWrap = document.createElement("div");
+    Array.from(sectionEl.childNodes).forEach(node => { if (node !== h3) bodyWrap.appendChild(node); });
+    const arrow = document.createElement("span");
+    arrow.className = "settings-accordion-arrow";
+    arrow.textContent = isOpen ? "▾" : "▸";
+    h3.classList.add("settings-accordion-head");
+    h3.appendChild(arrow);
+    bodyWrap.style.display = isOpen ? "" : "none";
+    sectionEl.appendChild(bodyWrap);
+    h3.onclick = () => {
+      const nowOpen = collapsedSections.has(key);
+      if (nowOpen) collapsedSections.delete(key); else collapsedSections.add(key);
+      bodyWrap.style.display = nowOpen ? "" : "none";
+      arrow.textContent = nowOpen ? "▾" : "▸";
+    };
   }
 
   function applySettingsAccordion(container) {
