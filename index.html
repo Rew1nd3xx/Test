@@ -721,6 +721,17 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   transition: transform .12s ease, border-color .15s ease;
 }
 .personal-quick-link:hover { transform: translateY(-2px); border-color: var(--accent); }
+.hue-light-row { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.hue-light-row:last-child { border-bottom: none; }
+.hue-light-top { display: flex; align-items: center; justify-content: space-between; }
+.hue-toggle { position: relative; display: inline-block; width: 38px; height: 22px; }
+.hue-toggle input { opacity: 0; width: 0; height: 0; }
+.hue-toggle span { position: absolute; inset: 0; background: var(--surface2); border-radius: 999px; transition: background .15s ease; cursor: pointer; }
+.hue-toggle span::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .15s ease; }
+.hue-toggle input:checked + span { background: #E8A33D; }
+.hue-toggle input:checked + span::before { transform: translateX(16px); }
+.hue-bri { width: 100%; accent-color: #E8A33D; }
+.hue-color { width: 100%; height: 26px; border: 1px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; padding: 2px; }
 .meal-options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
 .meal-group-head { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .meal-group-head .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
@@ -1331,7 +1342,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 86;
+  const APP_BUILD_NUMBER = 87;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1385,6 +1396,7 @@ body.menu-open { overflow: hidden; }
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
+      hue: { bridgeUrl: "", username: "", lights: [] },
       kinship: { enabled: false, circleId: "", serverUrl: "", familyLabel: "" },
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
@@ -1418,7 +1430,8 @@ body.menu-open { overflow: hidden; }
             ...base.push, ...(parsed.push || {}),
             categories: { ...base.push.categories, ...((parsed.push || {}).categories || {}) }
           },
-          kinship: { ...base.kinship, ...(parsed.kinship || {}) }
+          kinship: { ...base.kinship, ...(parsed.kinship || {}) },
+          hue: { ...base.hue, ...(parsed.hue || {}) }
         };
         // Migration: alte Einzel-Mindmap (state.mindmap) → neue Sammlung state.mindmaps
         if (parsed.mindmap && parsed.mindmap.nodes && parsed.mindmap.nodes.length && (!parsed.mindmaps || !parsed.mindmaps.length)) {
@@ -2199,6 +2212,28 @@ body.menu-open { overflow: hidden; }
         (openShopping.length > 5 ? `<div class="widget-empty">+${openShopping.length - 5} weitere</div>` : "")
         : `<div class="widget-empty">Liste ist leer.</div>`,
       "shopping", "Liste ›");
+
+    // --- Philips Hue Lampen ---
+    const myLights = (state.hue.lights || []).filter(l => l.assignedTo === state.activeProfileId);
+    if (state.hue.bridgeUrl && myLights.length) {
+      const hueCard = widget("💡", "Meine Lampen", "#E8A33D",
+        myLights.map(l => `
+          <div class="hue-light-row" data-light="${l.id}">
+            <div class="hue-light-top">
+              <span class="wr-title">${escapeHtml(l.name)}</span>
+              <label class="hue-toggle"><input type="checkbox" class="hue-on"><span></span></label>
+            </div>
+            <input type="range" class="hue-bri" min="1" max="254" value="200">
+            <input type="color" class="hue-color" value="#ffcc66">
+          </div>
+        `).join(""), null, null);
+      myLights.forEach(l => {
+        const row = hueCard.querySelector(`.hue-light-row[data-light="${l.id}"]`);
+        row.querySelector(".hue-on").onchange = (e) => setHueLightState(l.id, { on: e.target.checked });
+        row.querySelector(".hue-bri").addEventListener("change", (e) => setHueLightState(l.id, { on: true, bri: Number(e.target.value) }));
+        row.querySelector(".hue-color").addEventListener("change", (e) => setHueLightState(l.id, { on: true, ...hexToHueSat(e.target.value) }));
+      });
+    }
 
     // --- Familien-News ---
     const recentNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
@@ -6114,6 +6149,58 @@ body.menu-open { overflow: hidden; }
       render();
     };
 
+    // --- Philips Hue ---
+    const isParentForHue = !getActiveProfile() || getActiveProfile().role === "parent";
+    if (isParentForHue) {
+      const hueSection = document.createElement("div");
+      hueSection.className = "settings-section";
+      const h = state.hue;
+      hueSection.innerHTML = `
+        <h3>💡 Philips Hue</h3>
+        <p class="hint">Steuert Lampen im selben WLAN über die Hue Bridge — läuft direkt zwischen Gerät und Bridge, kein Cloud-Konto nötig.</p>
+        ${h.bridgeUrl && h.username ? `
+          <p class="hint">Verbunden mit: <code>${escapeHtml(h.bridgeUrl)}</code></p>
+          <div class="backup-row"><button class="btn btn-sm" id="hueRefreshBtn">🔄 Lampen neu suchen</button><button class="btn btn-sm btn-danger" id="hueDisconnectBtn">Trennen</button></div>
+          <div style="margin-top:12px;">${(h.lights || []).length ? h.lights.map(l => `
+            <div class="widget-row">
+              <span class="wr-title">💡 ${escapeHtml(l.name)}</span>
+              <select data-assign-light="${l.id}" style="margin-left:auto;">
+                <option value="">Niemandem zugeordnet</option>
+                ${state.profiles.map(p => `<option value="${p.id}" ${l.assignedTo === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
+              </select>
+            </div>
+          `).join("") : `<div class="widget-empty">Keine Lampen gefunden.</div>`}</div>
+        ` : `
+          <div class="field" style="max-width:280px;"><label>Adresse der Hue Bridge</label><input type="text" id="hueBridgeUrl" placeholder="http://192.168.1.23"></div>
+          <p class="hint">Vor dem Verbinden einmal den runden Knopf auf der Bridge drücken, dann innerhalb von ca. 30 Sekunden hier „Verbinden" klicken.</p>
+          <button class="btn btn-accent" id="hueConnectBtn">Verbinden</button>
+        `}
+      `;
+      container.appendChild(hueSection);
+      if (h.bridgeUrl && h.username) {
+        hueSection.querySelector("#hueRefreshBtn").onclick = async () => { await fetchHueLights(); render(); showToast("Lampen aktualisiert."); };
+        hueSection.querySelector("#hueDisconnectBtn").onclick = () => {
+          if (!confirm("Hue-Verbindung wirklich trennen?")) return;
+          state.hue = { bridgeUrl: "", username: "", lights: [] };
+          saveState(); render();
+        };
+        hueSection.querySelectorAll("[data-assign-light]").forEach(sel => {
+          sel.onchange = (e) => {
+            const light = state.hue.lights.find(l => l.id === sel.dataset.assignLight);
+            if (light) light.assignedTo = e.target.value || null;
+            saveState();
+          };
+        });
+      } else {
+        hueSection.querySelector("#hueConnectBtn").onclick = async () => {
+          const url = hueSection.querySelector("#hueBridgeUrl").value.trim();
+          if (!url) return;
+          const ok = await connectHueBridge(url);
+          if (ok) { showToast("Verbunden! 💡"); render(); }
+        };
+      }
+    }
+
     function renderThemeDots(t) {
       themeSection.querySelector("#themeDotRow").innerHTML =
         `<span style="background:${t.dots[0]}"></span><span style="background:${t.dots[1]}"></span><span style="background:${t.dots[2]}"></span>`;
@@ -7302,6 +7389,79 @@ body.menu-open { overflow: hidden; }
       if (!silent) showToast("Verwandtschafts-Sync fehlgeschlagen.");
       return false;
     }
+  }
+
+  async function connectHueBridge(bridgeUrl) {
+    bridgeUrl = bridgeUrl.replace(/\/$/, "");
+    try {
+      const res = await fetch(`${bridgeUrl}/api`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ devicetype: "dapp#familie" })
+      });
+      const data = await res.json();
+      const entry = Array.isArray(data) ? data[0] : data;
+      if (entry && entry.success && entry.success.username) {
+        state.hue.bridgeUrl = bridgeUrl;
+        state.hue.username = entry.success.username;
+        saveState();
+        await fetchHueLights();
+        return true;
+      }
+      if (entry && entry.error) {
+        showToast(entry.error.description || "Bitte zuerst den Knopf auf der Hue Bridge drücken.");
+      }
+      return false;
+    } catch (err) {
+      console.warn("Hue-Bridge-Verbindung fehlgeschlagen:", err);
+      showToast("Verbindung fehlgeschlagen — Adresse prüfen und im selben WLAN sein.");
+      return false;
+    }
+  }
+  async function fetchHueLights() {
+    const h = state.hue;
+    if (!h.bridgeUrl || !h.username) return false;
+    try {
+      const res = await fetch(`${h.bridgeUrl}/api/${h.username}/lights`);
+      const data = await res.json();
+      const existing = h.lights || [];
+      h.lights = Object.entries(data).map(([id, l]) => {
+        const prev = existing.find(x => x.id === id);
+        return { id, name: l.name, assignedTo: prev ? prev.assignedTo : null };
+      });
+      saveState();
+      return true;
+    } catch (err) {
+      console.warn("Hue-Lampen-Abruf fehlgeschlagen:", err);
+      return false;
+    }
+  }
+  async function setHueLightState(lightId, patch) {
+    const h = state.hue;
+    if (!h.bridgeUrl || !h.username) return;
+    try {
+      await fetch(`${h.bridgeUrl}/api/${h.username}/lights/${lightId}/state`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch)
+      });
+    } catch (err) {
+      console.warn("Hue-Lampe konnte nicht geschaltet werden:", err);
+      showToast("Lampe nicht erreichbar — im selben WLAN wie die Bridge?");
+    }
+  }
+  function hexToHueSat(hex) {
+    const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+    }
+    h = Math.round(h * 60); if (h < 0) h += 360;
+    const s = max === 0 ? 0 : d / max;
+    return { hue: Math.round((h / 360) * 65535), sat: Math.round(s * 254) };
   }
 
   async function subscribeToPush(serverUrl) {
