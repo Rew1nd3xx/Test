@@ -732,6 +732,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .hue-toggle input:checked + span::before { transform: translateX(16px); }
 .hue-bri { width: 100%; accent-color: #E8A33D; }
 .hue-color { width: 100%; height: 26px; border: 1px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; padding: 2px; }
+.hue-assign-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 8px; font-size: 12.5px; }
 
 .budget-sum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 16px; }
 .budget-sum-grid > div { display: flex; flex-direction: column; gap: 2px; }
@@ -1192,6 +1193,9 @@ body.menu-open { overflow: hidden; }
 .settings-section { margin-bottom: 32px; }
 .settings-section h3 { font-family: var(--font-display); font-size: 19px; margin-bottom: 4px; }
 .settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
+.settings-accordion-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; margin-bottom: 4px; }
+.settings-accordion-arrow { font-size: 13px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px; }
+.settings-section-body { margin-top: 10px; }
 .push-cat-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; font-size: 13px; }
 .push-cat-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .push-cat-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
@@ -1354,7 +1358,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 89;
+  const APP_BUILD_NUMBER = 90;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1497,6 +1501,7 @@ body.menu-open { overflow: hidden; }
   let tickerInterval = null;
   let autoPushDebounce = null;
   let activeTagFilter = null;
+  let settingsSectionsOpen = new Set();
   let syncSettingsUnlocked = false;
   let expandedChecklists = new Set();
   let mmSelectedNode = null;
@@ -2096,7 +2101,7 @@ body.menu-open { overflow: hidden; }
         ? (ferienStatus
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
                 ? `🏖️ Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis Schulbeginn (${escapeHtml(ferienStatus.name)})`
-                : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)} · letzter Schultag ${formatDateStrShort(ferienStatus.lastSchoolDay)}`}</div>`
+                : `🏖️ Noch ${countSchoolDays(todayStr, ferienStatus.lastSchoolDay)} Schultage bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
       let custodyPart = "";
@@ -4296,6 +4301,22 @@ body.menu-open { overflow: hidden; }
     const [y, m, d] = dateStr.split("-");
     return `${d}.${m}.`;
   }
+  function formatDateWithWeekday(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    let wd = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" });
+    if (!wd.endsWith(".")) wd += ".";
+    return `${wd} ${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.`;
+  }
+  function countSchoolDays(fromStr, toStr) {
+    // Zählt Werktage (Mo–Fr) zwischen heute (exklusiv) und dem letzten Schultag (inklusiv).
+    let count = 0;
+    let d = addDays(fromStr, 1);
+    while (d <= toStr) {
+      if (!isWeekendStr(d)) count++;
+      d = addDays(d, 1);
+    }
+    return count;
+  }
   function addDays(dateStr, n) {
     const [y, m, d] = dateStr.split("-").map(Number);
     const dt = new Date(Date.UTC(y, m - 1, d));
@@ -6439,6 +6460,41 @@ body.menu-open { overflow: hidden; }
     state.theme = themeId;
   }
 
+  function applySettingsAccordion(container) {
+    Array.from(container.querySelectorAll(":scope > .settings-section")).forEach(section => {
+      const h3 = section.querySelector(":scope > h3");
+      if (!h3) return;
+      const title = h3.textContent.trim();
+      const isOpen = settingsSectionsOpen.has(title);
+      const bodyWrap = document.createElement("div");
+      bodyWrap.className = "settings-section-body";
+      Array.from(section.childNodes).forEach(node => { if (node !== h3) bodyWrap.appendChild(node); });
+      const arrow = document.createElement("span");
+      arrow.className = "settings-accordion-arrow";
+      arrow.textContent = isOpen ? "▾" : "▸";
+      h3.classList.add("settings-accordion-head");
+      h3.appendChild(arrow);
+      bodyWrap.style.display = isOpen ? "" : "none";
+      section.appendChild(bodyWrap);
+      h3.onclick = () => {
+        const nowOpen = !settingsSectionsOpen.has(title);
+        if (nowOpen) settingsSectionsOpen.add(title); else settingsSectionsOpen.delete(title);
+        bodyWrap.style.display = nowOpen ? "" : "none";
+        arrow.textContent = nowOpen ? "▾" : "▸";
+      };
+    });
+  }
+
+  function unlockSyncAdminUI() {
+    syncSettingsUnlocked = true;
+    ["🔒 Export, Import & Synchronisierung", "Datenquellen & Synchronisierung", "Export", "Sicherung & Geräte-Abgleich", "👨‍👩‍👧‍👦 Verwandtschaftskreis"].forEach(t => settingsSectionsOpen.add(t));
+    render();
+    setTimeout(() => {
+      const el = Array.from(document.querySelectorAll(".settings-section h3")).find(h => h.textContent.trim().startsWith("🔒 Export"));
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
+
   function renderSettingsView(container) {
     const header = document.createElement("div");
     header.className = "view-header";
@@ -6482,7 +6538,7 @@ body.menu-open { overflow: hidden; }
           <div style="margin-top:12px;">${(h.lights || []).length ? h.lights.map(l => `
             <div class="widget-row">
               <span class="wr-title">💡 ${escapeHtml(l.name)}</span>
-              <select data-assign-light="${l.id}" style="margin-left:auto;">
+              <select data-assign-light="${l.id}" class="hue-assign-select" style="margin-left:auto;">
                 <option value="">Niemandem zugeordnet</option>
                 ${state.profiles.map(p => `<option value="${p.id}" ${l.assignedTo === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
               </select>
@@ -6771,9 +6827,8 @@ body.menu-open { overflow: hidden; }
         if (!p1 || p1.length < 4) { errEl.textContent = "Mindestens 4 Zeichen."; return; }
         if (p1 !== p2) { errEl.textContent = "Passwörter stimmen nicht überein."; return; }
         state.adminPasswordHash = await sha256Hex(p1);
-        syncSettingsUnlocked = true;
         saveState();
-        render();
+        unlockSyncAdminUI();
       };
     } else if (!syncSettingsUnlocked) {
       const gateBox = document.createElement("div");
@@ -6789,7 +6844,7 @@ body.menu-open { overflow: hidden; }
         gateBox.querySelector("#syncBioRow").innerHTML = `<button type="button" class="btn" id="syncBioBtn" style="width:100%;max-width:320px;margin-bottom:10px;">👆 Mit Face ID / Fingerabdruck entsperren</button>`;
         gateBox.querySelector("#syncBioBtn").onclick = async () => {
           const ok = await verifyBiometric("sync-admin");
-          if (ok) { syncSettingsUnlocked = true; render(); }
+          if (ok) { unlockSyncAdminUI(); }
           else gateBox.querySelector("#syncPwGateError").textContent = "Nicht erkannt — bitte Passwort verwenden.";
         };
       }
@@ -6797,8 +6852,7 @@ body.menu-open { overflow: hidden; }
         const val = gateBox.querySelector("#syncPwGate").value;
         const hash = await sha256Hex(val);
         if (hash === state.adminPasswordHash) {
-          syncSettingsUnlocked = true;
-          render();
+          unlockSyncAdminUI();
         } else {
           gateBox.querySelector("#syncPwGateError").textContent = "Falsches Passwort.";
         }
@@ -7017,6 +7071,8 @@ body.menu-open { overflow: hidden; }
       saveState();
       pullKinshipData(true).then(() => { showToast("Dem Kreis beigetreten!"); render(); });
     };
+
+    applySettingsAccordion(container);
   }
 
 
@@ -8170,7 +8226,7 @@ body.menu-open { overflow: hidden; }
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
         ? `🏖️ Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis Schulbeginn (${ferienForTicker.name})`
-        : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name} · letzter Schultag ${formatDateStrShort(ferienForTicker.lastSchoolDay)}` });
+        : `🏖️ Noch ${countSchoolDays(todayStr, ferienForTicker.lastSchoolDay)} Schultage bis ${ferienForTicker.name}. Letzter Schultag ${formatDateWithWeekday(ferienForTicker.lastSchoolDay)}` });
     }
     if (weatherCache.data) {
       const cw = weatherCache.data.current_weather;
