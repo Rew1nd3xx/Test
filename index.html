@@ -713,6 +713,14 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .meal-day-block { padding: 12px 0; border-bottom: 1px dashed var(--border); }
 .meal-day-block:last-child { border-bottom: none; }
 .meal-day-head { font-size: 13px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 10px; }
+.meal-custody-hint { font-weight: 400; text-transform: none; letter-spacing: normal; color: var(--text-muted); font-size: 11.5px; }
+.personal-quick-links { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.personal-quick-link {
+  padding: 10px 18px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 13.5px; cursor: pointer;
+  transition: transform .12s ease, border-color .15s ease;
+}
+.personal-quick-link:hover { transform: translateY(-2px); border-color: var(--accent); }
 .meal-options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
 .meal-group-head { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .meal-group-head .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
@@ -737,6 +745,10 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .meal-confirm-btn { font-size: 11px; padding: 3px 7px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text-muted); }
 .meal-del-btn { font-size: 12px; }
 .meal-add-row { display: flex; gap: 6px; }
+.meal-forwhom-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; }
+.meal-forwhom-checks label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.meal-forwhom-checks input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--accent); }
+.meal-forwhom-checks .mini-avatar { width: 16px; height: 16px; font-size: 9px; }
 
 .news-composer { margin-bottom: 22px; }
 .news-composer textarea { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; resize: vertical; }
@@ -754,6 +766,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .news-post-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 8px; }
 .news-post-photo { max-width: 100%; border-radius: var(--radius); display: block; margin-bottom: 6px; }
 .news-post-audio { width: 100%; height: 40px; }
+.news-post-kinship { border-color: #B15CDE; background: color-mix(in srgb, #B15CDE 8%, var(--surface)); }
 .allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
 
 .dashboard-card { position: relative; }
@@ -999,7 +1012,7 @@ body.menu-open { overflow: hidden; }
 .checklist-view-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .checklist-view-row.done label { text-decoration: line-through; color: var(--text-muted); }
 .shopping-row {
-  display: grid; grid-template-columns: 22px 2fr 1fr 1fr 26px 24px; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 22px 2fr 1fr 1fr 1fr 26px 24px; gap: 8px; align-items: center;
   padding: 5px 0; border-bottom: 1px dashed var(--border);
 }
 .shopping-row:last-child { border-bottom: none; }
@@ -1011,9 +1024,13 @@ body.menu-open { overflow: hidden; }
   padding: 4px 7px; font-size: 12.5px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
   font-size: 12.5px; width: 100%;
 }
+.s-size-hint {
+  display: inline-block; margin-left: 6px; font-size: 10.5px; padding: 1px 7px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface2)); color: var(--accent); font-weight: 600;
+}
 @media (max-width: 640px) {
   .shopping-row {
-    grid-template-columns: 20px 1fr 26px 24px; grid-template-areas: "cb text photo del" "sel loc loc loc"; row-gap: 4px; padding: 6px 0;
+    grid-template-columns: 20px 1fr 26px 24px; grid-template-areas: "cb text photo del" "sel cat loc loc"; row-gap: 4px; padding: 6px 0;
   }
   .shopping-row-head { display: none; }
   .shopping-row .s-done { grid-area: cb; }
@@ -1021,6 +1038,7 @@ body.menu-open { overflow: hidden; }
   .shopping-row .s-photo { grid-area: photo; }
   .shopping-row .s-del { grid-area: del; }
   .shopping-row .s-forwhom { grid-area: sel; width: auto; max-width: 88px; padding: 3px 4px; font-size: 11px; }
+  .shopping-row .s-category { grid-area: cat; width: auto; max-width: 88px; padding: 3px 4px; font-size: 11px; }
   .shopping-row .s-where { grid-area: loc; width: auto; padding: 3px 6px; font-size: 11px; }
 }
 .add-row-btn { align-self: flex-start; margin-top: 4px; }
@@ -1231,9 +1249,6 @@ body.menu-open { overflow: hidden; }
       <button class="nav-item" data-view="notes">
         <span class="nav-icon">📝</span><span class="nav-label">Notizen</span>
       </button>
-      <button class="nav-item" data-view="mindmap">
-        <span class="nav-icon">🕸️</span><span class="nav-label">Mind-Map</span>
-      </button>
       <button class="nav-item" data-view="checklists">
         <span class="nav-icon">☑️</span><span class="nav-label">Checklisten</span>
       </button>
@@ -1261,9 +1276,6 @@ body.menu-open { overflow: hidden; }
       </button>
       <button class="nav-item" data-view="news">
         <span class="nav-icon">📰</span><span class="nav-label">Familien-News</span>
-      </button>
-      <button class="nav-item" data-view="allowance">
-        <span class="nav-icon">💰</span><span class="nav-label">Taschengeld</span>
       </button>
     </nav>
 
@@ -1319,7 +1331,7 @@ body.menu-open { overflow: hidden; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 82;
+  const APP_BUILD_NUMBER = 84;
   const APP_BUILD_DATE = "2026-07-27";
 
   const THEMES = [
@@ -1368,9 +1380,11 @@ body.menu-open { overflow: hidden; }
       weatherLocation: { name: "", lat: null, lon: null },
       sharedAreas: { parent: { pinHash: "" }, child: { pinHash: "" } },
       checklistTemplates: [],
+      taskTemplates: [],
       newsPosts: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
+      kinship: { enabled: false, circleId: "", serverUrl: "", familyLabel: "" },
       tombstones: {},
       push: { serverUrl: "", categories: { tasks: true, meals: true, weather: true, approvals: true }, subscribed: false, localCheckEnabled: false },
       militaryTemplatesEnabled: false,
@@ -1402,7 +1416,8 @@ body.menu-open { overflow: hidden; }
           push: {
             ...base.push, ...(parsed.push || {}),
             categories: { ...base.push.categories, ...((parsed.push || {}).categories || {}) }
-          }
+          },
+          kinship: { ...base.kinship, ...(parsed.kinship || {}) }
         };
         // Migration: alte Einzel-Mindmap (state.mindmap) → neue Sammlung state.mindmaps
         if (parsed.mindmap && parsed.mindmap.nodes && parsed.mindmap.nodes.length && (!parsed.mindmaps || !parsed.mindmaps.length)) {
@@ -1682,6 +1697,10 @@ body.menu-open { overflow: hidden; }
             <div class="field" id="p-size-bra-row" style="${draft.gender === "female" ? "" : "display:none;"}"><label>BH</label><input type="text" id="p-size-bra" value="${escapeHtml(draft.sizes.bra || "")}" placeholder="z. B. 75B"></div>
           </div>
         </details>
+        ${existing && draft.role === "child" && isParentForReset ? `
+        <div class="field"><label>💰 Aktuelles Taschengeld (€)</label>
+          <input type="text" id="p-allowance" value="${allowanceBalance(existing.id).toFixed(2)}" inputmode="decimal">
+        </div>` : ""}
         <div class="modal-footer">
           <div style="display:flex;gap:8px;">
             ${existing && existing.pinHash && isParentForReset ? `<button class="btn" id="resetPinBtn" title="Setzt PIN und Face ID/Fingerabdruck zurück, falls jemand ausgesperrt ist">🔓 PIN zurücksetzen</button>` : ""}
@@ -1751,6 +1770,14 @@ body.menu-open { overflow: hidden; }
       const idx = state.profiles.findIndex(p => p.id === draft.id);
       if (idx >= 0) state.profiles[idx] = draft; else state.profiles.push(draft);
       if (!state.activeProfileId) state.activeProfileId = draft.id;
+      const allowanceInput = overlay.querySelector("#p-allowance");
+      if (existing && allowanceInput) {
+        const newVal = parseFloat((allowanceInput.value || "0").replace(",", "."));
+        const oldVal = allowanceBalance(existing.id);
+        if (!isNaN(newVal) && Math.abs(newVal - oldVal) > 0.001) {
+          allowanceAdd(existing.id, +(newVal - oldVal).toFixed(2), "Von Elternteil angepasst");
+        }
+      }
       saveState(); close(); renderProfileBar(); render();
       showToast(existing ? "Profil aktualisiert." : `Willkommen, ${draft.name}!`);
     };
@@ -2039,7 +2066,7 @@ body.menu-open { overflow: hidden; }
       const ferienPart = hasFerien
         ? (ferienStatus
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
-                ? `🎉 Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} (${escapeHtml(ferienStatus.name)})`
+                ? `🏖️ Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis Schulbeginn (${escapeHtml(ferienStatus.name)})`
                 : `🏖️ Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)}`}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
@@ -3491,6 +3518,63 @@ body.menu-open { overflow: hidden; }
     });
     container.appendChild(overview);
 
+    if (isParentForReset) {
+      const recurringTasks = state.tasks.filter(t => t.recurring);
+      const tplSection = document.createElement("div");
+      tplSection.className = "settings-section";
+      tplSection.innerHTML = `
+        <h3>🔁 Vorlagen für wiederkehrende Aufgaben</h3>
+        <p class="hint">Aktuelle wiederkehrende Aufgaben (${recurringTasks.length}) als Vorlage sichern, z. B. um zwischen „Schulwoche" und „Ferienwoche" zu wechseln.</p>
+        <div class="backup-row">
+          <button class="btn btn-sm" id="saveTaskTplBtn" ${recurringTasks.length ? "" : "disabled"}>Als Vorlage speichern</button>
+        </div>
+        ${state.taskTemplates.length ? `<div class="widget-body" style="margin-top:12px;">${state.taskTemplates.map(tpl => `
+          <div class="widget-row">
+            <span class="wr-title">${escapeHtml(tpl.name)}</span>
+            <span class="wr-meta">${tpl.tasks.length} Aufgaben</span>
+            <button class="btn btn-sm" data-load-tpl="${tpl.id}" style="margin-left:8px;">Laden</button>
+            <button class="card-pin" data-del-tpl="${tpl.id}" title="Vorlage löschen" style="margin-left:4px;">✕</button>
+          </div>
+        `).join("")}</div>` : ""}
+      `;
+      container.appendChild(tplSection);
+      const saveBtn = tplSection.querySelector("#saveTaskTplBtn");
+      if (saveBtn) saveBtn.onclick = () => {
+        const name = prompt("Name für die Vorlage (z. B. „Schulwoche“):");
+        if (!name || !name.trim()) return;
+        state.taskTemplates.push({
+          id: uid(), name: name.trim(), createdAt: Date.now(), updatedAt: Date.now(),
+          tasks: recurringTasks.map(t => ({ title: t.title, assignedTo: t.assignedTo, points: t.points, recurring: t.recurring, category: t.category, subject: t.subject || "" }))
+        });
+        saveState(); render();
+        showToast("Vorlage gespeichert.");
+      };
+      tplSection.querySelectorAll("[data-load-tpl]").forEach(btn => {
+        btn.onclick = () => {
+          const tpl = state.taskTemplates.find(t => t.id === btn.dataset.loadTpl);
+          if (!tpl) return;
+          if (!confirm(`„${tpl.name}" laden — ${tpl.tasks.length} Aufgaben werden neu angelegt (bestehende bleiben erhalten). Fortfahren?`)) return;
+          tpl.tasks.forEach(t => {
+            state.tasks.push({
+              id: uid(), title: t.title, assignedTo: t.assignedTo, points: t.points, recurring: t.recurring,
+              done: false, lastEntryId: null, category: t.category, dueDate: "", subject: t.subject || "",
+              approved: true, createdBy: state.activeProfileId || null, updatedAt: Date.now()
+            });
+          });
+          saveState(); render();
+          showToast(`${tpl.tasks.length} Aufgaben aus „${tpl.name}" angelegt.`);
+        };
+      });
+      tplSection.querySelectorAll("[data-del-tpl]").forEach(btn => {
+        btn.onclick = () => {
+          if (!confirm("Vorlage wirklich löschen?")) return;
+          markDeleted(btn.dataset.delTpl);
+          state.taskTemplates = state.taskTemplates.filter(t => t.id !== btn.dataset.delTpl);
+          saveState(); render();
+        };
+      });
+    }
+
     // Hausaufgaben
     const todayStr = new Date().toISOString().slice(0, 10);
     const homework = state.tasks.filter(t => t.category === "homework" && t.approved !== false);
@@ -3922,7 +4006,11 @@ body.menu-open { overflow: hidden; }
     const today = new Date().toISOString().slice(0, 10);
     const sorted = list.slice().sort((a, b) => a.start.localeCompare(b.start));
     const current = sorted.find(f => f.start <= today && today >= f.start && today <= f.end);
-    if (current) return { type: "current", name: current.name, days: dateStrToDayNumber(current.end) - dateStrToDayNumber(today) };
+    if (current) {
+      // Schule beginnt am Tag nach dem letzten Ferientag — nicht am letzten Ferientag selbst.
+      const daysUntilSchoolStart = dateStrToDayNumber(current.end) + 1 - dateStrToDayNumber(today);
+      return { type: "current", name: current.name, days: daysUntilSchoolStart };
+    }
     const next = sorted.find(f => f.start > today);
     if (next) return { type: "next", name: next.name, days: dateStrToDayNumber(next.start) - dateStrToDayNumber(today) };
     return null;
@@ -4057,22 +4145,26 @@ body.menu-open { overflow: hidden; }
     if (typeof raw === "string") return { options: [], confirmed: raw };
     return { options: raw.options || [], confirmed: raw.confirmed || null };
   }
+  function optionForWhomIds(o) {
+    if (Array.isArray(o.forWhomIds)) return o.forWhomIds;
+    return o.forWhom ? [o.forWhom] : [];
+  }
   function getMealForDate(dateStr, profileId) {
     profileId = profileId === undefined ? state.activeProfileId : profileId;
     const entry = getMealEntry(dateStr);
     // Persönliche, bestätigte Variante hat Vorrang vor der allgemeinen
-    const personalConfirmed = entry.options.find(o => o.forWhom === profileId && entry.confirmed === o.id);
+    const personalConfirmed = entry.options.find(o => optionForWhomIds(o).includes(profileId) && entry.confirmed === o.id);
     if (personalConfirmed) return personalConfirmed.text;
     if (entry.confirmed) {
       const opt = entry.options.find(o => o.id === entry.confirmed);
       if (opt) return opt.text;
       return entry.confirmed;
     }
-    const personalOptions = entry.options.filter(o => o.forWhom === profileId);
+    const personalOptions = entry.options.filter(o => optionForWhomIds(o).includes(profileId));
     if (personalOptions.length) {
       return personalOptions.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length)[0].text;
     }
-    const generalOptions = entry.options.filter(o => !o.forWhom);
+    const generalOptions = entry.options.filter(o => !optionForWhomIds(o).length);
     if (generalOptions.length) {
       return generalOptions.slice().sort((a, b) => (b.votes || []).length - (a.votes || []).length)[0].text;
     }
@@ -4083,12 +4175,13 @@ body.menu-open { overflow: hidden; }
     else delete state.mealPlan[dateStr];
     saveState();
   }
-  function addMealOption(dateStr, text, forWhom) {
+  function addMealOption(dateStr, text, forWhomIds, kinship) {
     if (!text || !text.trim()) return;
     const entry = getMealEntry(dateStr);
-    entry.options.push({ id: uid(), text: text.trim(), createdBy: state.activeProfileId || null, votes: [], forWhom: forWhom || null, ratings: {} });
+    entry.options.push({ id: uid(), text: text.trim(), createdBy: state.activeProfileId || null, votes: [], forWhomIds: forWhomIds || [], ratings: {}, kinship: !!kinship, updatedAt: Date.now() });
     state.mealPlan[dateStr] = entry;
     saveState();
+    if (kinship) pushKinshipData(true);
   }
   function toggleMealVote(dateStr, optionId, profileId) {
     const entry = getMealEntry(dateStr);
@@ -4218,9 +4311,13 @@ body.menu-open { overflow: hidden; }
       const owner = getProfile(t.assignedTo);
       return `<div class="cal-event cal-homework-chip" data-task-id="${t.id}" style="border-left-color:#3A5A9B;">📚 ${escapeHtml(t.title)}${owner ? " · " + escapeHtml(owner.name) : ""}</div>`;
     }).join("");
+    const kinshipEvents = (kinshipCache.events || []).filter(ev => ev.date === dateStr);
+    const kinshipChips = kinshipEvents.map(ev =>
+      `<div class="cal-event" style="border-left-color:#B15CDE;font-style:italic;">👨‍👩‍👧‍👦 ${escapeHtml(ev.title)} <span style="opacity:.7;">· ${escapeHtml(ev.familyLabel || "")}</span></div>`
+    ).join("");
     return `${headerHtml}
       <div style="display:flex;flex-direction:column;gap:2px;">
-        ${eventChips}${homeworkChips}
+        ${eventChips}${homeworkChips}${kinshipChips}
         ${dayEvents.length > maxEvents ? `<div style="font-size:10px;color:var(--text-muted);">+${dayEvents.length - maxEvents} mehr</div>` : ""}
       </div>
       ${ferienHtml}
@@ -4604,11 +4701,12 @@ body.menu-open { overflow: hidden; }
     function renderMealDay(dayWrap, dateStr, label) {
       const entry = getMealEntry(dateStr);
       const sortFn = (a, b) => (b.votes || []).length - (a.votes || []).length;
-      const generalOpts = entry.options.filter(o => !o.forWhom).sort(sortFn);
+      const generalOpts = entry.options.filter(o => !optionForWhomIds(o).length).sort(sortFn);
       const personGroups = state.profiles
-        .map(p => ({ p, opts: entry.options.filter(o => o.forWhom === p.id).sort(sortFn) }))
+        .map(p => ({ p, opts: entry.options.filter(o => optionForWhomIds(o).includes(p.id)).sort(sortFn) }))
         .filter(g => g.opts.length);
 
+      const kinshipMeals = (kinshipCache.meals || []).filter(m => m.date === dateStr);
       const groupsHtml = [
         `<div class="meal-group">
           <div class="meal-group-head">🍽️ Für alle</div>
@@ -4618,19 +4716,33 @@ body.menu-open { overflow: hidden; }
         <div class="meal-group">
           <div class="meal-group-head"><span class="mini-avatar" style="background:${g.p.color};">${g.p.emoji || g.p.name.charAt(0)}</span> Nur ${escapeHtml(g.p.name)}</div>
           ${g.opts.map(o => renderMealOptionCard(o, entry, dateStr)).join("")}
-        </div>`)
+        </div>`),
+        kinshipMeals.length ? `
+        <div class="meal-group">
+          <div class="meal-group-head">👨‍👩‍👧‍👦 Von der Verwandtschaft</div>
+          ${kinshipMeals.map(m => `<div class="meal-option-card"><div class="meal-option-top"><span class="meal-option-title">${escapeHtml(m.text)} <span style="opacity:.6;font-size:11px;">· ${escapeHtml(m.familyLabel || "")}</span></span></div></div>`).join("")}
+        </div>` : ""
       ].join("");
 
       dayWrap.innerHTML = `
-        <div class="meal-day-head">${label} · ${formatDateStrShort(dateStr)}</div>
+        <div class="meal-day-head">${label} · ${formatDateStrShort(dateStr)}${(() => {
+          const custody = custodyAssignmentsForDate(dateStr);
+          if (!custody.length) return "";
+          return custody.map(({ schedule, result }) => {
+            const kids = schedule.childIds.map(id => getProfile(id)).filter(Boolean).map(k => k.name).join(", ");
+            const parents = (result.block.profileIds || []).map(id => getProfile(id)).filter(Boolean).map(p => p.name).join(" & ");
+            return ` <span class="meal-custody-hint">· ${escapeHtml(kids)} bei ${escapeHtml(parents)}</span>`;
+          }).join("");
+        })()}</div>
         <div class="meal-options">${groupsHtml}</div>
         <div class="meal-add-row">
           <input type="text" class="meal-new-option" placeholder="Vorschlag hinzufügen, z. B. Spaghetti Bolognese">
-          <select class="meal-new-forwhom">
-            <option value="">Für alle</option>
-            ${state.profiles.map(p => `<option value="${p.id}">Nur ${escapeHtml(p.name)}</option>`).join("")}
-          </select>
           <button type="button" class="btn btn-sm meal-add-btn">+ Vorschlag</button>
+        </div>
+        <div class="meal-forwhom-checks">
+          <span class="hint" style="margin-right:4px;">Für wen (kein Häkchen = für alle):</span>
+          ${state.profiles.map(p => `<label><input type="checkbox" class="meal-new-forwhom-cb" value="${p.id}"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>${escapeHtml(p.name)}</label>`).join("")}
+          ${state.kinship.enabled ? `<label><input type="checkbox" class="meal-new-kinship">👨‍👩‍👧‍👦 Verwandtschaft</label>` : ""}
         </div>
       `;
       dayWrap.querySelectorAll(".meal-vote-btn").forEach(btn => {
@@ -4647,10 +4759,11 @@ body.menu-open { overflow: hidden; }
       });
       const addBtn = dayWrap.querySelector(".meal-add-btn");
       const addInput = dayWrap.querySelector(".meal-new-option");
-      const addForWhom = dayWrap.querySelector(".meal-new-forwhom");
+      const addKinship = dayWrap.querySelector(".meal-new-kinship");
       const doAdd = () => {
         if (!addInput.value.trim()) return;
-        addMealOption(dateStr, addInput.value, addForWhom.value || null);
+        const forWhomIds = Array.from(dayWrap.querySelectorAll(".meal-new-forwhom-cb:checked")).map(cb => cb.value);
+        addMealOption(dateStr, addInput.value, forWhomIds, addKinship && addKinship.checked);
         renderMealDay(dayWrap, dateStr, label);
       };
       addBtn.onclick = doAdd;
@@ -4869,6 +4982,7 @@ body.menu-open { overflow: hidden; }
         <button type="button" class="btn btn-sm" id="newsPhotoBtn">📷 Foto</button>
         <input type="file" id="newsPhotoInput" accept="image/*" style="display:none">
         <button type="button" class="btn btn-sm" id="newsRecordBtn">🎤 Sprachnachricht</button>
+        ${state.kinship.enabled ? `<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;"><input type="checkbox" id="newsKinship" style="width:15px;height:15px;accent-color:var(--accent);">👨‍👩‍👧‍👦 Verwandtschaft</label>` : ""}
         <button type="button" class="btn btn-accent" id="newsPostBtn" style="margin-left:auto;">Teilen</button>
       </div>
     `;
@@ -4943,41 +5057,52 @@ body.menu-open { overflow: hidden; }
     composer.querySelector("#newsPostBtn").onclick = () => {
       const text = composer.querySelector("#newsText").value.trim();
       if (!text && !pendingPhoto && !newsRecordedDataUrl) { showToast("Bitte Text, Foto oder Sprachnachricht hinzufügen."); return; }
+      const kinshipChecked = state.kinship.enabled && composer.querySelector("#newsKinship") && composer.querySelector("#newsKinship").checked;
       state.newsPosts.unshift({
-        id: uid(), createdBy: state.activeProfileId || null, createdAt: Date.now(),
-        text, photo: pendingPhoto || "", audio: newsRecordedDataUrl || ""
+        id: uid(), createdBy: state.activeProfileId || null, createdAt: Date.now(), updatedAt: Date.now(),
+        text, photo: pendingPhoto || "", audio: newsRecordedDataUrl || "", kinship: kinshipChecked
       });
       saveState();
       render();
+      if (kinshipChecked) pushKinshipData(true);
       showToast("Geteilt! 📰");
     };
 
     const feed = document.createElement("div");
     feed.className = "news-feed";
-    if (!state.newsPosts.length) {
+    const combinedPosts = [
+      ...state.newsPosts.map(p => ({ ...p, _kind: "local" })),
+      ...(kinshipCache.news || []).map(p => ({ ...p, _kind: "kinship" }))
+    ];
+    if (!combinedPosts.length) {
       feed.innerHTML = `<div class="empty-state"><span class="empty-icon">📰</span>Noch keine News — teil doch die erste!</div>`;
     } else {
-      state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt).forEach(post => {
-        const author = post.createdBy ? getProfile(post.createdBy) : null;
+      combinedPosts.sort((a, b) => (b.createdAt || b.updatedAt || 0) - (a.createdAt || a.updatedAt || 0)).forEach(post => {
+        const isKinship = post._kind === "kinship";
+        const author = !isKinship && post.createdBy ? getProfile(post.createdBy) : null;
         const card = document.createElement("div");
-        card.className = "news-post-card";
+        card.className = "news-post-card" + (isKinship ? " news-post-kinship" : "");
         card.innerHTML = `
           <div class="news-post-head">
-            ${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span><span class="news-post-author">${escapeHtml(author.name)}</span>` : `<span class="news-post-author">Familie</span>`}
+            ${isKinship ? `<span class="mini-avatar" style="background:#B15CDE;">👨‍👩‍👧‍👦</span><span class="news-post-author">${escapeHtml(post.familyLabel || "Verwandtschaft")}</span>`
+              : author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span><span class="news-post-author">${escapeHtml(author.name)}</span>` : `<span class="news-post-author">Familie</span>`}
             <span class="news-post-time">${fmtDate(post.createdAt)}</span>
-            <button type="button" class="card-pin news-post-del" title="Löschen">✕</button>
+            ${!isKinship ? `<button type="button" class="card-pin news-post-del" title="Löschen">✕</button>` : ""}
           </div>
           ${post.text ? `<div class="news-post-text">${escapeHtml(post.text)}</div>` : ""}
           ${post.photo ? `<img class="news-post-photo" src="${post.photo}">` : ""}
-          ${post.audio ? `<audio controls class="news-post-audio" src="${post.audio}"></audio>` : ""}
+          ${!isKinship && post.audio ? `<audio controls class="news-post-audio" src="${post.audio}"></audio>` : ""}
         `;
-        card.querySelector(".news-post-del").onclick = () => {
-          if (confirm("Diesen Beitrag wirklich löschen?")) {
-            markDeleted(post.id);
-            state.newsPosts = state.newsPosts.filter(p => p.id !== post.id);
-            saveState(); render();
-          }
-        };
+        if (!isKinship) {
+          card.querySelector(".news-post-del").onclick = () => {
+            if (confirm("Diesen Beitrag wirklich löschen?")) {
+              markDeleted(post.id);
+              state.newsPosts = state.newsPosts.filter(p => p.id !== post.id);
+              saveState(); render();
+              if (post.kinship) pushKinshipData(true);
+            }
+          };
+        }
         feed.appendChild(card);
       });
     }
@@ -5111,6 +5236,10 @@ body.menu-open { overflow: hidden; }
           <input type="checkbox" id="e-private" ${draft.private ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
           🔒 Privater Termin — andere sehen nur „Privat", keine Details
         </label>
+        ${state.kinship.enabled ? `<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="e-kinship" ${draft.kinship ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+          👨‍👩‍👧‍👦 Mit Verwandtschaftskreis teilen
+        </label>` : ""}
         <div class="modal-footer">
           <div>${existing ? `<button class="btn btn-danger" id="deleteEventBtn">Löschen</button>` : ""}</div>
           <div class="modal-footer-right">
@@ -5135,11 +5264,13 @@ body.menu-open { overflow: hidden; }
       draft.time = overlay.querySelector("#e-time").value.trim();
       draft.profileIds = [...overlay.querySelectorAll(".e-profile:checked")].map(cb => cb.value);
       draft.private = overlay.querySelector("#e-private").checked;
+      draft.kinship = state.kinship.enabled ? overlay.querySelector("#e-kinship").checked : false;
       draft.updatedAt = Date.now();
       if (!existing) draft.createdBy = state.activeProfileId || null;
       const idx = state.events.findIndex(ev => ev.id === draft.id);
       if (idx >= 0) state.events[idx] = draft; else state.events.push(draft);
       saveState(); close(); render();
+      if (draft.kinship) pushKinshipData(true);
       showToast(existing ? "Termin aktualisiert." : "Termin angelegt.");
     };
     setTimeout(() => overlay.querySelector("#e-title").focus(), 30);
@@ -5395,15 +5526,26 @@ body.menu-open { overflow: hidden; }
     } else {
       const head = document.createElement("div");
       head.className = "shopping-row shopping-row-head";
-      head.innerHTML = `<span></span><span>Was</span><span>Für wen</span><span>Wo</span><span></span><span></span>`;
+      head.innerHTML = `<span></span><span>Was</span><span>Kategorie</span><span>Für wen</span><span>Wo</span><span></span><span></span>`;
       card.appendChild(head);
 
+      const CLOTHING_CATS = {
+        shirt: "👕 Oberteil", pants: "👖 Hose", shoes: "👟 Schuhe",
+        jacket: "🧥 Jacke", head: "🧢 Kopfumfang", gloves: "🧤 Handschuhe", bra: "👙 BH"
+      };
       listItems.slice().sort((a, b) => a.done - b.done).forEach(item => {
         const row = document.createElement("div");
         row.className = "shopping-row" + (item.done ? " done" : "");
+        const forWhomProfile = item.forWhom ? getProfile(item.forWhom) : null;
+        const sizeHint = (item.category && CLOTHING_CATS[item.category] && forWhomProfile && forWhomProfile.sizes && forWhomProfile.sizes[item.category])
+          ? `<span class="s-size-hint" title="Hinterlegte Größe von ${escapeHtml(forWhomProfile.name)}">Größe ${escapeHtml(forWhomProfile.sizes[item.category])}</span>` : "";
         row.innerHTML = `
           <input type="checkbox" ${item.done ? "checked" : ""} class="s-done">
-          <label class="s-text">${escapeHtml(item.text)}</label>
+          <label class="s-text">${escapeHtml(item.text)}${sizeHint}</label>
+          <select class="s-category">
+            <option value="">–</option>
+            ${Object.entries(CLOTHING_CATS).map(([key, label]) => `<option value="${key}" ${item.category === key ? "selected" : ""}>${label}</option>`).join("")}
+          </select>
           <select class="s-forwhom">
             <option value="">Alle</option>
             ${state.profiles.map(p => `<option value="${p.id}" ${item.forWhom === p.id ? "selected" : ""}>${escapeHtml(p.name)}</option>`).join("")}
@@ -5414,7 +5556,8 @@ body.menu-open { overflow: hidden; }
           <button class="card-pin s-del" title="Entfernen">✕</button>
         `;
         row.querySelector(".s-done").onchange = (e) => { item.done = e.target.checked; item.updatedAt = Date.now(); saveState(); render(); };
-        row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; item.updatedAt = Date.now(); saveState(); };
+        row.querySelector(".s-category").onchange = (e) => { item.category = e.target.value || ""; item.updatedAt = Date.now(); saveState(); render(); };
+        row.querySelector(".s-forwhom").onchange = (e) => { item.forWhom = e.target.value || null; item.updatedAt = Date.now(); saveState(); render(); };
         row.querySelector(".s-where").addEventListener("change", (e) => { item.location = e.target.value.trim(); item.updatedAt = Date.now(); saveState(); });
         const photoInput = row.querySelector(".s-photo-input");
         row.querySelector(".s-photo").onclick = () => {
@@ -5472,7 +5615,7 @@ body.menu-open { overflow: hidden; }
       const input = document.getElementById("shopInput");
       const text = input.value.trim();
       if (!text) return;
-      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, location: "", photo: "", list: activeShoppingList, updatedAt: Date.now() });
+      state.shoppingList.push({ id: uid(), text, done: false, addedBy: state.activeProfileId, forWhom: null, category: "", location: "", photo: "", list: activeShoppingList, updatedAt: Date.now() });
       saveState(); render();
       setTimeout(() => document.getElementById("shopInput").focus(), 30);
     }
@@ -5608,6 +5751,7 @@ body.menu-open { overflow: hidden; }
     state.custodySchedules = state.custodySchedules.filter(isLive);
     state.wishlist = state.wishlist.filter(isLive);
     state.checklistTemplates = (state.checklistTemplates || []).filter(isLive);
+    state.taskTemplates = (state.taskTemplates || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
@@ -5644,6 +5788,7 @@ body.menu-open { overflow: hidden; }
     state.wishlist = mergeByIdNewest(state.wishlist, remote.wishlist);
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
     state.checklistTemplates = unionById(state.checklistTemplates || [], remote.checklistTemplates);
+    state.taskTemplates = unionById(state.taskTemplates || [], remote.taskTemplates);
     state.newsPosts = unionById(state.newsPosts || [], remote.newsPosts);
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
@@ -6253,6 +6398,71 @@ body.menu-open { overflow: hidden; }
     `;
   if (syncSettingsUnlocked) syncAdminGroup.appendChild(backupSection);
 
+  // --- Verwandtschaftskreis ---
+  const kinshipSection = document.createElement("div");
+  kinshipSection.className = "settings-section";
+  const k = state.kinship;
+  kinshipSection.innerHTML = `
+    <h3>👨‍👩‍👧‍👦 Verwandtschaftskreis</h3>
+    <p class="hint">Getrennt vom normalen Familien-Sync: nur Termine, News und Essensplan-Vorschläge, die ihr einzeln dafür markiert, werden mit anderen Familien im selben Kreis geteilt (z. B. Großeltern, gemeinsame Nachmittagsbetreuung).</p>
+    ${k.enabled && k.circleId ? `
+      <div class="field"><label>Euer Name im Kreis</label><input type="text" id="kinFamilyLabel" value="${escapeHtml(k.familyLabel)}" placeholder="z. B. Familie Müller"></div>
+      <p class="hint">Kreis-Code zum Weitergeben an weitere Familien: <code id="kinCodeDisplay">${escapeHtml(k.circleId)}</code> · Server: <code>${escapeHtml(k.serverUrl)}</code></p>
+      <div class="backup-row">
+        <button class="btn btn-sm" id="kinSyncNowBtn">🔄 Jetzt synchronisieren</button>
+        <button class="btn btn-sm btn-danger" id="kinLeaveBtn">Kreis verlassen</button>
+      </div>
+    ` : `
+      <div class="backup-row">
+        <button class="btn btn-accent" id="kinCreateBtn">+ Neuen Kreis erstellen</button>
+        <button class="btn" id="kinJoinBtn">Bestehendem Kreis beitreten</button>
+      </div>
+    `}
+  `;
+  container.appendChild(kinshipSection);
+  if (!syncSettingsUnlocked) kinshipSection.remove();
+  else syncAdminGroup.appendChild(kinshipSection);
+
+  if (k.enabled && k.circleId) {
+    kinshipSection.querySelector("#kinFamilyLabel").addEventListener("change", (e) => {
+      state.kinship.familyLabel = e.target.value.trim();
+      saveState();
+    });
+    kinshipSection.querySelector("#kinSyncNowBtn").onclick = async () => {
+      await pushKinshipData(false);
+      await pullKinshipData(true);
+      render();
+    };
+    kinshipSection.querySelector("#kinLeaveBtn").onclick = () => {
+      if (!confirm("Verwandtschaftskreis wirklich verlassen? Eure geteilten Inhalte werden nicht mehr synchronisiert.")) return;
+      state.kinship = { enabled: false, circleId: "", serverUrl: "", familyLabel: "" };
+      kinshipCache = { events: [], news: [], meals: [] };
+      saveState(); render();
+    };
+  } else {
+    kinshipSection.querySelector("#kinCreateBtn").onclick = () => {
+      const serverUrl = prompt("Adresse eures Sync-Servers für den Kreis (z. B. https://family-dapp.de/kinship-sync.php):", state.connectors.network.url ? state.connectors.network.url.replace(/sync\.php.*$/, "kinship-sync.php") : "");
+      if (!serverUrl) return;
+      const label = prompt("Euer Name im Kreis (z. B. Familie Müller):", "") || "Familie";
+      const circleId = uid().replace(/-/g, "").slice(0, 12);
+      state.kinship = { enabled: true, circleId, serverUrl: serverUrl.trim(), familyLabel: label.trim() };
+      saveState();
+      showToast("Kreis erstellt! Gib den Code an weitere Familien weiter.");
+      render();
+    };
+    kinshipSection.querySelector("#kinJoinBtn").onclick = () => {
+      const serverUrl = prompt("Adresse des Sync-Servers, den euch die einladende Familie gegeben hat:");
+      if (!serverUrl) return;
+      const circleId = prompt("Kreis-Code, den euch die einladende Familie gegeben hat:");
+      if (!circleId) return;
+      const label = prompt("Euer Name im Kreis (z. B. Familie Schmidt):", "") || "Familie";
+      state.kinship = { enabled: true, circleId: circleId.trim(), serverUrl: serverUrl.trim(), familyLabel: label.trim() };
+      saveState();
+      pullKinshipData(true).then(() => { showToast("Dem Kreis beigetreten!"); render(); });
+    };
+  }
+
+
   backupSection.querySelector("#backupShareBtn").onclick = () => {
     shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-alle-${Date.now()}.json`, "DApp Backup");
   };
@@ -6595,6 +6805,15 @@ body.menu-open { overflow: hidden; }
     container.appendChild(header);
     header.querySelector("#hubBack").onclick = () => { personalAreaViewingProfileId = null; render(); };
 
+    const quickLinks = document.createElement("div");
+    quickLinks.className = "personal-quick-links";
+    quickLinks.innerHTML = `
+      <button type="button" class="personal-quick-link" data-goto="mindmap">🕸️ Mind-Map</button>
+      <button type="button" class="personal-quick-link" data-goto="allowance">💰 Taschengeld</button>
+    `;
+    container.appendChild(quickLinks);
+    quickLinks.querySelectorAll("[data-goto]").forEach(btn => { btn.onclick = () => setView(btn.dataset.goto); });
+
     if (profile.shared && isParent) {
       const info = document.createElement("div");
       info.className = "build-info-card";
@@ -6869,6 +7088,68 @@ body.menu-open { overflow: hidden; }
         serverUrl: state.push.serverUrl, deviceId: state.push.deviceId
       }), { headers: { "Content-Type": "application/json" } }));
     } catch (e) { /* Cache Storage evtl. nicht verfügbar — Push funktioniert dann nicht offline-robust, kein Absturz */ }
+  }
+
+  let kinshipCache = { events: [], news: [], meals: [] };
+  function collectKinshipEvents() {
+    return state.events.filter(e => e.kinship).map(e => ({
+      id: e.id, title: e.title, date: e.date, time: e.time || "", updatedAt: e.updatedAt || Date.now(),
+      familyLabel: state.kinship.familyLabel || "Familie"
+    }));
+  }
+  function collectKinshipNews() {
+    return state.newsPosts.filter(p => p.kinship).map(p => ({
+      id: p.id, text: p.text || "", photo: p.photo || "", createdAt: p.createdAt, updatedAt: p.updatedAt || p.createdAt,
+      familyLabel: state.kinship.familyLabel || "Familie"
+    }));
+  }
+  function collectKinshipMeals() {
+    const out = [];
+    Object.entries(state.mealPlan || {}).forEach(([dateStr, entry]) => {
+      if (!entry || !entry.options) return;
+      entry.options.filter(o => o.kinship).forEach(o => {
+        out.push({ id: o.id, date: dateStr, text: o.text, updatedAt: o.updatedAt || Date.now(), familyLabel: state.kinship.familyLabel || "Familie" });
+      });
+    });
+    return out;
+  }
+  async function pushKinshipData(silent) {
+    const k = state.kinship;
+    if (!k.enabled || !k.circleId || !k.serverUrl) return false;
+    try {
+      const res = await fetch(k.serverUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          circle: k.circleId,
+          events: collectKinshipEvents(), news: collectKinshipNews(), meals: collectKinshipMeals(),
+          tombstones: state.tombstones
+        })
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      kinshipCache = await res.json();
+      if (!silent) showToast("Mit Verwandtschaft synchronisiert.");
+      return true;
+    } catch (err) {
+      console.warn("Verwandtschafts-Push fehlgeschlagen:", err);
+      if (!silent) showToast("Verwandtschafts-Sync fehlgeschlagen.");
+      return false;
+    }
+  }
+  async function pullKinshipData(silent) {
+    const k = state.kinship;
+    if (!k.enabled || !k.circleId || !k.serverUrl) return false;
+    try {
+      const url = k.serverUrl + (k.serverUrl.includes("?") ? "&" : "?") + "circle=" + encodeURIComponent(k.circleId);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      kinshipCache = await res.json();
+      return true;
+    } catch (err) {
+      console.warn("Verwandtschafts-Pull fehlgeschlagen:", err);
+      if (!silent) showToast("Verwandtschafts-Sync fehlgeschlagen.");
+      return false;
+    }
   }
 
   async function subscribeToPush(serverUrl) {
@@ -7240,7 +7521,7 @@ body.menu-open { overflow: hidden; }
     const ferienForTicker = getFerienStatus();
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
-        ? `🎉 Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} (${ferienForTicker.name})`
+        ? `🏖️ Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis Schulbeginn (${ferienForTicker.name})`
         : `🏖️ Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis ${ferienForTicker.name}` });
     }
     if (weatherCache.data) {
@@ -7384,10 +7665,15 @@ body.menu-open { overflow: hidden; }
     if (state.connectors.network.autoSync && state.connectors.network.url) {
       pullFromNetwork(true, { onlyIfNewer: true, skipConfirm: true }).then(() => startAutoSync());
     }
+    if (state.kinship.enabled && state.kinship.circleId && state.kinship.serverUrl) {
+      pullKinshipData(true).then(() => render());
+      setInterval(() => { pushKinshipData(true).then(() => pullKinshipData(true)).then(() => render()); }, 10 * 60 * 1000);
+    }
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
       resetRecurringTasksIfNeeded();
       render();
+      if (state.kinship.enabled && state.kinship.circleId) { pullKinshipData(true).then(() => render()); }
       const net = state.connectors.network;
       if (!net.autoSync || !net.url) return;
       const dueMs = Math.max(1, net.intervalMinutes || 5) * 60 * 1000;
