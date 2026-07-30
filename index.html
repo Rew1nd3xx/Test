@@ -233,10 +233,10 @@ body.theme-bauhaus {
 }
 /* 12. Sternenstaub — magical starlight */
 .theme-stardust {
-  --bg: #0D0B1F; --surface: #171331; --surface2: #211C42;
-  --text: #EDE8FF; --text-muted: #9C93C4;
-  --accent: #9C7FFF; --accent2: #FFD86B;
-  --border: #2E2757; --shadow: 0 0 22px rgba(156,127,255,.28);
+  --bg: #04060B; --surface: #0A0E16; --surface2: #121826;
+  --text: #EFEDE6; --text-muted: #8C93A3;
+  --accent: #D4AF37; --accent2: #C6CDD6;
+  --border: #2A3140; --shadow: 0 10px 34px rgba(0,0,0,.7), 0 0 0 1px rgba(212,175,55,.14);
   --font-display: 'Cinzel', serif; --font-body: 'Manrope', sans-serif;
   --radius: 12px; --pattern: none;
 }
@@ -271,34 +271,139 @@ body.theme-bauhaus {
 .theme-neon .view-title { text-shadow: 0 0 18px rgba(255,20,53,.35); }
 .theme-neon ::selection { background: var(--accent2); color: #0A0A0A; }
 
-/* ---- Sternenstaub: soft twinkling starfield + gentle glow ---- */
-.theme-stardust #app {
-  position: relative; z-index: 0;
-}
+/* ---- Sternenstaub: tiefes Weltall mit Nebeln, Milchstraßenband und Edelmetall-Kanten ---- */
+.theme-stardust #app { position: relative; z-index: 0; }
+/* Ebene 1: farbige Nebelwolken, die sehr langsam atmen */
 .theme-stardust #app::before {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background-image:
-    radial-gradient(1.6px 1.6px at 12% 22%, #fff, transparent),
-    radial-gradient(1.4px 1.4px at 28% 68%, #fff, transparent),
-    radial-gradient(1.8px 1.8px at 45% 12%, #fff, transparent),
-    radial-gradient(1.3px 1.3px at 62% 78%, #fff, transparent),
-    radial-gradient(1.6px 1.6px at 78% 35%, #fff, transparent),
-    radial-gradient(1.4px 1.4px at 88% 60%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 95% 15%, #fff, transparent),
-    radial-gradient(1.3px 1.3px at 8% 85%, #fff, transparent),
-    radial-gradient(1.7px 1.7px at 55% 50%, #fff, transparent),
-    radial-gradient(1.4px 1.4px at 35% 40%, #fff, transparent);
-  background-repeat: no-repeat;
-  opacity: .55;
-  animation: starTwinkle 5s ease-in-out infinite alternate;
+  content: ""; position: fixed; inset: -10%; z-index: -3; pointer-events: none;
+  background:
+    radial-gradient(46vw 40vw at 18% 22%, rgba(86, 62, 168, .34), transparent 68%),
+    radial-gradient(40vw 34vw at 82% 30%, rgba(28, 96, 140, .30), transparent 70%),
+    radial-gradient(52vw 42vw at 55% 88%, rgba(150, 70, 120, .22), transparent 72%),
+    radial-gradient(30vw 26vw at 92% 78%, rgba(212, 175, 55, .10), transparent 70%);
+  filter: blur(24px) saturate(115%);
+  animation: galaxyBreathe 40s ease-in-out infinite alternate;
 }
-@keyframes starTwinkle { from { opacity: .3; } to { opacity: .7; } }
-.theme-stardust .brand-text { text-shadow: 0 0 14px rgba(156,127,255,.6); }
-.theme-stardust .btn-accent { box-shadow: 0 0 16px rgba(156,127,255,.5); }
-.theme-stardust .btn-accent:hover { box-shadow: 0 0 24px rgba(156,127,255,.7); }
-.theme-stardust .card:hover, .theme-stardust .widget-card:hover { box-shadow: 0 0 24px rgba(255,216,107,.2), 0 1px 2px rgba(0,0,0,.2); }
-.theme-stardust .mm-node.root { box-shadow: 0 0 26px rgba(156,127,255,.5); }
-.theme-stardust .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent), 0 0 14px rgba(156,127,255,.6); }
+@keyframes galaxyBreathe {
+  0%   { transform: translate(0, 0) scale(1); opacity: .85; }
+  50%  { transform: translate(1.5%, -2%) scale(1.08); opacity: 1; }
+  100% { transform: translate(-1.5%, 1.5%) scale(1.03); opacity: .9; }
+}
+/* Ebene 2: schräges Milchstraßenband mit feinem Staubkorn */
+.theme-stardust #app::after {
+  content: ""; position: fixed; inset: -25%; z-index: -2; pointer-events: none;
+  background:
+    linear-gradient(102deg, transparent 40%, rgba(228, 232, 245, .10) 47%, rgba(255,255,255,.16) 50%, rgba(228, 232, 245, .10) 53%, transparent 60%),
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1px 1px at 70% 65%, rgba(255,255,255,.4), transparent);
+  filter: blur(1.5px);
+  transform: rotate(-8deg);
+  animation: milkyDrift 90s linear infinite;
+}
+@keyframes milkyDrift {
+  from { transform: rotate(-8deg) translateX(-2%); }
+  to   { transform: rotate(-8deg) translateX(2%); }
+}
+/* Ebene 3: Sternenfeld in zwei Tiefen — feine ferne Sterne, hellere nahe Sterne */
+.theme-stardust .galaxy-stars {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; display: block;
+}
+.theme-stardust .galaxy-stars::before,
+.theme-stardust .galaxy-stars::after {
+  content: ""; position: absolute; inset: 0;
+  background-repeat: repeat;
+}
+.theme-stardust .galaxy-stars::before {
+  background-image:
+    radial-gradient(1px 1px at 14% 18%, rgba(255,255,255,.85), transparent),
+    radial-gradient(1px 1px at 37% 62%, rgba(198, 205, 214, .75), transparent),
+    radial-gradient(1px 1px at 58% 27%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1px 1px at 76% 71%, rgba(212, 175, 55, .55), transparent),
+    radial-gradient(1px 1px at 91% 34%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1px 1px at 24% 86%, rgba(198, 205, 214, .6), transparent),
+    radial-gradient(1px 1px at 66% 92%, rgba(255,255,255,.55), transparent);
+  background-size: 340px 340px;
+  opacity: .5;
+  animation: starDriftFar 220s linear infinite;
+}
+.theme-stardust .galaxy-stars::after {
+  background-image:
+    radial-gradient(1.8px 1.8px at 22% 40%, #fff, transparent),
+    radial-gradient(2px 2px at 68% 18%, rgba(255, 246, 214, .95), transparent),
+    radial-gradient(1.6px 1.6px at 45% 78%, #fff, transparent),
+    radial-gradient(2.2px 2.2px at 86% 58%, rgba(212, 175, 55, .9), transparent);
+  background-size: 620px 620px;
+  opacity: .75;
+  animation: starDriftNear 140s linear infinite, starPulse 6s ease-in-out infinite alternate;
+}
+@keyframes starDriftFar  { from { background-position: 0 0; }     to { background-position: 340px 170px; } }
+@keyframes starDriftNear { from { background-position: 0 0; }     to { background-position: -620px 310px; } }
+@keyframes starPulse { from { opacity: .55; } to { opacity: .9; } }
+body:not(.theme-stardust) .galaxy-stars { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-stardust #app::before, .theme-stardust #app::after,
+  .theme-stardust .galaxy-stars::before, .theme-stardust .galaxy-stars::after { animation: none; }
+}
+/* Edelmetall: Gold-Platin-Titan-Verlauf an Kanten und Schrift */
+.theme-stardust .sidebar, .theme-stardust .topbar {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-color: transparent;
+}
+.theme-stardust .sidebar { border-right: 1px solid transparent; border-image: linear-gradient(180deg, rgba(212,175,55,.55), rgba(198,205,214,.35) 45%, rgba(122,132,148,.25)) 1; }
+.theme-stardust .topbar { border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, transparent, rgba(212,175,55,.5), rgba(198,205,214,.4), transparent) 1; }
+.theme-stardust .brand-text, .theme-stardust .view-title {
+  background: linear-gradient(100deg, #EFD98A 0%, #D4AF37 26%, #F5F2E8 48%, #C6CDD6 66%, #9AA3B2 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: .02em;
+}
+.theme-stardust .card, .theme-stardust .widget-card, .theme-stardust .calendar-card {
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  border: 1px solid rgba(198, 205, 214, .16);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+  position: relative;
+}
+/* Feiner Lichtreflex an der Oberkante, wie poliertes Metall */
+.theme-stardust .card::after, .theme-stardust .calendar-card::after {
+  content: ""; position: absolute; left: 12%; right: 12%; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,.7), rgba(255,255,255,.75), rgba(198,205,214,.6), transparent);
+}
+.theme-stardust .card:hover, .theme-stardust .widget-card:hover {
+  border-color: rgba(212, 175, 55, .45);
+  box-shadow: 0 14px 40px rgba(0,0,0,.75), 0 0 26px rgba(212,175,55,.16), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.theme-stardust .widget-card::before { background: linear-gradient(180deg, #EFD98A, #D4AF37 40%, #C6CDD6); }
+.theme-stardust .btn { border-color: rgba(198,205,214,.22); }
+.theme-stardust .btn-accent {
+  background: linear-gradient(135deg, #EFD98A, #D4AF37 55%, #A8862A);
+  color: #16130A; border: none; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(212,175,55,.35), inset 0 1px 0 rgba(255,255,255,.45);
+}
+.theme-stardust .btn-accent:hover { box-shadow: 0 7px 24px rgba(212,175,55,.5), inset 0 1px 0 rgba(255,255,255,.55); }
+.theme-stardust .nav-item.active {
+  background: linear-gradient(135deg, rgba(212,175,55,.22), rgba(198,205,214,.10));
+  color: #F5F2E8; box-shadow: inset 0 0 0 1px rgba(212,175,55,.4);
+}
+.theme-stardust .avatar, .theme-stardust .mini-avatar { box-shadow: 0 0 0 1.5px rgba(198,205,214,.45), 0 2px 8px rgba(0,0,0,.6); }
+.theme-stardust .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px #D4AF37, 0 0 18px rgba(212,175,55,.55); }
+.theme-stardust .mm-node { background: color-mix(in srgb, var(--surface) 80%, transparent); border-color: rgba(198,205,214,.18); }
+.theme-stardust .mm-node.root {
+  background: radial-gradient(circle at 35% 30%, #2A2418, #0A0E16 70%);
+  border: 1.5px solid #D4AF37;
+  box-shadow: 0 0 34px rgba(212,175,55,.45), inset 0 0 18px rgba(212,175,55,.15);
+}
+.theme-stardust .card-progress-bar { background: linear-gradient(90deg, #D4AF37, #C6CDD6); }
+.theme-stardust .tag-chip { background: rgba(198,205,214,.08); border-color: rgba(198,205,214,.22); }
+.theme-stardust input, .theme-stardust select, .theme-stardust textarea {
+  background: rgba(10, 14, 22, .75) !important; border-color: rgba(198,205,214,.2) !important; color: var(--text) !important;
+}
+.theme-stardust input:focus, .theme-stardust select:focus, .theme-stardust textarea:focus {
+  outline: none; border-color: rgba(212,175,55,.6) !important; box-shadow: 0 0 0 3px rgba(212,175,55,.12);
+}
+.theme-stardust .global-ticker { background: color-mix(in srgb, var(--surface2) 55%, transparent); backdrop-filter: blur(10px); }
+.theme-stardust .global-ticker-dot { background: #D4AF37; box-shadow: 0 0 10px rgba(212,175,55,.7); }
+.theme-stardust .widget-head h3 { color: #D8DEE6; letter-spacing: .03em; }
+.theme-stardust ::selection { background: rgba(212,175,55,.35); color: #F5F2E8; }
 
 /* 13. Blockwelt — blocky pixel-world look */
 .theme-blockwelt {
@@ -907,6 +1012,48 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .news-post-photo { max-width: 100%; border-radius: var(--radius); display: block; margin-bottom: 6px; }
 .news-post-audio { width: 100%; height: 40px; }
 .news-post-kinship { border-color: #B15CDE; background: color-mix(in srgb, #B15CDE 8%, var(--surface)); }
+.news-reactions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.news-reaction {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 14px; line-height: 1;
+  transition: transform .1s ease, border-color .15s ease;
+}
+.news-reaction:hover { transform: scale(1.08); }
+.news-reaction.reacted { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface2)); }
+.news-reaction span { font-size: 11.5px; font-weight: 600; }
+.news-reply-toggle {
+  margin-left: auto; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface2); cursor: pointer; font-size: 12px; color: var(--text-muted);
+}
+.news-replies { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.news-reply { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+.news-reply .mini-avatar { width: 20px; height: 20px; font-size: 11px; flex-shrink: 0; }
+.news-reply-text { flex: 1; line-height: 1.45; }
+.news-reply-time { font-size: 10.5px; color: var(--text-muted); flex-shrink: 0; }
+.news-reply-input-row { display: flex; gap: 6px; margin-top: 4px; }
+.news-reply-input {
+  flex: 1; padding: 7px 11px; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--bg); color: var(--text); font-size: 13px;
+}
+.area-chat-feed { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.area-chat-msg { display: flex; }
+.area-chat-msg.mine { justify-content: flex-end; }
+.area-chat-bubble {
+  max-width: 84%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 9px 13px; display: flex; flex-direction: column; gap: 5px;
+}
+.area-chat-msg.mine .area-chat-bubble { background: color-mix(in srgb, var(--accent) 14%, var(--surface2)); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.area-chat-meta { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
+.area-chat-meta .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
+.area-chat-time { margin-left: auto; }
+.area-chat-text { font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; }
+.area-chat-reactions { display: flex; flex-wrap: wrap; gap: 4px; }
+.area-chat-reactions .news-reaction { padding: 2px 7px; font-size: 12.5px; }
+.area-chat-input-row { display: flex; gap: 6px; margin-top: 12px; }
+.area-chat-input {
+  flex: 1; padding: 9px 13px; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--bg); color: var(--text); font-size: 13.5px;
+}
 .allowance-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
 .allowance-entry-date { font-size: 10.5px; color: var(--text-muted); font-weight: 400; }
 
@@ -983,6 +1130,9 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 .vacation-tag { background: #BFE3EA !important; color: #24555E !important; }
 
 .nav-sync-btn { opacity: .75; }
+.day-overview-body { max-height: 58vh; overflow-y: auto; }
+.day-overview-heading { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 14px 0 6px; }
+.day-overview-event:hover { background: var(--surface2); border-radius: var(--radius); }
 .nav-sync-btn:hover { opacity: 1; }
 .nav-sync-btn:disabled { opacity: .5; cursor: default; }
 .sync-spinning { display: inline-block; animation: syncSpin 1s linear infinite; }
@@ -1574,6 +1724,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <div class="holiday-sparkles" id="holidaySparkles" aria-hidden="true"></div>
+  <div class="galaxy-stars" aria-hidden="true"></div>
 
   <!-- Main -->
   <div class="main">
@@ -1611,8 +1762,8 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 101;
-  const APP_BUILD_DATE = "2026-07-29";
+  const APP_BUILD_NUMBER = 102;
+  const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
     { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
@@ -1625,7 +1776,7 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
     { id: "neon",       name: "Neon",            sub: "Rot-Glow ✨",   dots: ["#FF1435", "#FFFFFF", "#0A0A0A"] },
-    { id: "stardust",   name: "Sternenstaub",    sub: "Magisches Glühen ✨", dots: ["#9C7FFF", "#FFD86B", "#0D0B1F"] },
+    { id: "stardust",   name: "Sternenstaub",    sub: "Galaxie & Edelmetall 🌌", dots: ["#D4AF37", "#C6CDD6", "#04060B"] },
     { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
     { id: "obsidian",   name: "Obsidian",        sub: "Exklusiv & gedämpft ♟️", dots: ["#C9A24B", "#7A6E5C", "#0B0B0A"] },
@@ -1663,6 +1814,7 @@ body.sortable-active * { cursor: grabbing !important; }
       checklistTemplates: [],
       taskTemplates: [],
       newsPosts: [],
+      areaChat: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
@@ -2363,6 +2515,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function widget(icon, title, accentVar, bodyHtml, linkView, linkLabel) {
       const card = document.createElement("div");
       card.className = "widget-card";
+      card.dataset.sortId = title; // Titel dient als stabiler Schlüssel für die eigene Reihenfolge
       card.style.setProperty("--widget-accent", accentVar);
       card.innerHTML = `
         <div class="widget-head"><h3>${icon} ${title}</h3>${linkView ? `<span class="widget-link" data-goto="${linkView}" style="cursor:pointer;">${linkLabel || "Öffnen ›"}</span>` : ""}</div>
@@ -2571,6 +2724,23 @@ body.sortable-active * { cursor: grabbing !important; }
       row.onclick = () => openEditor(row.dataset.type, row.dataset.item);
     });
 
+    // Eigene Kachel-Reihenfolge anwenden — die Dashboard-Kachel bleibt immer oben.
+    let savedOrder = [];
+    try { savedOrder = JSON.parse(localStorage.getItem("dapp_widget_order") || "[]"); } catch (e) {}
+    if (savedOrder.length) {
+      savedOrder.forEach(key => {
+        const el = grid.querySelector(`.widget-card[data-sort-id="${CSS.escape(key)}"]`);
+        if (el) grid.appendChild(el);
+      });
+      // Kacheln ohne gespeicherte Position hängen sich hinten an, bleiben aber erhalten.
+      Array.from(grid.querySelectorAll(".widget-card[data-sort-id]"))
+        .filter(el => !savedOrder.includes(el.dataset.sortId))
+        .forEach(el => grid.appendChild(el));
+    }
+    makeListSortable(grid, ".widget-card[data-sort-id]", (order) => {
+      try { localStorage.setItem("dapp_widget_order", JSON.stringify(order)); } catch (e) {}
+      showToast("Reihenfolge gespeichert.");
+    });
   }
 
   function renderListView(container, type, title, subtitle, icon) {
@@ -4946,6 +5116,24 @@ body.sortable-active * { cursor: grabbing !important; }
       ${(!showHeader && custody.length) ? `<div class="cal-custody-row" style="position:static;margin-top:6px;">${custodyDotsHtml}</div>` : ""}`;
   }
 
+  // Waagerechtes Wischen zum Blättern (Touch) — senkrechtes Scrollen bleibt unberührt.
+  function makeSwipeable(el, onSwipeLeft, onSwipeRight) {
+    let startX = 0, startY = 0, tracking = false;
+    el.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    el.addEventListener("touchend", (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      // Nur auslösen, wenn deutlich waagerecht gewischt wurde.
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+      if (dx < 0) onSwipeLeft(); else onSwipeRight();
+    }, { passive: true });
+  }
+
   function wireDayCell(cell, dateStr) {
     cell.onclick = (e) => {
       const hwChip = e.target.closest(".cal-homework-chip");
@@ -4957,8 +5145,78 @@ body.sortable-active * { cursor: grabbing !important; }
         openEventEditor(ev);
         return;
       }
-      openEventEditor(null, dateStr);
+      openDayOverview(dateStr);
     };
+  }
+
+  // Tagesübersicht statt sofort einen neuen Termin anzulegen — zeigt alles,
+  // was an dem Tag ansteht, und lässt jeden Eintrag direkt bearbeiten.
+  function openDayOverview(dateStr) {
+    const dayEvents = state.events.filter(ev => ev.date === dateStr)
+      .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    const dayHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.dueDate === dateStr && t.approved !== false);
+    const meal = getMealForDate(dateStr);
+    const ferien = getSchoolHolidayName(dateStr);
+    const holiday = getHolidayName(dateStr);
+    const vacation = getVacationForDate(dateStr);
+    const custody = custodyAssignmentsForDate(dateStr);
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const weekdayLong = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" });
+    overlay.innerHTML = `<div class="modal" style="max-width:460px;">
+      <div class="modal-header">
+        <h2>${weekdayLong}, ${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.${y}</h2>
+        <button class="close-btn" id="closeModal">✕</button>
+      </div>
+      <div class="day-overview-body">
+        ${holiday ? `<div class="today-sub-stat">🎌 Feiertag: ${escapeHtml(holiday)}</div>` : ""}
+        ${ferien ? `<div class="today-sub-stat">🏖️ Ferien: ${escapeHtml(ferien)}</div>` : ""}
+        ${vacation ? `<div class="today-sub-stat">${vacation.emoji || "🏝️"} Urlaub: ${escapeHtml(vacation.name)}</div>` : ""}
+        ${custody.length ? custody.map(({ schedule, result }) => {
+          const parents = (result.block.profileIds || []).map(pid => getProfile(pid)).filter(Boolean);
+          const kids = schedule.childIds.map(id => getProfile(id)).filter(Boolean);
+          return `<div class="today-sub-stat">🔁 ${escapeHtml(kids.map(k => k.name).join(", "))} bei ${escapeHtml(parents.map(p => p.name).join(" & ") || "—")}${result.isSwitchDay ? " · Wechseltag" : ""}</div>`;
+        }).join("") : ""}
+        ${meal ? `<div class="today-sub-stat">🍽️ ${escapeHtml(meal)}</div>` : ""}
+        <h3 class="day-overview-heading">Termine</h3>
+        ${dayEvents.length ? dayEvents.map(ev => {
+          const visible = canSeeEventDetails(ev);
+          const people = (ev.profileIds || []).map(id => getProfile(id)).filter(Boolean);
+          return `<div class="widget-row day-overview-event" data-event-id="${ev.id}" style="cursor:${visible ? "pointer" : "default"};">
+            <span class="wr-title">${visible ? `${ev.time ? `<strong>${escapeHtml(ev.time)}</strong> · ` : ""}${escapeHtml(ev.title)}` : "🔒 Privat"}</span>
+            <span class="meal-voters">${people.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
+          </div>`;
+        }).join("") : `<div class="widget-empty">Keine Termine an diesem Tag.</div>`}
+        ${dayHomework.length ? `<h3 class="day-overview-heading">Hausaufgaben</h3>` + dayHomework.map(t => {
+          const owner = getProfile(t.assignedTo);
+          return `<div class="widget-row"><span class="wr-title">📚 ${escapeHtml(t.title)}${owner ? ` · ${escapeHtml(owner.name)}` : ""}</span></div>`;
+        }).join("") : ""}
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-right">
+          <button class="btn btn-ghost" id="dayCloseBtn">Schließen</button>
+          <button class="btn btn-accent" id="dayNewEventBtn">+ Neuer Termin</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); }
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#dayCloseBtn").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#dayNewEventBtn").onclick = () => { close(); openEventEditor(null, dateStr); };
+    overlay.querySelectorAll("[data-event-id]").forEach(row => {
+      row.onclick = () => {
+        const ev = state.events.find(x => x.id === row.dataset.eventId);
+        if (!ev) return;
+        if (!canSeeEventDetails(ev)) { showToast("🔒 Dieser Termin ist privat."); return; }
+        close();
+        openEventEditor(ev);
+      };
+    });
   }
 
   let ferienAutoFetchTried = false;
@@ -5167,6 +5425,9 @@ body.sortable-active * { cursor: grabbing !important; }
       container.appendChild(calCard);
       toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, -1); render(); };
       toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addMonths(calendarCursorStr, 1); render(); };
+      makeSwipeable(calCard,
+        () => { calendarCursorStr = addMonths(calendarCursorStr, 1); render(); },
+        () => { calendarCursorStr = addMonths(calendarCursorStr, -1); render(); });
     } else {
       const weekCard = document.createElement("div");
       weekCard.className = "calendar-card week-card-vertical";
@@ -5197,6 +5458,9 @@ body.sortable-active * { cursor: grabbing !important; }
       }
       toolbar.querySelector("#calPrev").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, -7); render(); };
       toolbar.querySelector("#calNext").onclick = () => { calendarCursorStr = addDays(calendarCursorStr, 7); render(); };
+      makeSwipeable(weekCard,
+        () => { calendarCursorStr = addDays(calendarCursorStr, 7); render(); },
+        () => { calendarCursorStr = addDays(calendarCursorStr, -7); render(); });
     }
 
     toolbar.querySelector("#calToday").onclick = () => { calendarCursorStr = new Date().toISOString().slice(0, 10); render(); };
@@ -5825,6 +6089,7 @@ body.sortable-active * { cursor: grabbing !important; }
     paint();
   }
 
+  const NEWS_REACTIONS = ["👍", "❤️", "😂", "🎉", "😮", "🥰"];
   let newsRecorder = null;
   let newsRecordedChunks = [];
   let newsRecordedBlobUrl = null;
@@ -5946,6 +6211,8 @@ body.sortable-active * { cursor: grabbing !important; }
         const author = !isKinship && post.createdBy ? getProfile(post.createdBy) : null;
         const card = document.createElement("div");
         card.className = "news-post-card" + (isKinship ? " news-post-kinship" : "");
+        const reactions = post.reactions || {};
+        const replies = post.replies || [];
         card.innerHTML = `
           <div class="news-post-head">
             ${isKinship ? `<span class="mini-avatar" style="background:#B15CDE;">👨‍👩‍👧‍👦</span><span class="news-post-author">${escapeHtml(post.familyLabel || "Verwandtschaft")}</span>`
@@ -5956,6 +6223,29 @@ body.sortable-active * { cursor: grabbing !important; }
           ${post.text ? `<div class="news-post-text">${escapeHtml(post.text)}</div>` : ""}
           ${post.photo ? `<img class="news-post-photo" src="${post.photo}">` : ""}
           ${!isKinship && post.audio ? `<audio controls class="news-post-audio" src="${post.audio}"></audio>` : ""}
+          ${!isKinship ? `
+          <div class="news-reactions">
+            ${NEWS_REACTIONS.map(emo => {
+              const who = (reactions[emo] || []).map(pid => getProfile(pid)).filter(Boolean);
+              const mine = state.activeProfileId && (reactions[emo] || []).includes(state.activeProfileId);
+              return `<button type="button" class="news-reaction${mine ? " reacted" : ""}${who.length ? " has-count" : ""}" data-react="${emo}" title="${who.map(p => p.name).join(", ")}">${emo}${who.length ? ` <span>${who.length}</span>` : ""}</button>`;
+            }).join("")}
+            <button type="button" class="news-reply-toggle" data-reply-toggle>💬 ${replies.length ? replies.length : "Antworten"}</button>
+          </div>
+          <div class="news-replies" style="display:${replies.length ? "" : "none"};">
+            ${replies.map(r => {
+              const ra = r.by ? getProfile(r.by) : null;
+              return `<div class="news-reply">
+                ${ra ? `<span class="mini-avatar" style="background:${ra.color};">${ra.emoji || ra.name.charAt(0)}</span>` : ""}
+                <span class="news-reply-text"><strong>${ra ? escapeHtml(ra.name) : "Familie"}</strong> ${escapeHtml(r.text)}</span>
+                <span class="news-reply-time">${fmtDate(r.at)}</span>
+              </div>`;
+            }).join("")}
+            <div class="news-reply-input-row">
+              <input type="text" class="news-reply-input" placeholder="Antworten …">
+              <button type="button" class="btn btn-sm news-reply-send">Senden</button>
+            </div>
+          </div>` : ""}
         `;
         if (!isKinship) {
           card.querySelector(".news-post-del").onclick = () => {
@@ -5966,6 +6256,34 @@ body.sortable-active * { cursor: grabbing !important; }
               if (post.kinship) pushKinshipData(true);
             }
           };
+          card.querySelectorAll("[data-react]").forEach(btn => {
+            btn.onclick = () => {
+              if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+              const emo = btn.dataset.react;
+              post.reactions = post.reactions || {};
+              post.reactions[emo] = post.reactions[emo] || [];
+              const i = post.reactions[emo].indexOf(state.activeProfileId);
+              if (i >= 0) post.reactions[emo].splice(i, 1); else post.reactions[emo].push(state.activeProfileId);
+              post.updatedAt = Date.now();
+              saveState(); render();
+            };
+          });
+          const repliesWrap = card.querySelector(".news-replies");
+          card.querySelector("[data-reply-toggle]").onclick = () => {
+            repliesWrap.style.display = repliesWrap.style.display === "none" ? "" : "none";
+            if (repliesWrap.style.display !== "none") repliesWrap.querySelector(".news-reply-input").focus();
+          };
+          const replyInput = card.querySelector(".news-reply-input");
+          const sendReply = () => {
+            const text = replyInput.value.trim();
+            if (!text) return;
+            post.replies = post.replies || [];
+            post.replies.push({ id: uid(), by: state.activeProfileId || null, text, at: Date.now() });
+            post.updatedAt = Date.now();
+            saveState(); render();
+          };
+          card.querySelector(".news-reply-send").onclick = sendReply;
+          replyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); sendReply(); } });
         }
         feed.appendChild(card);
       });
@@ -6360,7 +6678,91 @@ body.sortable-active * { cursor: grabbing !important; }
   }
 
   /* ============ SPAR-POOLS ============ */
+  /* ============ BEREICHS-CHAT ============ */
+  function renderAreaChat(container, profile) {
+    const areaId = profile.id;
+    const section = document.createElement("div");
+    section.className = "settings-section";
+    section.innerHTML = `<h3>💬 Chat</h3>`;
+    const body = document.createElement("div");
+    body.innerHTML = `<p class="hint">Nur für alle, die Zugang zu diesem Bereich haben.</p>`;
+
+    const feed = document.createElement("div");
+    feed.className = "area-chat-feed";
+    const msgs = state.areaChat.filter(m => m.areaId === areaId).sort((a, b) => a.at - b.at);
+    if (!msgs.length) {
+      feed.innerHTML = `<div class="widget-empty">Noch keine Nachrichten — schreib die erste!</div>`;
+    } else {
+      msgs.forEach(m => {
+        const author = m.by ? getProfile(m.by) : null;
+        const mine = m.by && m.by === state.activeProfileId;
+        const reactions = m.reactions || {};
+        const row = document.createElement("div");
+        row.className = "area-chat-msg" + (mine ? " mine" : "");
+        row.innerHTML = `
+          <div class="area-chat-bubble">
+            <div class="area-chat-meta">
+              ${author ? `<span class="mini-avatar" style="background:${author.color};">${author.emoji || author.name.charAt(0)}</span><strong>${escapeHtml(author.name)}</strong>` : `<strong>Familie</strong>`}
+              <span class="area-chat-time">${fmtDate(m.at)}</span>
+              ${mine ? `<button type="button" class="card-pin area-chat-del" title="Löschen">✕</button>` : ""}
+            </div>
+            <div class="area-chat-text">${escapeHtml(m.text)}</div>
+            <div class="area-chat-reactions">
+              ${NEWS_REACTIONS.map(emo => {
+                const who = (reactions[emo] || []).map(pid => getProfile(pid)).filter(Boolean);
+                const reacted = state.activeProfileId && (reactions[emo] || []).includes(state.activeProfileId);
+                return `<button type="button" class="news-reaction${reacted ? " reacted" : ""}" data-chat-react="${emo}" title="${who.map(p => p.name).join(", ")}">${emo}${who.length ? ` <span>${who.length}</span>` : ""}</button>`;
+              }).join("")}
+            </div>
+          </div>`;
+        row.querySelectorAll("[data-chat-react]").forEach(btn => {
+          btn.onclick = () => {
+            if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+            const emo = btn.dataset.chatReact;
+            m.reactions = m.reactions || {};
+            m.reactions[emo] = m.reactions[emo] || [];
+            const i = m.reactions[emo].indexOf(state.activeProfileId);
+            if (i >= 0) m.reactions[emo].splice(i, 1); else m.reactions[emo].push(state.activeProfileId);
+            m.updatedAt = Date.now();
+            saveState(); render();
+          };
+        });
+        const delBtn = row.querySelector(".area-chat-del");
+        if (delBtn) delBtn.onclick = () => {
+          if (!confirm("Nachricht löschen?")) return;
+          markDeleted(m.id);
+          state.areaChat = state.areaChat.filter(x => x.id !== m.id);
+          saveState(); render();
+        };
+        feed.appendChild(row);
+      });
+    }
+    body.appendChild(feed);
+
+    const inputRow = document.createElement("div");
+    inputRow.className = "area-chat-input-row";
+    inputRow.innerHTML = `
+      <input type="text" class="area-chat-input" placeholder="Nachricht schreiben …">
+      <button type="button" class="btn btn-accent btn-sm area-chat-send">Senden</button>`;
+    body.appendChild(inputRow);
+    const input = inputRow.querySelector(".area-chat-input");
+    const send = () => {
+      const text = input.value.trim();
+      if (!text) return;
+      state.areaChat.push({ id: uid(), areaId, by: state.activeProfileId || null, text, at: Date.now(), updatedAt: Date.now(), reactions: {} });
+      saveState(); render();
+    };
+    inputRow.querySelector(".area-chat-send").onclick = send;
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); send(); } });
+
+    section.appendChild(body);
+    container.appendChild(section);
+    makeCollapsible(section, "area-chat-" + areaId, true);
+    setTimeout(() => { feed.scrollTop = feed.scrollHeight; }, 30);
+  }
+
   function renderSavingsPools(container, isParentView, viewingEntity) {
+    const isSharedView = !!(viewingEntity && viewingEntity.shared);
     const section = document.createElement("div");
     section.className = "settings-section";
     section.innerHTML = `<h3>🏦 Spar-Pools</h3>`;
@@ -6395,7 +6797,9 @@ body.sortable-active * { cursor: grabbing !important; }
             ${gifts ? `<span class="pool-contrib-chip">🎁 Geschenkt: ${fmtEuro(gifts)}</span>` : ""}
           </div>` : ""}
           <div class="news-composer-actions" style="margin-top:12px;">
-            ${!isParentView ? `
+            ${isSharedView ? `
+              <button type="button" class="btn btn-sm" data-pool-gift="${pool.id}">🎁 Beisteuern</button>
+            ` : !isParentView ? `
               <button type="button" class="btn btn-sm" data-pool-money="${pool.id}">💶 Taschengeld einzahlen</button>
               <button type="button" class="btn btn-sm" data-pool-points="${pool.id}">⭐ Punkte einzahlen</button>
             ` : `
@@ -7521,6 +7925,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.vacations = (state.vacations || []).filter(isLive);
     state.poolLedger = (state.poolLedger || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
+    state.areaChat = (state.areaChat || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
     state.items = unionById(state.items, remote.items).map(it => {
@@ -7584,7 +7989,8 @@ body.sortable-active * { cursor: grabbing !important; }
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
     state.checklistTemplates = unionById(state.checklistTemplates || [], remote.checklistTemplates);
     state.taskTemplates = unionById(state.taskTemplates || [], remote.taskTemplates);
-    state.newsPosts = unionById(state.newsPosts || [], remote.newsPosts);
+    state.newsPosts = mergeByIdNewest(state.newsPosts || [], remote.newsPosts);
+    state.areaChat = mergeByIdNewest(state.areaChat || [], remote.areaChat);
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
@@ -8853,6 +9259,15 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(quickLinks);
     quickLinks.querySelectorAll("[data-goto]").forEach(btn => { btn.onclick = () => setView(btn.dataset.goto); });
 
+    // Spar-Pools sind gemeinsam — im gemeinsamen Kinderbereich direkt hier anzeigen,
+    // da es dort bewusst keinen Umweg über das persönliche Taschengeld gibt.
+    if (isSharedChild) {
+      renderSavingsPools(container, false, profile);
+    }
+    if (profile.shared) {
+      renderAreaChat(container, profile);
+    }
+
     if (profile.shared && isParent) {
       const info = document.createElement("div");
       info.className = "build-info-card";
@@ -8883,23 +9298,34 @@ body.sortable-active * { cursor: grabbing !important; }
         budgetCard.querySelector("#openBudgetBtn").onclick = () => setView("budget");
       }
 
-      const kidsForSizes = state.profiles.filter(p => p.role === "child" && p.sizes && Object.values(p.sizes).some(v => v));
-      if (kidsForSizes.length) {
+      const allKids = state.profiles.filter(p => p.role === "child");
+      if (allKids.length) {
         const sizesCard = document.createElement("div");
         sizesCard.className = "settings-section";
-        sizesCard.innerHTML = `<h3>👕 Kleidergrößen</h3>` + kidsForSizes.map(k => {
-          const rows = [
-            k.sizes.shirt && `Oberteil ${escapeHtml(k.sizes.shirt)}`,
-            k.sizes.pants && `Hose ${escapeHtml(k.sizes.pants)}`,
-            k.sizes.shoes && `Schuhe ${escapeHtml(k.sizes.shoes)}`,
-            k.sizes.jacket && `Jacke ${escapeHtml(k.sizes.jacket)}`,
-            k.sizes.head && `Kopf ${escapeHtml(k.sizes.head)}`,
-            k.sizes.gloves && `Handschuhe ${escapeHtml(k.sizes.gloves)}`,
-            k.sizes.bra && `BH ${escapeHtml(k.sizes.bra)}`,
-          ].filter(Boolean).join(" · ");
-          return `<div class="widget-row"><span class="mini-avatar" style="background:${k.color};">${k.emoji || k.name.charAt(0)}</span><span class="wr-title">${escapeHtml(k.name)}</span><span class="wr-meta" style="text-align:right;max-width:60%;">${rows}</span></div>`;
-        }).join("");
+        sizesCard.innerHTML = `<h3>👕 Kinderprofile &amp; Kleidergrößen</h3>
+          <p class="hint">Hier könnt ihr die Profile eurer Kinder bearbeiten — Name, Symbol, Farbe, Geschlecht und alle Größen.</p>` +
+          allKids.map(k => {
+            const s = k.sizes || {};
+            const rows = [
+              s.shirt && `Oberteil ${escapeHtml(s.shirt)}`,
+              s.pants && `Hose ${escapeHtml(s.pants)}`,
+              s.shoes && `Schuhe ${escapeHtml(s.shoes)}`,
+              s.jacket && `Jacke ${escapeHtml(s.jacket)}`,
+              s.head && `Kopf ${escapeHtml(s.head)}`,
+              s.gloves && `Handschuhe ${escapeHtml(s.gloves)}`,
+              s.bra && `BH ${escapeHtml(s.bra)}`,
+            ].filter(Boolean).join(" · ");
+            return `<div class="widget-row">
+              <span class="mini-avatar" style="background:${k.color};">${k.emoji || k.name.charAt(0)}</span>
+              <span class="wr-title">${escapeHtml(k.name)}</span>
+              <span class="wr-meta" style="text-align:right;max-width:52%;">${rows || "<em>Noch keine Größen hinterlegt</em>"}</span>
+              <button class="card-pin" data-edit-kid="${k.id}" title="Profil bearbeiten" style="margin-left:8px;">✏️</button>
+            </div>`;
+          }).join("");
         container.appendChild(sizesCard);
+        sizesCard.querySelectorAll("[data-edit-kid]").forEach(btn => {
+          btn.onclick = () => openProfileEditor(btn.dataset.editKid);
+        });
       }
 
       const future = document.createElement("div");
@@ -9399,8 +9825,15 @@ body.sortable-active * { cursor: grabbing !important; }
       }
       // Zusammenführen statt überschreiben: bestehende lokale Daten bleiben erhalten,
       // alles Neue vom Server kommt ergänzend dazu (verhindert Datenverlust bei mehreren Geräten).
+      const unlockedBefore = personalAreaUnlockedFor;
+      const pinBefore = unlockedBefore ? ((getAreaEntity(unlockedBefore) || {}).pinHash || "") : "";
       mergeStateFrom(remote);
-      personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
+      // Nur abmelden, wenn sich die PIN des offenen Bereichs tatsächlich geändert hat —
+      // sonst wurde man bei jedem Sync grundlos aus dem eigenen Bereich geworfen.
+      if (unlockedBefore) {
+        const pinAfter = (getAreaEntity(unlockedBefore) || {}).pinHash || "";
+        if (pinAfter !== pinBefore) { personalAreaUnlockedFor = null; personalAreaViewingProfileId = null; }
+      }
       state.connectors.network.lastSyncAt = Date.now();
       saveState();
       renderProfileBar();
