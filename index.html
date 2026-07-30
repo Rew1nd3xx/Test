@@ -705,7 +705,9 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .family-share-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .family-share-divider { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
 .widget-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: 16px;
   padding: 18px 20px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.05);
   display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;
 }
@@ -980,6 +982,12 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 }
 .vacation-tag { background: #BFE3EA !important; color: #24555E !important; }
 
+.nav-sync-btn { opacity: .75; }
+.nav-sync-btn:hover { opacity: 1; }
+.nav-sync-btn:disabled { opacity: .5; cursor: default; }
+.sync-spinning { display: inline-block; animation: syncSpin 1s linear infinite; }
+@keyframes syncSpin { to { transform: rotate(360deg); } }
+
 .retro-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
 .retro-game-card {
   display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 12px;
@@ -1154,7 +1162,9 @@ body.menu-open { overflow: hidden; }
 /* ============ GRID / CARDS ============ */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: var(--radius);
   padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
   cursor: pointer; transition: transform .12s ease, border-color .15s;
 }
@@ -1549,6 +1559,9 @@ body.sortable-active * { cursor: grabbing !important; }
       <button class="nav-item" id="installBtn" style="display:none;">
         <span class="nav-icon">⬇️</span><span class="nav-label">App installieren</span>
       </button>
+      <button class="nav-item nav-sync-btn" id="quickSyncBtn" type="button" title="Erst hochladen, dann herunterladen">
+        <span class="nav-icon" id="quickSyncIcon">🔄</span><span class="nav-label">Synchronisieren</span>
+      </button>
       <button class="nav-item" data-view="tags">
         <span class="nav-icon">🏷️</span><span class="nav-label">Tags</span>
       </button>
@@ -1598,7 +1611,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 100;
+  const APP_BUILD_NUMBER = 101;
   const APP_BUILD_DATE = "2026-07-29";
 
   const THEMES = [
@@ -6524,10 +6537,114 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(tabRow);
     tabRow.querySelectorAll("[data-tab]").forEach(btn => { btn.onclick = () => { budgetSubTab = btn.dataset.tab; render(); }; });
 
-    if (budgetSubTab === "uebersicht") renderBudgetOverview(container);
+    if (budgetSubTab === "uebersicht") { renderBudgetOverview(container); renderBudgetImportExport(container); }
     else if (budgetSubTab === "einnahmen") renderBudgetIncome(container);
     else if (budgetSubTab === "kosten") renderBudgetCosts(container);
     else renderBudgetLoans(container);
+  }
+
+  // Gemeinsames CSV-Format mit der BILANZ-Vorlage, damit Daten in beide Richtungen passen:
+  // Typ;Bezeichnung;Kategorie;Betrag;Rhythmus;Gesamtsumme;Restschuld;Zinssatz
+  function budgetToCsv() {
+    const esc = (v) => {
+      const s = String(v ?? "");
+      return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = [["Typ", "Bezeichnung", "Kategorie", "Betrag", "Rhythmus", "Gesamtsumme", "Restschuld", "Zinssatz"]];
+    (state.budget.income || []).forEach(i => rows.push(["Einnahme", i.name, "", i.amount, i.frequency, "", "", ""]));
+    (state.budget.costs || []).forEach(i => rows.push(["Kosten", i.name, i.category || "", i.amount, i.frequency, "", "", ""]));
+    (state.budget.loans || []).forEach(l => rows.push(["Rueckzahlung", l.name, "", l.monthlyPayment, "monthly", l.totalAmount, l.remainingAmount, l.interestRate || 0]));
+    return rows.map(r => r.map(esc).join(";")).join("\n");
+  }
+  function parseBudgetCsv(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (!lines.length) return null;
+    const sep = (lines[0].match(/;/g) || []).length >= (lines[0].match(/,/g) || []).length ? ";" : ",";
+    const splitRow = (line) => {
+      const out = []; let cur = ""; let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+          else inQuotes = !inQuotes;
+        } else if (ch === sep && !inQuotes) { out.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out.map(s => s.trim());
+    };
+    const first = splitRow(lines[0]).map(s => s.toLowerCase());
+    const hasHeader = first[0] === "typ" || first.includes("bezeichnung");
+    const dataLines = hasHeader ? lines.slice(1) : lines;
+    const num = (v) => { const n = parseFloat(String(v || "0").replace(/\./g, "").replace(",", ".")); return isNaN(n) ? 0 : n; };
+    const result = { income: [], costs: [], loans: [] };
+    dataLines.forEach(line => {
+      const c = splitRow(line);
+      const typ = (c[0] || "").toLowerCase();
+      const name = c[1] || "";
+      if (!name) return;
+      if (typ.startsWith("einnahme")) {
+        result.income.push({ id: uid(), name, amount: num(c[3]), frequency: (c[4] || "monthly").toLowerCase(), updatedAt: Date.now() });
+      } else if (typ.startsWith("kosten") || typ.startsWith("cost")) {
+        result.costs.push({ id: uid(), name, category: c[2] || "", amount: num(c[3]), frequency: (c[4] || "monthly").toLowerCase(), updatedAt: Date.now() });
+      } else if (typ.startsWith("rueck") || typ.startsWith("rück") || typ.startsWith("loan") || typ.startsWith("kredit")) {
+        result.loans.push({
+          id: uid(), name, monthlyPayment: num(c[3]),
+          totalAmount: num(c[5]), remainingAmount: num(c[6]), interestRate: num(c[7]), updatedAt: Date.now()
+        });
+      }
+    });
+    return result;
+  }
+
+  function renderBudgetImportExport(container) {
+    const box = document.createElement("div");
+    box.className = "settings-section";
+    box.innerHTML = `<h3>⇅ Import &amp; Export</h3>
+      <p class="hint">CSV im gleichen Format wie die BILANZ-Vorlage — so lassen sich Daten zwischen beiden hin- und herschieben, ohne etwas neu einzutippen.</p>
+      <div class="backup-row">
+        <button class="btn btn-sm" id="budgetExportBtn">⇩ Als CSV exportieren</button>
+        <button class="btn btn-sm" id="budgetImportBtn">⇧ CSV importieren</button>
+        <input type="file" id="budgetImportInput" accept=".csv,text/csv" style="display:none">
+      </div>`;
+    container.appendChild(box);
+
+    box.querySelector("#budgetExportBtn").onclick = () => {
+      const csv = budgetToCsv();
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `haushaltsbuch-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("CSV exportiert.");
+    };
+    const fileInput = box.querySelector("#budgetImportInput");
+    box.querySelector("#budgetImportBtn").onclick = () => fileInput.click();
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const parsed = parseBudgetCsv(String(e.target.result || "").replace(/^\ufeff/, ""));
+        if (!parsed) { showToast("CSV konnte nicht gelesen werden."); return; }
+        const total = parsed.income.length + parsed.costs.length + parsed.loans.length;
+        if (!total) { showToast("Keine passenden Zeilen gefunden."); return; }
+        const replace = confirm(`${total} Einträge gefunden.\n\nOK = bestehende Daten ersetzen\nAbbrechen = an bestehende anhängen`);
+        if (replace) {
+          [...state.budget.income, ...state.budget.costs, ...state.budget.loans].forEach(x => markDeleted(x.id));
+          state.budget = { income: parsed.income, costs: parsed.costs, loans: parsed.loans };
+        } else {
+          state.budget.income = [...state.budget.income, ...parsed.income];
+          state.budget.costs = [...state.budget.costs, ...parsed.costs];
+          state.budget.loans = [...state.budget.loans, ...parsed.loans];
+        }
+        saveState(); render();
+        showToast(`${total} Einträge importiert.`);
+      };
+      reader.readAsText(file, "utf-8");
+      fileInput.value = "";
+    };
   }
 
   function renderBudgetOverview(container) {
@@ -6839,6 +6956,10 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="field"><label>Bis</label><input type="date" id="vacEnd"></div>
         <div class="field"><label>Symbol</label><input type="text" id="vacEmoji" value="🏝️" maxlength="4"></div>
       </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:10px;">
+        <input type="checkbox" id="vacVotable" style="width:16px;height:16px;accent-color:var(--accent);">
+        🗳️ Zur Abstimmung stellen — die Familie kann dafür stimmen
+      </label>
       <button class="btn btn-accent btn-sm" id="vacAddBtn">+ Urlaub eintragen</button>
       <div class="modal-footer"><div></div><div class="modal-footer-right"><button class="btn btn-ghost" id="vacClose">Fertig</button></div></div>
     </div>`;
@@ -6851,16 +6972,35 @@ body.sortable-active * { cursor: grabbing !important; }
     function paintList() {
       const listEl = overlay.querySelector("#vacList");
       const vacs = (state.vacations || []).slice().sort((a, b) => a.start.localeCompare(b.start));
-      listEl.innerHTML = vacs.length ? vacs.map(v => `
-        <div class="widget-row">
+      listEl.innerHTML = vacs.length ? vacs.map(v => {
+        const voters = (v.votes || []).map(pid => getProfile(pid)).filter(Boolean);
+        const iVoted = state.activeProfileId && (v.votes || []).includes(state.activeProfileId);
+        return `
+        <div class="widget-row" style="flex-wrap:wrap;">
           <span class="wr-title">${v.emoji || "🏝️"} ${escapeHtml(v.name)}</span>
           <span class="wr-meta">${formatDateStrShort(v.start)} – ${formatDateStrShort(v.end)}</span>
           <button class="card-pin" data-vac-del="${v.id}" title="Entfernen" style="margin-left:8px;">✕</button>
-        </div>`).join("") : `<div class="widget-empty">Noch kein Urlaub eingetragen.</div>`;
+          ${v.votable ? `<div style="flex-basis:100%;display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <button type="button" class="meal-vote-btn${iVoted ? " voted" : ""}" data-vac-vote="${v.id}">🗳️ ${(v.votes || []).length}</button>
+            <span class="meal-voters">${voters.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
+          </div>` : ""}
+        </div>`;
+      }).join("") : `<div class="widget-empty">Noch kein Urlaub eingetragen.</div>`;
       listEl.querySelectorAll("[data-vac-del]").forEach(btn => {
         btn.onclick = () => {
           markDeleted(btn.dataset.vacDel);
           state.vacations = state.vacations.filter(v => v.id !== btn.dataset.vacDel);
+          saveState(); paintList();
+        };
+      });
+      listEl.querySelectorAll("[data-vac-vote]").forEach(btn => {
+        btn.onclick = () => {
+          const v = state.vacations.find(x => x.id === btn.dataset.vacVote);
+          if (!v || !state.activeProfileId) return;
+          v.votes = v.votes || [];
+          const i = v.votes.indexOf(state.activeProfileId);
+          if (i >= 0) v.votes.splice(i, 1); else v.votes.push(state.activeProfileId);
+          v.updatedAt = Date.now();
           saveState(); paintList();
         };
       });
@@ -6874,9 +7014,11 @@ body.sortable-active * { cursor: grabbing !important; }
       const emoji = overlay.querySelector("#vacEmoji").value.trim() || "🏝️";
       if (!name || !start || !end) { showToast("Bitte Anlass, Von und Bis ausfüllen."); return; }
       if (end < start) { showToast("Das Enddatum liegt vor dem Startdatum."); return; }
-      state.vacations.push({ id: uid(), name, start, end, emoji, createdAt: Date.now(), updatedAt: Date.now() });
+      const votable = overlay.querySelector("#vacVotable").checked;
+      state.vacations.push({ id: uid(), name, start, end, emoji, votable, votes: [], createdAt: Date.now(), updatedAt: Date.now() });
       saveState();
       overlay.querySelector("#vacName").value = "";
+      overlay.querySelector("#vacVotable").checked = false;
       paintList();
       showToast("Urlaub eingetragen! 🏝️");
     };
@@ -8699,10 +8841,14 @@ body.sortable-active * { cursor: grabbing !important; }
 
     const quickLinks = document.createElement("div");
     quickLinks.className = "personal-quick-links";
+    // Taschengeld und Notenspiegel sind personenbezogen — im gemeinsamen Kinderbereich
+    // ergeben sie keinen Sinn (gemeinsames Sparen läuft dort über die Spar-Pools).
+    const isSharedChild = profile.shared && profile.role === "child";
     quickLinks.innerHTML = `
       <button type="button" class="personal-quick-link" data-goto="mindmap">🕸️ Mind-Map</button>
-      <button type="button" class="personal-quick-link" data-goto="allowance">💰 Taschengeld</button>
-      <button type="button" class="personal-quick-link" data-goto="grades">📓 Notenspiegel</button>
+      ${isSharedChild ? "" : `
+        <button type="button" class="personal-quick-link" data-goto="allowance">💰 Taschengeld</button>
+        <button type="button" class="personal-quick-link" data-goto="grades">📓 Notenspiegel</button>`}
     `;
     container.appendChild(quickLinks);
     quickLinks.querySelectorAll("[data-goto]").forEach(btn => { btn.onclick = () => setView(btn.dataset.goto); });
@@ -9634,6 +9780,29 @@ body.sortable-active * { cursor: grabbing !important; }
     if (toolsChildViews.includes(currentView)) {
       toolsSubmenu.classList.add("open");
       toolsArrow.textContent = "▾";
+    }
+    const quickSyncBtn = document.getElementById("quickSyncBtn");
+    if (quickSyncBtn) {
+      quickSyncBtn.onclick = async () => {
+        const net = state.connectors.network;
+        if (!net.url) { showToast("Noch keine Sync-Adresse hinterlegt — siehe Einstellungen."); setView("settings"); return; }
+        const icon = document.getElementById("quickSyncIcon");
+        quickSyncBtn.disabled = true;
+        if (icon) icon.classList.add("sync-spinning");
+        try {
+          // Erst die eigenen Änderungen hochladen, danach den zusammengeführten Stand
+          // wieder herunterladen — so gehen weder eigene noch fremde Änderungen verloren.
+          const pushed = await pushToNetwork(true);
+          const pulled = await pullFromNetwork(true, { skipConfirm: true });
+          showToast(pushed || pulled ? "Synchronisiert ✓" : "Sync fehlgeschlagen — Verbindung prüfen.");
+        } catch (e) {
+          showToast("Sync fehlgeschlagen — Verbindung prüfen.");
+        } finally {
+          quickSyncBtn.disabled = false;
+          if (icon) icon.classList.remove("sync-spinning");
+          render();
+        }
+      };
     }
     document.getElementById("toolsToggle").onclick = () => {
       const open = toolsSubmenu.classList.toggle("open");
