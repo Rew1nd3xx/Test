@@ -1128,10 +1128,26 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
   body.holiday-mood .holiday-sparkles, body.holiday-mood .app-header-sticky::after { animation: none; }
 }
 .vacation-tag { background: #BFE3EA !important; color: #24555E !important; }
+.weather-forecast { display: flex; gap: 8px; margin-top: 8px; }
+.weather-fc-day {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 4px; border-radius: var(--radius); background: var(--surface2); font-size: 11.5px;
+}
+.weather-fc-wd { color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; font-size: 10.5px; }
+.weather-fc-icon { font-size: 19px; line-height: 1.1; }
+.weather-fc-temp { font-weight: 600; }
+.weather-fc-temp span { color: var(--text-muted); font-weight: 400; }
 
 .nav-sync-btn { opacity: .75; }
 .day-overview-body { max-height: 58vh; overflow-y: auto; }
-.day-overview-heading { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 14px 0 6px; }
+.day-overview-heading { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 16px 0 8px; }
+.day-overview-body .today-sub-stat {
+  display: flex; align-items: flex-start; gap: 9px; line-height: 1.5;
+  font-size: 13.5px; padding: 9px 0; margin: 0; border-top: none; border-bottom: 1px dashed var(--border);
+}
+.day-overview-body .today-sub-stat:last-of-type { border-bottom: none; }
+.day-overview-event { padding: 9px 8px; gap: 10px; align-items: center; }
+.day-overview-event .wr-title { line-height: 1.45; }
 .day-overview-event:hover { background: var(--surface2); border-radius: var(--radius); }
 .nav-sync-btn:hover { opacity: 1; }
 .nav-sync-btn:disabled { opacity: .5; cursor: default; }
@@ -1154,7 +1170,46 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 .retro-touch-pad button {
   min-width: 74px; height: 60px; border-radius: var(--radius); border: 1px solid var(--border);
   background: var(--surface2); color: var(--text); font-size: 20px; cursor: pointer;
+  /* Spiel-Steuerung: keine Textauswahl, kein Doppeltipp-Zoom, keine 300ms-Verzögerung */
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
+.retro-touch-pad button:active { background: var(--accent); color: var(--surface); transform: scale(.96); }
+.retro-game-wrap, .retro-memory-card, .retro-game-card {
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.retro-memory-card, .retro-game-card { touch-action: manipulation; }
+.retro-highscores { margin-top: 18px; width: 100%; max-width: 560px; border-top: 1px dashed var(--border); padding-top: 12px; }
+.retro-highscores h4 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
+.retro-score-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed var(--border); }
+.retro-score-row:last-child { border-bottom: none; }
+.retro-score-rank { width: 26px; }
+.retro-score-row .mini-avatar { width: 20px; height: 20px; font-size: 11px; }
+.retro-score-name { flex: 1; }
+.retro-score-value { font-family: var(--font-display); font-size: 15px; }
+.reaction-pad {
+  width: 100%; max-width: 460px; aspect-ratio: 4 / 3; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 2px solid var(--border);
+  font-size: 22px; font-weight: 700; cursor: pointer;
+  user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  transition: background .1s ease;
+}
+.reaction-pad.waiting { background: #C0453B; color: #fff; border-color: #C0453B; }
+.reaction-pad.go { background: #3FA796; color: #fff; border-color: #3FA796; }
+.reaction-pad.too-early { background: #E08A4A; color: #fff; border-color: #E08A4A; }
+.g2-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  width: 100%; max-width: 380px; aspect-ratio: 1 / 1;
+  background: var(--surface2); padding: 8px; border-radius: var(--radius);
+  user-select: none; -webkit-user-select: none; touch-action: none;
+}
+.g2-tile {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; font-weight: 700; font-size: clamp(15px, 5vw, 26px);
+  font-family: var(--font-display);
+}
+.g2-tile.empty { background: color-mix(in srgb, var(--border) 40%, transparent); }
 .retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 18px; font-size: 15px; }
 .retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 460px; }
 .retro-memory-card {
@@ -1448,9 +1503,11 @@ body.menu-open { overflow: hidden; }
 
 .shopping-list-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .shopping-list-tab {
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
   color: var(--text); font-size: 13px; cursor: pointer;
 }
+.shopping-list-tab .mini-avatar { width: 17px; height: 17px; font-size: 10px; }
 .shopping-list-tab.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
 .theme-bauhaus .shopping-list-tab.active { color: #fff; }
 .shopping-list-add { border-style: dashed; color: var(--text-muted); }
@@ -1762,7 +1819,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 102;
+  const APP_BUILD_NUMBER = 103;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -1801,7 +1858,7 @@ body.sortable-active * { cursor: grabbing !important; }
       pointsLedger: [],
       events: [],
       shoppingList: [],
-      shoppingLists: ["Einkaufen"],
+      shoppingLists: ["Einkaufen"], shoppingListOwners: {},
       custodySchedules: [],
       adminPasswordHash: "",
       mealPlan: {},
@@ -1815,6 +1872,7 @@ body.sortable-active * { cursor: grabbing !important; }
       taskTemplates: [],
       newsPosts: [],
       areaChat: [],
+      gameScores: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
@@ -2495,12 +2553,30 @@ body.sortable-active * { cursor: grabbing !important; }
       const info = weatherInfo(cw.weathercode);
       const tMax = Math.round(weatherCache.data.daily.temperature_2m_max[0]);
       const tMin = Math.round(weatherCache.data.daily.temperature_2m_min[0]);
+      // Drei-Tage-Vorschau: heute überspringen, die nächsten drei Tage zeigen
+      const daily = weatherCache.data.daily;
+      let forecastHtml = "";
+      if (daily && daily.time && daily.time.length > 1) {
+        const days = [];
+        for (let i = 1; i <= 3 && i < daily.time.length; i++) {
+          const dInfo = weatherInfo(daily.weathercode[i]);
+          const [y, mo, dd] = daily.time[i].split("-").map(Number);
+          const wd = new Date(Date.UTC(y, mo - 1, dd)).toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" });
+          days.push(`<div class="weather-fc-day" title="${dInfo.label}">
+            <span class="weather-fc-wd">${wd}</span>
+            <span class="weather-fc-icon">${dInfo.icon}</span>
+            <span class="weather-fc-temp">${Math.round(daily.temperature_2m_max[i])}° <span>${Math.round(daily.temperature_2m_min[i])}°</span></span>
+          </div>`);
+        }
+        if (days.length) forecastHtml = `<div class="weather-forecast">${days.join("")}</div>`;
+      }
       el.innerHTML = `
         <div style="display:flex;align-items:center;gap:12px;">
           <span style="font-size:34px;">${info.icon}</span>
           <div><div class="widget-big-stat">${Math.round(cw.temperature)}°</div><div style="font-size:12px;color:var(--text-muted);">${info.label} · ${loc.name}</div></div>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Heute: ${tMin}° / ${tMax}°</div>`;
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Heute: ${tMin}° / ${tMax}°</div>
+        ${forecastHtml}`;
     }
   }
 
@@ -2542,7 +2618,7 @@ body.sortable-active * { cursor: grabbing !important; }
         ? (ferienStatus
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
                 ? `🏖️ Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis Schulbeginn (${escapeHtml(ferienStatus.name)})`
-                : `🏖️ Noch ${countSchoolDays(todayStr, ferienStatus.lastSchoolDay)} Schultage bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`}</div>`
+                : (() => { const sd = countSchoolDays(todayStr, ferienStatus.lastSchoolDay); return `🏖️ ${sd === 0 ? "Heute ist der letzte Schultag" : `Noch ${sd} Schultag${sd === 1 ? "" : "e"}`} bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`; })()}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
       const vacStatus = getVacationStatus();
@@ -2573,6 +2649,14 @@ body.sortable-active * { cursor: grabbing !important; }
         <span>🍽️ ${mealToday ? escapeHtml(mealToday) : "Essensplan: noch nichts geplant."}</span>
         <span class="widget-link" data-goto="mealplan" style="cursor:pointer;white-space:nowrap;">Planen ›</span>
       </div>`;
+      const openTasksCount = state.tasks.filter(t => !t.done && t.category !== "homework" && t.approved !== false).length;
+      const pointsPills = state.profiles.filter(p => p.role === "child").map(p =>
+        `<span class="points-pill"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>${escapeHtml(p.name)} · ${pointsBalance(p.id)}⭐</span>`
+      ).join("");
+      const tasksPart = `<div class="today-sub-stat" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">⭐ ${openTasksCount ? `${openTasksCount} offene Aufgabe${openTasksCount === 1 ? "" : "n"}` : "Keine offenen Aufgaben 🎉"}${pointsPills ? `<span class="points-pill-row">${pointsPills}</span>` : ""}</span>
+        <span class="widget-link" data-goto="tasks" style="cursor:pointer;white-space:nowrap;">Aufgaben ›</span>
+      </div>`;
       const auroraPart = `<div class="today-sub-stat dash-clickable" data-goto="settings" id="auroraWidgetBody">Lade Nordlicht-Vorschau …</div>`;
       const warnPart = state.federalState
         ? `<div class="today-sub-stat dash-clickable" data-goto="settings" id="warnBadgeBody">Lade Wetterwarnungen …</div>`
@@ -2585,7 +2669,7 @@ body.sortable-active * { cursor: grabbing !important; }
       try { clockSide = localStorage.getItem("dapp_clock_side") || "left"; } catch (e) {}
       dashCard.className = "widget-card dashboard-card" + (clockSide === "right" ? " clock-right" : "");
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + auroraPart + warnPart + pollenPart;
+      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + tasksPart + auroraPart + warnPart + pollenPart;
       dashCard.innerHTML = `
         <button type="button" class="clock-side-toggle" id="clockSideToggle" title="Uhr links/rechts">⇄ Uhr ${clockSide === "left" ? "rechts" : "links"}</button>
         <div class="dash-clock" id="dashClock"></div>
@@ -2656,15 +2740,6 @@ body.sortable-active * { cursor: grabbing !important; }
         });
       }
     }
-
-    // --- Aufgaben & Punktestand ---
-    const openTasks = state.tasks.filter(t => !t.done && t.category !== "homework" && t.approved !== false);
-    const pointsHtml = `<div class="points-pill-row">${state.profiles.filter(p => p.role === "child").map(p =>
-      `<span class="points-pill"><span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>${escapeHtml(p.name)} · ${pointsBalance(p.id)}⭐</span>`
-    ).join("")}</div>`;
-    widget("⭐", "Aufgaben &amp; Punkte", "#C9A24B",
-      `${pointsHtml}<div style="margin-top:8px;font-size:12.5px;color:var(--text-muted);">${openTasks.length ? openTasks.length + " offene Aufgabe(n)" : "Keine offenen Aufgaben 🎉"}</div>`,
-      "tasks", "Aufgaben ›");
 
     // --- Hausaufgaben ---
     const openHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.approved !== false)
@@ -5875,7 +5950,47 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "snake", icon: "🐍", name: "Snake" },
     { id: "pong", icon: "🏓", name: "Pong" },
     { id: "memory", icon: "🃏", name: "Memory" },
+    { id: "breakout", icon: "🧱", name: "Steinebrecher" },
+    { id: "catcher", icon: "🧺", name: "Sternenfänger" },
+    { id: "reaction", icon: "⚡", name: "Reaktionstest" },
+    { id: "2048", icon: "🔢", name: "2048" },
   ];
+
+  /* ---- Bestenliste ---- */
+  function gameHighscores(gameId) {
+    return (state.gameScores || []).filter(s => s.gameId === gameId)
+      .sort((a, b) => (b.score - a.score) || (a.at - b.at)).slice(0, 5);
+  }
+  function submitScore(gameId, score, lowerIsBetter) {
+    if (!score && score !== 0) return;
+    state.gameScores = state.gameScores || [];
+    state.gameScores.push({
+      id: uid(), gameId, score, lowerIsBetter: !!lowerIsBetter,
+      profileId: state.activeProfileId || null, at: Date.now(), updatedAt: Date.now()
+    });
+    // Pro Spiel nur die besten 20 behalten, damit die Liste nicht endlos wächst.
+    const forGame = state.gameScores.filter(s => s.gameId === gameId)
+      .sort((a, b) => lowerIsBetter ? (a.score - b.score) : (b.score - a.score));
+    const keep = new Set(forGame.slice(0, 20).map(s => s.id));
+    state.gameScores = state.gameScores.filter(s => s.gameId !== gameId || keep.has(s.id));
+    saveState();
+  }
+  function renderHighscoreList(container, gameId, lowerIsBetter, unit) {
+    const list = (state.gameScores || []).filter(s => s.gameId === gameId)
+      .sort((a, b) => lowerIsBetter ? (a.score - b.score) : (b.score - a.score)).slice(0, 5);
+    const box = document.createElement("div");
+    box.className = "retro-highscores";
+    box.innerHTML = `<h4>🏆 Bestenliste</h4>` + (list.length ? list.map((s, i) => {
+      const p = s.profileId ? getProfile(s.profileId) : null;
+      return `<div class="retro-score-row">
+        <span class="retro-score-rank">${["🥇", "🥈", "🥉"][i] || (i + 1) + "."}</span>
+        ${p ? `<span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>` : ""}
+        <span class="retro-score-name">${p ? escapeHtml(p.name) : "Gast"}</span>
+        <span class="retro-score-value">${s.score}${unit || ""}</span>
+      </div>`;
+    }).join("") : `<div class="widget-empty">Noch kein Ergebnis — sei die/der Erste!</div>`);
+    container.appendChild(box);
+  }
   let activeRetroGame = null;
 
   function renderRetroGamesView(container) {
@@ -5906,6 +6021,10 @@ body.sortable-active * { cursor: grabbing !important; }
     if (activeRetroGame === "snake") renderSnakeGame(container);
     else if (activeRetroGame === "pong") renderPongGame(container);
     else if (activeRetroGame === "memory") renderMemoryGame(container);
+    else if (activeRetroGame === "breakout") renderBreakoutGame(container);
+    else if (activeRetroGame === "catcher") renderCatcherGame(container);
+    else if (activeRetroGame === "reaction") renderReactionGame(container);
+    else if (activeRetroGame === "2048") render2048Game(container);
   }
 
   function renderSnakeGame(container) {
@@ -5957,7 +6076,7 @@ body.sortable-active * { cursor: grabbing !important; }
       dir = nextDir;
       const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
       if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
-        gameOver = true; paint(); return;
+        gameOver = true; submitScore("snake", score); paint(); render(); return;
       }
       snake.unshift(head);
       if (head.x === food.x && head.y === food.y) {
@@ -5978,11 +6097,13 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     document.addEventListener("keydown", keyHandler);
     wrap.querySelectorAll("[data-dir]").forEach(btn => {
-      btn.onclick = () => {
+      // pointerdown statt click: reagiert sofort, ohne die Touch-Verzögerung des Browsers
+      btn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
         const d = btn.dataset.dir;
         if (d === "up") setDir(0, -1); else if (d === "down") setDir(0, 1);
         else if (d === "left") setDir(-1, 0); else if (d === "right") setDir(1, 0);
-      };
+      });
     });
     canvas.onclick = () => {
       if (!gameOver) return;
@@ -5996,6 +6117,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
     paint();
     retroGameHandle = setInterval(tick, 130);
+    renderHighscoreList(container, "snake", false, "");
   }
 
   function renderPongGame(container) {
@@ -6020,10 +6142,14 @@ body.sortable-active * { cursor: grabbing !important; }
     function keyUp(e) { if (e.key === "ArrowUp") moveUp = false; if (e.key === "ArrowDown") moveDown = false; }
     document.addEventListener("keydown", keyDown);
     document.addEventListener("keyup", keyUp);
-    wrap.querySelector('[data-dir="up"]').addEventListener("pointerdown", () => moveUp = true);
-    wrap.querySelector('[data-dir="up"]').addEventListener("pointerup", () => moveUp = false);
-    wrap.querySelector('[data-dir="down"]').addEventListener("pointerdown", () => moveDown = true);
-    wrap.querySelector('[data-dir="down"]').addEventListener("pointerup", () => moveDown = false);
+    const pongUp = wrap.querySelector('[data-dir="up"]');
+    const pongDown = wrap.querySelector('[data-dir="down"]');
+    pongUp.addEventListener("pointerdown", (e) => { e.preventDefault(); moveUp = true; });
+    pongDown.addEventListener("pointerdown", (e) => { e.preventDefault(); moveDown = true; });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(evt => {
+      pongUp.addEventListener(evt, () => moveUp = false);
+      pongDown.addEventListener(evt, () => moveDown = false);
+    });
     function tick() {
       if (moveUp) playerY -= 5; if (moveDown) playerY += 5;
       playerY = Math.max(0, Math.min(H - paddleH, playerY));
@@ -6052,6 +6178,305 @@ body.sortable-active * { cursor: grabbing !important; }
     observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
     paint();
     retroGameHandle = setInterval(tick, 20);
+    renderHighscoreList(container, "pong", false, "");
+  }
+
+  function renderBreakoutGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="bkScore">0</strong> · Leben: <strong id="bkLives">3</strong></div>
+      <canvas id="bkCanvas" width="360" height="420" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad"><div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="right">▶</button></div></div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten oder die Knöpfe. Alle Steine abräumen!</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#bkCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const padW = 72, padH = 11;
+    let padX = W / 2 - padW / 2, ballX = W / 2, ballY = H - 60, vx = 2.6, vy = -3.4;
+    let score = 0, lives = 3, over = false;
+    let moveL = false, moveR = false;
+    const cols = 7, rows = 5, bw = W / cols, bh = 20;
+    const colors = ["#C0453B", "#E08A4A", "#D9A441", "#86B35A", "#3FA796"];
+    let bricks = [];
+    function resetBricks() {
+      bricks = [];
+      for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) bricks.push({ x: col * bw, y: 40 + r * bh, alive: true, c: colors[r % colors.length] });
+    }
+    resetBricks();
+    function keyDown(e) { if (e.key === "ArrowLeft") moveL = true; if (e.key === "ArrowRight") moveR = true; }
+    function keyUp(e) { if (e.key === "ArrowLeft") moveL = false; if (e.key === "ArrowRight") moveR = false; }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-dir]").forEach(btn => {
+      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); if (btn.dataset.dir === "left") moveL = true; else moveR = true; });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev => btn.addEventListener(ev, () => { moveL = false; moveR = false; }));
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      padX = Math.max(0, Math.min(W - padW, (e.clientX - rect.left) * (W / rect.width) - padW / 2));
+    });
+    function paint() {
+      ctx.fillStyle = "#14181B"; ctx.fillRect(0, 0, W, H);
+      bricks.forEach(b => { if (b.alive) { ctx.fillStyle = b.c; ctx.fillRect(b.x + 1.5, b.y + 1.5, bw - 3, bh - 3); } });
+      ctx.fillStyle = "#3FA796"; ctx.fillRect(padX, H - 26, padW, padH);
+      ctx.fillStyle = "#E8A33D"; ctx.beginPath(); ctx.arc(ballX, ballY, 6, 0, Math.PI * 2); ctx.fill();
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.65)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(bricks.every(b => !b.alive) ? "Geschafft!" : "Game Over", W / 2, H / 2 - 8);
+        ctx.font = "14px sans-serif"; ctx.fillText("Tippen für neue Runde", W / 2, H / 2 + 18);
+      }
+    }
+    function tick() {
+      if (over) return;
+      if (moveL) padX -= 6; if (moveR) padX += 6;
+      padX = Math.max(0, Math.min(W - padW, padX));
+      ballX += vx; ballY += vy;
+      if (ballX < 6 || ballX > W - 6) vx *= -1;
+      if (ballY < 6) vy *= -1;
+      if (ballY > H - 32 && ballY < H - 20 && ballX > padX && ballX < padX + padW) {
+        vy = -Math.abs(vy);
+        vx += ((ballX - (padX + padW / 2)) / (padW / 2)) * 1.4;
+      }
+      bricks.forEach(b => {
+        if (!b.alive) return;
+        if (ballX > b.x && ballX < b.x + bw && ballY > b.y && ballY < b.y + bh) {
+          b.alive = false; vy *= -1; score += 10;
+          wrap.querySelector("#bkScore").textContent = score;
+        }
+      });
+      if (bricks.every(b => !b.alive)) { over = true; submitScore("breakout", score); render(); return; }
+      if (ballY > H) {
+        lives--; wrap.querySelector("#bkLives").textContent = Math.max(0, lives);
+        if (lives <= 0) { over = true; submitScore("breakout", score); render(); return; }
+        ballX = W / 2; ballY = H - 60; vx = 2.6; vy = -3.4;
+      }
+      paint();
+    }
+    canvas.addEventListener("pointerdown", () => {
+      if (!over) return;
+      score = 0; lives = 3; over = false; resetBricks();
+      wrap.querySelector("#bkScore").textContent = "0"; wrap.querySelector("#bkLives").textContent = "3";
+      ballX = W / 2; ballY = H - 60; vx = 2.6; vy = -3.4;
+    });
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 18);
+    renderHighscoreList(container, "breakout", false, "");
+  }
+
+  function renderCatcherGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="ctScore">0</strong> · Verpasst: <strong id="ctMiss">0</strong>/5</div>
+      <canvas id="ctCanvas" width="360" height="400" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad"><div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="right">▶</button></div></div>
+      <p class="hint" style="margin-top:8px;">Fang die Sterne, lass die Steine fallen!</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#ctCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    let basketX = W / 2 - 30, score = 0, missed = 0, over = false;
+    let moveL = false, moveR = false;
+    let items = [];
+    let spawnTimer = 0;
+    function keyDown(e) { if (e.key === "ArrowLeft") moveL = true; if (e.key === "ArrowRight") moveR = true; }
+    function keyUp(e) { if (e.key === "ArrowLeft") moveL = false; if (e.key === "ArrowRight") moveR = false; }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-dir]").forEach(btn => {
+      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); if (btn.dataset.dir === "left") moveL = true; else moveR = true; });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev => btn.addEventListener(ev, () => { moveL = false; moveR = false; }));
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      basketX = Math.max(0, Math.min(W - 60, (e.clientX - rect.left) * (W / rect.width) - 30));
+    });
+    function paint() {
+      ctx.fillStyle = "#14181B"; ctx.fillRect(0, 0, W, H);
+      items.forEach(it => {
+        ctx.font = "26px serif"; ctx.textAlign = "center";
+        ctx.fillText(it.bad ? "🪨" : "⭐", it.x, it.y);
+      });
+      ctx.font = "34px serif"; ctx.textAlign = "center";
+      ctx.fillText("🧺", basketX + 30, H - 12);
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.65)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif";
+        ctx.fillText("Game Over", W / 2, H / 2 - 8);
+        ctx.font = "14px sans-serif"; ctx.fillText("Tippen für neue Runde", W / 2, H / 2 + 18);
+      }
+    }
+    function tick() {
+      if (over) return;
+      if (moveL) basketX -= 7; if (moveR) basketX += 7;
+      basketX = Math.max(0, Math.min(W - 60, basketX));
+      spawnTimer++;
+      if (spawnTimer > 34) {
+        spawnTimer = 0;
+        items.push({ x: 22 + Math.random() * (W - 44), y: -10, bad: Math.random() < 0.25, speed: 2 + Math.random() * 1.8 });
+      }
+      items.forEach(it => { it.y += it.speed; });
+      items = items.filter(it => {
+        if (it.y > H - 34 && it.y < H && it.x > basketX && it.x < basketX + 60) {
+          if (it.bad) { missed++; wrap.querySelector("#ctMiss").textContent = missed; }
+          else { score += 10; wrap.querySelector("#ctScore").textContent = score; }
+          return false;
+        }
+        if (it.y > H + 20) {
+          if (!it.bad) { missed++; wrap.querySelector("#ctMiss").textContent = missed; }
+          return false;
+        }
+        return true;
+      });
+      if (missed >= 5) { over = true; submitScore("catcher", score); render(); return; }
+      paint();
+    }
+    canvas.addEventListener("pointerdown", () => {
+      if (!over) return;
+      score = 0; missed = 0; items = []; over = false;
+      wrap.querySelector("#ctScore").textContent = "0"; wrap.querySelector("#ctMiss").textContent = "0";
+    });
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 22);
+    renderHighscoreList(container, "catcher", false, "");
+  }
+
+  function renderReactionGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score" id="rxInfo">Tippe auf das Feld, um zu starten</div>
+      <div id="rxPad" class="reaction-pad">Bereit?</div>
+      <p class="hint" style="margin-top:8px;">Warte auf Grün und tippe so schnell du kannst. Weniger Millisekunden = besser.</p>`;
+    container.appendChild(wrap);
+    const pad = wrap.querySelector("#rxPad");
+    const info = wrap.querySelector("#rxInfo");
+    let phase = "idle", startAt = 0, timer = null;
+    pad.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (phase === "idle") {
+        phase = "waiting";
+        pad.className = "reaction-pad waiting";
+        pad.textContent = "Warte auf Grün …";
+        timer = setTimeout(() => {
+          phase = "go"; startAt = performance.now();
+          pad.className = "reaction-pad go"; pad.textContent = "JETZT!";
+        }, 1200 + Math.random() * 2800);
+      } else if (phase === "waiting") {
+        clearTimeout(timer); phase = "idle";
+        pad.className = "reaction-pad too-early"; pad.textContent = "Zu früh! Nochmal tippen";
+      } else if (phase === "go") {
+        const ms = Math.round(performance.now() - startAt);
+        phase = "idle";
+        pad.className = "reaction-pad"; pad.textContent = `${ms} ms — nochmal?`;
+        info.innerHTML = `Letzte Zeit: <strong>${ms} ms</strong>`;
+        submitScore("reaction", ms, true);
+        render();
+      }
+    });
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(pad)) { clearTimeout(timer); observer.disconnect(); }
+    });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    renderHighscoreList(container, "reaction", true, " ms");
+  }
+
+  function render2048Game(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="g2Score">0</strong></div>
+      <div id="g2Grid" class="g2-grid"></div>
+      <div class="retro-touch-pad">
+        <button data-dir="up">▲</button>
+        <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Wischen, Pfeiltasten oder Knöpfe — gleiche Zahlen verschmelzen.</p>`;
+    container.appendChild(wrap);
+    const gridEl = wrap.querySelector("#g2Grid");
+    let board = Array.from({ length: 4 }, () => Array(4).fill(0));
+    let score = 0, done = false;
+    const TILE_COLORS = { 2: "#EDE4D4", 4: "#E8D8B8", 8: "#E8A33D", 16: "#E08A4A", 32: "#D9744A", 64: "#C0453B", 128: "#86B35A", 256: "#3FA796", 512: "#3A5A9B", 1024: "#7E57C2", 2048: "#C9A24B" };
+    function addTile() {
+      const free = [];
+      board.forEach((row, r) => row.forEach((v, col) => { if (!v) free.push([r, col]); }));
+      if (!free.length) return;
+      const [r, col] = free[Math.floor(Math.random() * free.length)];
+      board[r][col] = Math.random() < 0.9 ? 2 : 4;
+    }
+    function paint() {
+      gridEl.innerHTML = board.flat().map(v => `<div class="g2-tile${v ? "" : " empty"}" style="${v ? `background:${TILE_COLORS[v] || "#8B2E28"};color:${v > 4 ? "#fff" : "#3E2A2E"};` : ""}">${v || ""}</div>`).join("");
+      wrap.querySelector("#g2Score").textContent = score;
+    }
+    function slide(row) {
+      const vals = row.filter(v => v);
+      for (let i = 0; i < vals.length - 1; i++) {
+        if (vals[i] === vals[i + 1]) { vals[i] *= 2; score += vals[i]; vals.splice(i + 1, 1); }
+      }
+      while (vals.length < 4) vals.push(0);
+      return vals;
+    }
+    function move(dir) {
+      if (done) return;
+      const before = JSON.stringify(board);
+      if (dir === "left") board = board.map(r => slide(r));
+      else if (dir === "right") board = board.map(r => slide(r.slice().reverse()).reverse());
+      else {
+        for (let col = 0; col < 4; col++) {
+          let column = [board[0][col], board[1][col], board[2][col], board[3][col]];
+          if (dir === "down") column.reverse();
+          column = slide(column);
+          if (dir === "down") column.reverse();
+          for (let r = 0; r < 4; r++) board[r][col] = column[r];
+        }
+      }
+      if (JSON.stringify(board) !== before) { addTile(); paint(); }
+      const full = board.flat().every(v => v);
+      if (full) {
+        let canMove = false;
+        for (let r = 0; r < 4; r++) for (let col = 0; col < 4; col++) {
+          if (col < 3 && board[r][col] === board[r][col + 1]) canMove = true;
+          if (r < 3 && board[r][col] === board[r + 1][col]) canMove = true;
+        }
+        if (!canMove) { done = true; submitScore("2048", score); showToast(`Vorbei — ${score} Punkte!`); render(); }
+      }
+    }
+    function keyHandler(e) {
+      const map = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" };
+      if (map[e.key]) { e.preventDefault(); move(map[e.key]); }
+    }
+    document.addEventListener("keydown", keyHandler);
+    wrap.querySelectorAll("[data-dir]").forEach(btn => {
+      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); move(btn.dataset.dir); });
+    });
+    makeSwipeable(gridEl, () => move("left"), () => move("right"));
+    let sy = 0;
+    gridEl.addEventListener("touchstart", (e) => { sy = e.touches[0].clientY; }, { passive: true });
+    gridEl.addEventListener("touchend", (e) => {
+      const dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dy) > 50) move(dy > 0 ? "down" : "up");
+    }, { passive: true });
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(gridEl)) { document.removeEventListener("keydown", keyHandler); observer.disconnect(); }
+    });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    addTile(); addTile(); paint();
+    renderHighscoreList(container, "2048", false, "");
   }
 
   function renderMemoryGame(container) {
@@ -6077,7 +6502,7 @@ body.sortable-active * { cursor: grabbing !important; }
             if (cards[flipped[0]] === cards[flipped[1]]) {
               matched.add(flipped[0]); matched.add(flipped[1]);
               flipped = []; paint();
-              if (matched.size === cards.length) setTimeout(() => showToast("🎉 Geschafft!"), 200);
+              if (matched.size === cards.length) { submitScore("memory", moves, true); setTimeout(() => { showToast(`🎉 Geschafft in ${moves} Zügen!`); render(); }, 200); }
             } else {
               paint();
               setTimeout(() => { flipped = []; paint(); }, 700);
@@ -6087,6 +6512,7 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     }
     paint();
+    renderHighscoreList(container, "memory", true, " Züge");
   }
 
   const NEWS_REACTIONS = ["👍", "❤️", "😂", "🎉", "😮", "🥰"];
@@ -6259,12 +6685,15 @@ body.sortable-active * { cursor: grabbing !important; }
           card.querySelectorAll("[data-react]").forEach(btn => {
             btn.onclick = () => {
               if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+              // Wichtig: am echten Beitrag im Speicher arbeiten, nicht an der Anzeige-Kopie.
+              const real = state.newsPosts.find(p => p.id === post.id);
+              if (!real) return;
               const emo = btn.dataset.react;
-              post.reactions = post.reactions || {};
-              post.reactions[emo] = post.reactions[emo] || [];
-              const i = post.reactions[emo].indexOf(state.activeProfileId);
-              if (i >= 0) post.reactions[emo].splice(i, 1); else post.reactions[emo].push(state.activeProfileId);
-              post.updatedAt = Date.now();
+              real.reactions = real.reactions || {};
+              real.reactions[emo] = real.reactions[emo] || [];
+              const i = real.reactions[emo].indexOf(state.activeProfileId);
+              if (i >= 0) real.reactions[emo].splice(i, 1); else real.reactions[emo].push(state.activeProfileId);
+              real.updatedAt = Date.now();
               saveState(); render();
             };
           });
@@ -6277,9 +6706,11 @@ body.sortable-active * { cursor: grabbing !important; }
           const sendReply = () => {
             const text = replyInput.value.trim();
             if (!text) return;
-            post.replies = post.replies || [];
-            post.replies.push({ id: uid(), by: state.activeProfileId || null, text, at: Date.now() });
-            post.updatedAt = Date.now();
+            const real = state.newsPosts.find(p => p.id === post.id);
+            if (!real) return;
+            real.replies = real.replies || [];
+            real.replies.push({ id: uid(), by: state.activeProfileId || null, text, at: Date.now() });
+            real.updatedAt = Date.now();
             saveState(); render();
           };
           card.querySelector(".news-reply-send").onclick = sendReply;
@@ -6716,14 +7147,17 @@ body.sortable-active * { cursor: grabbing !important; }
             </div>
           </div>`;
         row.querySelectorAll("[data-chat-react]").forEach(btn => {
-          btn.onclick = () => {
+          btn.onclick = (ev) => {
+            ev.preventDefault(); ev.stopPropagation();
             if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+            const real = state.areaChat.find(x => x.id === m.id);
+            if (!real) return;
             const emo = btn.dataset.chatReact;
-            m.reactions = m.reactions || {};
-            m.reactions[emo] = m.reactions[emo] || [];
-            const i = m.reactions[emo].indexOf(state.activeProfileId);
-            if (i >= 0) m.reactions[emo].splice(i, 1); else m.reactions[emo].push(state.activeProfileId);
-            m.updatedAt = Date.now();
+            real.reactions = real.reactions || {};
+            real.reactions[emo] = real.reactions[emo] || [];
+            const i = real.reactions[emo].indexOf(state.activeProfileId);
+            if (i >= 0) real.reactions[emo].splice(i, 1); else real.reactions[emo].push(state.activeProfileId);
+            real.updatedAt = Date.now();
             saveState(); render();
           };
         });
@@ -7615,9 +8049,17 @@ body.sortable-active * { cursor: grabbing !important; }
 
     const tabRow = document.createElement("div");
     tabRow.className = "shopping-list-tabs";
-    tabRow.innerHTML = state.shoppingLists.map(name =>
-      `<button class="shopping-list-tab ${name === activeShoppingList ? "active" : ""}" data-list="${escapeHtml(name)}">${escapeHtml(name)}</button>`
-    ).join("") + `<button class="shopping-list-tab shopping-list-add" id="addListBtn">+ Neue Liste</button>`;
+    // Persönliche Listen nur für ihren Besitzer anzeigen — wie bei privaten Checklisten.
+    const visibleLists = state.shoppingLists.filter(name => {
+      const owner = (state.shoppingListOwners || {})[name];
+      return !owner || owner === state.activeProfileId;
+    });
+    if (!visibleLists.includes(activeShoppingList)) activeShoppingList = visibleLists[0] || state.shoppingLists[0];
+    tabRow.innerHTML = visibleLists.map(name => {
+      const owner = (state.shoppingListOwners || {})[name];
+      const ownerProfile = owner ? getProfile(owner) : null;
+      return `<button class="shopping-list-tab ${name === activeShoppingList ? "active" : ""}" data-list="${escapeHtml(name)}">${ownerProfile ? `<span class="mini-avatar" style="background:${ownerProfile.color};">${ownerProfile.emoji || ownerProfile.name.charAt(0)}</span>` : ""}${escapeHtml(name)}</button>`;
+    }).join("") + `<button class="shopping-list-tab shopping-list-add" id="addListBtn">+ Neue Liste</button>`;
     container.appendChild(tabRow);
     tabRow.querySelectorAll(".shopping-list-tab[data-list]").forEach(btn => {
       btn.onclick = () => { activeShoppingList = btn.dataset.list; render(); };
@@ -7627,6 +8069,9 @@ body.sortable-active * { cursor: grabbing !important; }
       if (!name || !name.trim()) return;
       if (state.shoppingLists.includes(name.trim())) { showToast("Diese Liste gibt es schon."); return; }
       state.shoppingLists.push(name.trim());
+      const personal = state.activeProfileId && confirm("Soll das eine persönliche Liste sein?\n\nOK = nur für dich sichtbar\nAbbrechen = für die ganze Familie");
+      state.shoppingListOwners = state.shoppingListOwners || {};
+      if (personal) state.shoppingListOwners[name.trim()] = state.activeProfileId;
       activeShoppingList = name.trim();
       saveState(); render();
     };
@@ -7645,6 +8090,11 @@ body.sortable-active * { cursor: grabbing !important; }
         if (state.shoppingLists.includes(newName.trim())) { showToast("Diese Liste gibt es schon."); return; }
         state.shoppingList.forEach(i => { if ((i.list || state.shoppingLists[0]) === activeShoppingList) i.list = newName.trim(); });
         state.shoppingLists = state.shoppingLists.map(n => n === activeShoppingList ? newName.trim() : n);
+        state.shoppingListOwners = state.shoppingListOwners || {};
+        if (state.shoppingListOwners[activeShoppingList]) {
+          state.shoppingListOwners[newName.trim()] = state.shoppingListOwners[activeShoppingList];
+          delete state.shoppingListOwners[activeShoppingList];
+        }
         activeShoppingList = newName.trim();
         saveState(); render();
       };
@@ -7654,6 +8104,7 @@ body.sortable-active * { cursor: grabbing !important; }
         markDeletedMany(toRemove.map(i => i.id));
         state.shoppingList = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) !== activeShoppingList);
         state.shoppingLists = state.shoppingLists.filter(n => n !== activeShoppingList);
+        if (state.shoppingListOwners) delete state.shoppingListOwners[activeShoppingList];
         if (!state.shoppingLists.length) state.shoppingLists = ["Einkaufen"];
         activeShoppingList = state.shoppingLists[0];
         saveState(); render();
@@ -7926,6 +8377,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.poolLedger = (state.poolLedger || []).filter(isLive);
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.areaChat = (state.areaChat || []).filter(isLive);
+    state.gameScores = (state.gameScores || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
     state.items = unionById(state.items, remote.items).map(it => {
@@ -7984,6 +8436,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
+    state.shoppingListOwners = { ...(remote.shoppingListOwners || {}), ...(state.shoppingListOwners || {}) };
     state.custodySchedules = mergeByIdNewest(state.custodySchedules, remote.custodySchedules);
     state.wishlist = mergeByIdNewest(state.wishlist, remote.wishlist);
     state.mealPlan = mergeMealPlans(remote.mealPlan, state.mealPlan);
@@ -7991,6 +8444,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.taskTemplates = unionById(state.taskTemplates || [], remote.taskTemplates);
     state.newsPosts = mergeByIdNewest(state.newsPosts || [], remote.newsPosts);
     state.areaChat = mergeByIdNewest(state.areaChat || [], remote.areaChat);
+    state.gameScores = unionById(state.gameScores || [], remote.gameScores);
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
@@ -8171,6 +8625,8 @@ body.sortable-active * { cursor: grabbing !important; }
 
     function beginDrag(el) {
       isDragging = true;
+      const sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
       dragEl = el;
       el.classList.add("sortable-dragging");
       document.body.classList.add("sortable-active");
@@ -8212,7 +8668,13 @@ body.sortable-active * { cursor: grabbing !important; }
       const el = e.target.closest(itemSelector);
       if (!el || !containerEl.contains(el)) return;
       startY = e.clientY;
-      pressTimer = setTimeout(() => beginDrag(el), LONG_PRESS_MS);
+      // Textauswahl schon beim Gedrückthalten unterbinden — sonst markiert der Browser
+      // beim Ziehen den Text unter dem Finger, was das Verschieben unangenehm macht.
+      pressTimer = setTimeout(() => {
+        const sel = window.getSelection && window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+        beginDrag(el);
+      }, LONG_PRESS_MS);
     });
     containerEl.addEventListener("pointermove", (e) => {
       if (!isDragging && pressTimer && Math.abs(e.clientY - startY) > 12) { clearTimeout(pressTimer); pressTimer = null; }
@@ -10064,7 +10526,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const upcomingForTicker = state.events.filter(ev => ev.date >= todayStr && canSeeEventDetails(ev))
       .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")))[0];
     if (upcomingForTicker) {
-      messages.push({ view: "calendar", text: `📅 Nächster Termin: ${upcomingForTicker.title} — ${upcomingForTicker.date === todayStr ? "heute" : formatDateStrShort(upcomingForTicker.date)}` });
+      messages.push({ view: "calendar", date: upcomingForTicker.date, text: `📅 Nächster Termin: ${upcomingForTicker.title} — ${upcomingForTicker.date === todayStr ? "heute" : formatDateStrShort(upcomingForTicker.date)}` });
     }
     const nextHomework = state.tasks.filter(t => t.category === "homework" && !t.done && t.dueDate && t.approved !== false)
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
@@ -10091,7 +10553,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
         ? `🏖️ Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis Schulbeginn (${ferienForTicker.name})`
-        : `🏖️ Noch ${countSchoolDays(todayStr, ferienForTicker.lastSchoolDay)} Schultage bis ${ferienForTicker.name}. Letzter Schultag ${formatDateWithWeekday(ferienForTicker.lastSchoolDay)}` });
+        : (() => { const sd = countSchoolDays(todayStr, ferienForTicker.lastSchoolDay); return `🏖️ ${sd === 0 ? "Heute ist der letzte Schultag" : `Noch ${sd} Schultag${sd === 1 ? "" : "e"}`} bis ${ferienForTicker.name}. Letzter Schultag ${formatDateWithWeekday(ferienForTicker.lastSchoolDay)}`; })() });
     }
     if (weatherCache.data) {
       const cw = weatherCache.data.current_weather;
@@ -10108,7 +10570,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (pending) { unvotedMeal = { date: d, text: pending.text }; break; }
     }
     if (unvotedMeal) {
-      messages.push({ view: "mealplan", text: `🍽️ Neuer Essensvorschlag: ${unvotedMeal.text} (${unvotedMeal.date === todayStr ? "heute" : formatDateStrShort(unvotedMeal.date)}) — jetzt abstimmen!` });
+      messages.push({ view: "mealplan", mealDate: unvotedMeal.date, text: `🍽️ Neuer Essensvorschlag: ${unvotedMeal.text} (${unvotedMeal.date === todayStr ? "heute" : formatDateStrShort(unvotedMeal.date)}) — jetzt abstimmen!` });
     }
     const kidsForLeader = state.profiles.filter(p => p.role === "child");
     if (kidsForLeader.length) {
@@ -10168,7 +10630,7 @@ body.sortable-active * { cursor: grabbing !important; }
       lastKey = key;
 
       const segHtml = messages.map(m =>
-        `<span class="ticker-seg" data-view="${m.view || ""}">${escapeHtml(m.text)}</span>`
+        `<span class="ticker-seg" data-view="${m.view || ""}"${m.date ? ` data-date="${m.date}"` : ""}${m.mealDate ? ` data-meal-date="${m.mealDate}"` : ""}>${escapeHtml(m.text)}</span>`
       ).join(`<span class="ticker-sep">✦</span>`);
       // Zweimal hintereinander für einen nahtlosen Loop (bei -50% Verschiebung wiederholt sich exakt derselbe Inhalt).
       textEl.innerHTML = `<span class="ticker-copy">${segHtml}</span><span class="ticker-sep">✦</span><span class="ticker-copy">${segHtml}</span><span class="ticker-sep">✦</span>`;
@@ -10185,7 +10647,12 @@ body.sortable-active * { cursor: grabbing !important; }
     tickerEl.onclick = (e) => {
       const seg = e.target.closest(".ticker-seg");
       const view = seg && seg.dataset.view;
-      if (view) setView(view);
+      if (!view) return;
+      // Wo es sinnvoll ist, direkt zum passenden Tag springen statt nur den Bereich zu öffnen.
+      if (seg.dataset.date) { calendarCursorStr = seg.dataset.date; }
+      if (seg.dataset.mealDate) { mealPlanWeekCursor = startOfWeek(seg.dataset.mealDate); }
+      setView(view);
+      if (seg.dataset.date) setTimeout(() => openDayOverview(seg.dataset.date), 120);
     };
     buildTape();
     tickerInterval = setInterval(buildTape, 20000);
