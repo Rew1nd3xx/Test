@@ -1819,7 +1819,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 103;
+  const APP_BUILD_NUMBER = 104;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2617,15 +2617,15 @@ body.sortable-active * { cursor: grabbing !important; }
       const ferienPart = hasFerien
         ? (ferienStatus
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
-                ? `🏖️ Ferien! Noch ${ferienStatus.days} Tag${ferienStatus.days === 1 ? "" : "e"} bis Schulbeginn (${escapeHtml(ferienStatus.name)})`
+                ? `🏖️ Ferien! ${countdownText(ferienStatus.days, { zero: "Heute ist der letzte Ferientag", one: "Morgen geht die Schule wieder los" })}${ferienStatus.days > 1 ? " bis Schulbeginn" : ""} (${escapeHtml(ferienStatus.name)})`
                 : (() => { const sd = countSchoolDays(todayStr, ferienStatus.lastSchoolDay); return `🏖️ ${sd === 0 ? "Heute ist der letzte Schultag" : `Noch ${sd} Schultag${sd === 1 ? "" : "e"}`} bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`; })()}</div>`
             : `<div class="today-sub-stat widget-empty" style="padding:0;">Noch keine Ferientermine geladen.</div>`)
         : "";
       const vacStatus = getVacationStatus();
       const vacationPart = vacStatus
         ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${vacStatus.type === "current"
-            ? `${vacStatus.emoji} Urlaub: ${escapeHtml(vacStatus.name)} — noch ${vacStatus.days} Tag${vacStatus.days === 1 ? "" : "e"}`
-            : `${vacStatus.emoji} Noch ${vacStatus.days} Tag${vacStatus.days === 1 ? "" : "e"} bis ${escapeHtml(vacStatus.name)}`}</div>`
+            ? `${vacStatus.emoji} Urlaub: ${escapeHtml(vacStatus.name)} — ${countdownText(vacStatus.days, { zero: "heute letzter Tag", one: "noch 1 Tag" })}`
+            : `${vacStatus.emoji} ${countdownText(vacStatus.days, { zero: "Heute geht es los", one: "Morgen geht es los" })}${vacStatus.days > 1 ? " bis" : " —"} ${escapeHtml(vacStatus.name)}`}</div>`
         : "";
       let custodyPart = "";
       if (hasCustody) {
@@ -5066,6 +5066,14 @@ body.sortable-active * { cursor: grabbing !important; }
     const [y, m, d] = dateStr.split("-");
     return `${d}.${m}.`;
   }
+  // Countdown-Text ohne "0 Tage": bei 0 bzw. 1 verständliche Worte statt nackter Zahl.
+  function countdownText(days, opts) {
+    const o = opts || {};
+    if (days <= 0) return o.zero || "heute";
+    if (days === 1) return o.one || "noch 1 Tag";
+    return `noch ${days} Tage`;
+  }
+
   function formatDateWithWeekday(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
     let wd = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" });
@@ -10546,13 +10554,13 @@ body.sortable-active * { cursor: grabbing !important; }
     const vacForTicker = getVacationStatus();
     if (vacForTicker) {
       messages.push({ view: "calendar", text: vacForTicker.type === "current"
-        ? `${vacForTicker.emoji} Urlaub: ${vacForTicker.name} — noch ${vacForTicker.days} Tag${vacForTicker.days === 1 ? "" : "e"}`
-        : `${vacForTicker.emoji} Noch ${vacForTicker.days} Tag${vacForTicker.days === 1 ? "" : "e"} bis ${vacForTicker.name}` });
+        ? `${vacForTicker.emoji} Urlaub: ${vacForTicker.name} — ${countdownText(vacForTicker.days, { zero: "heute letzter Tag", one: "noch 1 Tag" })}`
+        : `${vacForTicker.emoji} ${countdownText(vacForTicker.days, { zero: "Heute geht es los", one: "Morgen geht es los" })}${vacForTicker.days > 1 ? " bis" : " —"} ${vacForTicker.name}` });
     }
     const ferienForTicker = getFerienStatus();
     if (ferienForTicker) {
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
-        ? `🏖️ Ferien! Noch ${ferienForTicker.days} Tag${ferienForTicker.days === 1 ? "" : "e"} bis Schulbeginn (${ferienForTicker.name})`
+        ? `🏖️ Ferien! ${countdownText(ferienForTicker.days, { zero: "Heute ist der letzte Ferientag", one: "Morgen geht die Schule wieder los" })}${ferienForTicker.days > 1 ? " bis Schulbeginn" : ""} (${ferienForTicker.name})`
         : (() => { const sd = countSchoolDays(todayStr, ferienForTicker.lastSchoolDay); return `🏖️ ${sd === 0 ? "Heute ist der letzte Schultag" : `Noch ${sd} Schultag${sd === 1 ? "" : "e"}`} bis ${ferienForTicker.name}. Letzter Schultag ${formatDateWithWeekday(ferienForTicker.lastSchoolDay)}`; })() });
     }
     if (weatherCache.data) {
