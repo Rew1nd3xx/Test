@@ -756,7 +756,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .nav-divider { height: 1px; background: var(--border); margin: 8px 4px; }
 .nav-submenu-arrow { margin-left: auto; font-size: 11px; color: var(--text-muted); transition: transform .15s ease; }
 .nav-submenu { display: flex; flex-direction: column; gap: 4px; overflow: hidden; max-height: 0; transition: max-height .2s ease; }
-.nav-submenu.open { max-height: 220px; }
+.nav-submenu.open { max-height: 640px; }
 .nav-subitem { padding-left: 34px; font-size: 13px; }
 .nav-subitem .nav-icon { font-size: 15px; }
 
@@ -1084,6 +1084,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 }
 .pool-contrib-chip .mini-avatar { width: 17px; height: 17px; font-size: 10px; }
 
+.grade-pick-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.grade-pick {
+  width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent;
+  font-weight: 700; font-size: 17px; color: #fff; cursor: pointer; opacity: .55;
+}
+.grade-pick.active { opacity: 1; border-color: var(--text); transform: scale(1.06); }
 .grade-rate-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
 .grade-bonus-row { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 5px; }
 .grade-bonus-row label { font-size: 12px; color: var(--text-muted); }
@@ -1484,8 +1490,21 @@ body.menu-open { overflow: hidden; }
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; padding: 24px;
   box-shadow: var(--shadow);
+  /* Kopf und Fuß bleiben stehen, nur der Inhalt dazwischen scrollt.
+     Dadurch sind Titel und die Speichern-Knöpfe auch bei langen Listen immer erreichbar. */
+  display: flex; flex-direction: column; overflow: hidden;
 }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal > *:not(.modal-header):not(.modal-footer) { flex-shrink: 0; }
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  flex-shrink: 0; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.modal-footer {
+  flex-shrink: 0; padding-top: 14px; border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+/* Alles zwischen Kopf und Fuß in einen scrollbaren Bereich packen */
+.modal-scroll { overflow-y: auto; flex: 1; min-height: 0; margin: 0 -4px; padding: 0 4px; }
 .modal-header h2 { font-family: var(--font-display); margin: 0; font-size: 22px; }
 .close-btn { background: none; border: none; font-size: 20px; color: var(--text-muted); }
 .field { margin-bottom: 14px; }
@@ -1935,7 +1954,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 109;
+  const APP_BUILD_NUMBER = 110;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -5169,7 +5188,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const today = new Date().toISOString().slice(0, 10);
     const current = getVacationForDate(today);
     if (current) {
-      return { type: "current", name: current.name, emoji: current.emoji || "🏝️", days: dateStrToDayNumber(current.end) - dateStrToDayNumber(today) + 1 };
+      return { type: "current", name: current.name, emoji: current.emoji || "🏝️", start: current.start, days: dateStrToDayNumber(current.end) - dateStrToDayNumber(today) + 1 };
     }
     const upcoming = (state.vacations || []).filter(v => v.start > today).sort((a, b) => a.start.localeCompare(b.start))[0];
     if (upcoming) {
@@ -7829,6 +7848,68 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(card);
   }
 
+  // Noten eintragen — Eltern können dabei auch das Kind und die Zeugnisnote wählen
+  function openGradeEditor(isParentView, viewingEntity) {
+    const kids = state.profiles.filter(p => p.role === "child");
+    if (isParentView && !kids.length) { showToast("Noch keine Kinderprofile angelegt."); return; }
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:420px;">
+      <div class="modal-header"><h2>Note eintragen</h2><button class="close-btn" id="closeModal">✕</button></div>
+      ${isParentView ? `<div class="field"><label>Für wen</label>
+        <select id="gdWho">${kids.map(k => `<option value="${k.id}">${k.emoji || ""} ${escapeHtml(k.name)}</option>`).join("")}</select>
+      </div>` : ""}
+      <div class="field"><label>Fach</label><input type="text" id="gdSubject" placeholder="z. B. Mathe"></div>
+      <div class="field"><label>Note</label>
+        <div class="grade-pick-row">
+          ${[1, 2, 3, 4, 5, 6].map(n => `<button type="button" class="grade-pick grade-${n}" data-val="${n}">${n}</button>`).join("")}
+        </div>
+      </div>
+      <div class="field"><label>Art</label>
+        <select id="gdType">
+          <option value="exam">Schulaufgabe</option>
+          <option value="test">Kurzarbeit / Test</option>
+          <option value="oral">Mündlich</option>
+          <option value="report">🎓 Zeugnisnote</option>
+        </select>
+      </div>
+      <div class="field"><label>Datum</label><input type="date" id="gdDate" value="${new Date().toISOString().slice(0, 10)}"></div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="gdCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="gdSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#gdCancel").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+    let chosen = null;
+    overlay.querySelectorAll(".grade-pick").forEach(btn => {
+      btn.onclick = () => {
+        overlay.querySelectorAll(".grade-pick").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        chosen = Number(btn.dataset.val);
+      };
+    });
+    overlay.querySelector("#gdSave").onclick = () => {
+      const subject = overlay.querySelector("#gdSubject").value.trim();
+      if (!subject) { showToast("Bitte ein Fach angeben."); return; }
+      if (!chosen) { showToast("Bitte eine Note auswählen."); return; }
+      const targetId = isParentView ? overlay.querySelector("#gdWho").value : viewingEntity.id;
+      state.grades.push({
+        id: uid(), profileId: targetId, subject, value: chosen,
+        type: overlay.querySelector("#gdType").value,
+        date: overlay.querySelector("#gdDate").value || new Date().toISOString().slice(0, 10),
+        createdAt: Date.now(), updatedAt: Date.now()
+      });
+      saveState(); close(); render();
+      showToast("Note eingetragen.");
+    };
+    setTimeout(() => overlay.querySelector("#gdSubject").focus(), 30);
+  }
+
   function renderGradesView(container) {
     const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
     if (!viewingEntity || personalAreaUnlockedFor !== viewingEntity.id) {
@@ -7840,7 +7921,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const header = document.createElement("div");
     header.className = "view-header";
     header.innerHTML = `<div><h1 class="view-title">📓 Notenspiegel</h1><p class="view-sub">${isParentView ? "Noten aller Kinder und die Zeugnisgeld-Sätze." : "Deine Noten und dein voraussichtliches Zeugnisgeld."}</p></div>
-      ${!isParentView ? `<button class="btn btn-accent" id="addGradeBtn">+ Note eintragen</button>` : ""}`;
+      <button class="btn btn-accent" id="addGradeBtn">+ Note eintragen</button>`;
     container.appendChild(header);
 
     if (isParentView) {
@@ -7960,20 +8041,7 @@ body.sortable-active * { cursor: grabbing !important; }
     });
 
     const addBtn = header.querySelector("#addGradeBtn");
-    if (addBtn) addBtn.onclick = () => {
-      const subject = prompt("Fach (z. B. Mathe, Deutsch):");
-      if (!subject || !subject.trim()) return;
-      const valRaw = prompt("Note (1–6):");
-      const value = parseInt(valRaw, 10);
-      if (isNaN(value) || value < 1 || value > 6) { showToast("Bitte eine Note zwischen 1 und 6 eingeben."); return; }
-      const isReport = confirm("Ist das eine Zeugnisnote?\n\nOK = Zeugnisnote · Abbrechen = normale Note");
-      state.grades.push({
-        id: uid(), profileId: viewingEntity.id, subject: subject.trim(), value,
-        type: isReport ? "report" : "exam", date: new Date().toISOString().slice(0, 10),
-        createdAt: Date.now(), updatedAt: Date.now()
-      });
-      saveState(); render();
-    };
+    if (addBtn) addBtn.onclick = () => openGradeEditor(isParentView, viewingEntity);
   }
 
   /* ============ SPAR-POOLS ============ */
@@ -11749,7 +11817,8 @@ body.sortable-active * { cursor: grabbing !important; }
     if (vacForTicker) {
       messages.push({ view: "calendar", text: vacForTicker.type === "current"
         ? `${vacForTicker.emoji} Urlaub: ${vacForTicker.name} — ${countdownText(vacForTicker.days, { zero: "heute letzter Tag", one: "noch 1 Tag" })}`
-        : `${vacForTicker.emoji} ${countdownText(vacForTicker.days, { zero: "Heute geht es los", one: "Morgen geht es los" })}${vacForTicker.days > 1 ? " bis" : " —"} ${vacForTicker.name}` });
+        : `${vacForTicker.emoji} ${countdownText(vacForTicker.days, { zero: "Heute geht es los", one: "Morgen geht es los" })}${vacForTicker.days > 1 ? " bis" : " —"} ${vacForTicker.name}`,
+        date: vacForTicker.start || undefined });
     }
     const ferienForTicker = getFerienStatus();
     if (ferienForTicker) {
@@ -11896,7 +11965,41 @@ body.sortable-active * { cursor: grabbing !important; }
     tickerInterval = setInterval(buildTape, 20000);
   }
 
+  // Jedes Popup bekommt automatisch einen scrollbaren Mittelteil: Kopf (Titel/Schließen)
+  // und Fuß (Speichern, Löschen …) bleiben stehen, dazwischen wird gescrollt.
+  function setupModalScrollAreas() {
+    const wrapModal = (modal) => {
+      if (!modal || modal.dataset.scrollWrapped) return;
+      const header = modal.querySelector(":scope > .modal-header");
+      const footer = modal.querySelector(":scope > .modal-footer");
+      if (!header) return;
+      const middle = [];
+      let node = header.nextSibling;
+      while (node && node !== footer) { middle.push(node); node = node.nextSibling; }
+      if (!middle.length) return;
+      const scroller = document.createElement("div");
+      scroller.className = "modal-scroll";
+      middle.forEach(n => scroller.appendChild(n));
+      modal.insertBefore(scroller, footer || null);
+      modal.dataset.scrollWrapped = "1";
+    };
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(n => {
+          if (n.nodeType !== 1) return;
+          if (n.classList && n.classList.contains("modal-overlay")) {
+            n.querySelectorAll(".modal").forEach(wrapModal);
+          } else if (n.classList && n.classList.contains("modal")) {
+            wrapModal(n);
+          }
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: false });
+  }
+
   function init() {
+    setupModalScrollAreas();
     // Browser soll die Scrollposition nicht selbst wiederherstellen
     if ("scrollRestoration" in history) { try { history.scrollRestoration = "manual"; } catch (e) {} }
     applyTheme(state.theme || "papier");
