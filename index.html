@@ -990,6 +990,7 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .meal-star { font-size: 17px; color: var(--border); cursor: pointer; line-height: 1; }
 .meal-star.filled { color: #E8A33D; }
 .meal-avg-rating { font-size: 11.5px; color: var(--text-muted); }
+.meal-recipe-pick { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; max-width: 150px; }
 .meal-new-forwhom { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; }
 .meal-vote-btn { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; }
 .meal-vote-btn.voted { background: var(--accent); color: var(--surface); border-color: var(--accent); }
@@ -1070,6 +1071,12 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .pool-name { font-weight: 700; font-size: 15px; }
 .pool-amount { font-family: var(--font-display); font-size: 24px; margin-top: 2px; }
 .pool-goal { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); }
+.pool-feed { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
+.pool-feed-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
+.pool-feed-text { display: inline-flex; align-items: center; gap: 6px; }
+.pool-feed-text .mini-avatar { width: 18px; height: 18px; font-size: 10px; }
+.pool-feed-reactions { display: flex; gap: 4px; }
+.pool-feed-reactions .news-reaction { padding: 2px 7px; font-size: 12px; }
 .pool-contributors { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .pool-contrib-chip {
   display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px;
@@ -1253,6 +1260,12 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 }
 .choir-blob.singing .choir-mouth { height: 18px; width: 20px; border-radius: 50%; }
 .choir-controls { display: flex; gap: 8px; margin-top: 12px; }
+.emoji-picker { display: flex; flex-wrap: wrap; gap: 5px; }
+.emoji-opt-btn {
+  width: 38px; height: 38px; font-size: 19px; border-radius: 10px; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--surface2); line-height: 1;
+}
+.emoji-opt-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface2)); }
 .retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 18px; font-size: 15px; }
 .retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 460px; }
 .retro-memory-card {
@@ -1588,6 +1601,17 @@ body.menu-open { overflow: hidden; }
 .draw-layer-vis { display: flex; align-items: center; gap: 5px; cursor: pointer; }
 .draw-layer-vis input { width: 15px; height: 15px; accent-color: var(--accent); }
 
+.task-child { border-left: 4px solid #86B35A; }
+.task-own { border-left: 4px solid #3A5A9B; }
+.task-owner-badge {
+  position: absolute; top: 8px; right: 10px; font-size: 10.5px; padding: 2px 8px;
+  border-radius: 999px; background: color-mix(in srgb, #86B35A 20%, var(--surface2));
+  color: var(--text-muted);
+}
+.card { position: relative; }
+.quick-add-check { display: flex; gap: 5px; align-items: center; padding: 4px 2px 8px; }
+.quick-add-check input[type=text] { flex: 2; min-width: 0; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 13px; }
+.quick-add-check select { flex: 1; min-width: 0; padding: 7px 6px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12px; }
 .quick-check-row { display: flex; gap: 6px; align-items: center; }
 .quick-check-row input[type=text] { flex: 2; min-width: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 13px; }
 .quick-check-row select { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; }
@@ -1807,6 +1831,9 @@ body.sortable-active * { cursor: grabbing !important; }
         <button class="nav-item nav-subitem" data-view="mealplan">
           <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
         </button>
+        <button class="nav-item nav-subitem" data-view="recipes">
+          <span class="nav-icon">📖</span><span class="nav-label">Rezepte</span>
+        </button>
         <button class="nav-item nav-subitem" data-view="shopping">
           <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
         </button>
@@ -1904,7 +1931,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 107;
+  const APP_BUILD_NUMBER = 108;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -1958,6 +1985,7 @@ body.sortable-active * { cursor: grabbing !important; }
       newsPosts: [],
       areaChat: [],
       gameScores: [],
+      recipes: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
@@ -2039,7 +2067,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "homework", "learnai", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "homework", "learnai", "recipes", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -2057,6 +2085,7 @@ body.sortable-active * { cursor: grabbing !important; }
   let settingsSectionsOpen = new Set();
   let hueUnassignedOpen = false;
   let taskSortMode = "status";
+  let gradeSortMode = "subject";
   let syncSettingsUnlocked = false;
   let expandedChecklists = new Set();
   let mmSelectedNode = null;
@@ -2380,11 +2409,15 @@ body.sortable-active * { cursor: grabbing !important; }
     document.getElementById("sidebarBackdrop").classList.toggle("show", open);
     document.body.classList.toggle("menu-open", open);
     if (open) {
-      sidebarEl.scrollTop = 0;
-      // Manche Browser stellen die alte Scrollposition erst nach dem Einblenden wieder her —
-      // deshalb nochmal nachsetzen, sonst startet das Menü nicht zuverlässig oben.
-      requestAnimationFrame(() => { sidebarEl.scrollTop = 0; });
-      setTimeout(() => { sidebarEl.scrollTop = 0; }, 260);
+      const resetNav = () => {
+        sidebarEl.scrollTop = 0;
+        const navEl = sidebarEl.querySelector(".nav");
+        if (navEl) navEl.scrollTop = 0;
+      };
+      resetNav();
+      requestAnimationFrame(resetNav);
+      setTimeout(resetNav, 120);
+      setTimeout(resetNav, 300);
     }
   }
 
@@ -2405,7 +2438,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (arrowEl) arrowEl.textContent = "▾";
     }
     const orgaSubmenuEl = document.getElementById("orgaSubmenu");
-    if (orgaSubmenuEl && ["tasks", "mealplan", "shopping", "calendar"].includes(view)) {
+    if (orgaSubmenuEl && ["tasks", "mealplan", "shopping", "calendar", "recipes"].includes(view)) {
       orgaSubmenuEl.classList.add("open");
       const oArrow = document.getElementById("orgaArrow");
       if (oArrow) oArrow.textContent = "▾";
@@ -2418,11 +2451,24 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     setSidebarOpen(false);
     render();
-    // Nach jedem Menüwechsel oben starten — sonst behält der Browser die Scrollposition
-    // der vorherigen Ansicht bei und man landet mitten im neuen Bereich.
-    window.scrollTo({ top: 0, behavior: "auto" });
-    const vc = document.getElementById("viewContainer");
-    if (vc) vc.scrollTop = 0;
+    // Nach jedem Menüwechsel oben starten. Der Browser stellt die alte Position teils
+    // erst nach dem Zeichnen wieder her — deshalb mehrfach zurücksetzen.
+    scrollViewToTop();
+  }
+
+  function scrollViewToTop() {
+    const reset = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vc = document.getElementById("viewContainer");
+      if (vc) vc.scrollTop = 0;
+      const main = document.querySelector(".main");
+      if (main) main.scrollTop = 0;
+    };
+    reset();
+    requestAnimationFrame(reset);
+    setTimeout(reset, 60);
   }
 
   function render() {
@@ -2446,6 +2492,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (currentView === "grades") return renderGradesView(c);
     if (currentView === "homework") return renderHomeworkView(c);
     if (currentView === "learnai") return renderLearnAiView(c);
+    if (currentView === "recipes") return renderRecipesView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -2687,7 +2734,12 @@ body.sortable-active * { cursor: grabbing !important; }
     grid.className = "widget-grid";
     container.appendChild(grid);
 
+    let hiddenWidgets = [];
+    try { hiddenWidgets = JSON.parse(localStorage.getItem("dapp_hidden_widgets") || "[]"); } catch (e) {}
     function widget(icon, title, accentVar, bodyHtml, linkView, linkLabel) {
+      // Ausgeblendete Kacheln gar nicht erst bauen — aber ein Dummy zurückgeben,
+      // damit aufrufender Code weiterhin .querySelector() nutzen kann.
+      if (hiddenWidgets.includes(title)) return document.createElement("div");
       const card = document.createElement("div");
       card.className = "widget-card";
       card.dataset.sortId = title; // Titel dient als stabiler Schlüssel für die eigene Reihenfolge
@@ -2846,36 +2898,6 @@ body.sortable-active * { cursor: grabbing !important; }
       }
     }
 
-    // --- Schnell zur Checkliste hinzufügen ---
-    const checklists = state.items.filter(it => it.type === "checklist" && canSeeItemDetails(it));
-    if (checklists.length) {
-      const quickCard = widget("➕", "Zur Checkliste hinzufügen", "#3FA796",
-        `<div class="quick-check-row">
-          <input type="text" id="quickCheckText" placeholder="Was soll rein?">
-          <select id="quickCheckList">
-            ${checklists.map(cl => `<option value="${cl.id}">${escapeHtml(cl.title || "Ohne Titel")}</option>`).join("")}
-          </select>
-          <button type="button" class="btn btn-sm btn-accent" id="quickCheckAdd">+</button>
-        </div>`, null);
-      const qInput = quickCard.querySelector("#quickCheckText");
-      const qAdd = () => {
-        const text = qInput.value.trim();
-        if (!text) return;
-        const listId = quickCard.querySelector("#quickCheckList").value;
-        const target = state.items.find(it => it.id === listId);
-        if (!target) return;
-        target.items = target.items || [];
-        target.items.push({ id: uid(), text, done: false });
-        target.updatedAt = Date.now();
-        saveState();
-        qInput.value = "";
-        showToast(`„${text}" hinzugefügt.`);
-        render();
-      };
-      quickCard.querySelector("#quickCheckAdd").onclick = qAdd;
-      qInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); qAdd(); } });
-    }
-
     // --- Offene Abstimmungen ---
     const activeIdForVotes = state.activeProfileId;
     const pendingVotes = [];
@@ -2893,8 +2915,21 @@ body.sortable-active * { cursor: grabbing !important; }
         pendingVotes.push({ kind: "vacation", label: `${v.emoji || "🏝️"} ${v.name}`, sub: `${formatDateStrShort(v.start)}–${formatDateStrShort(v.end)}` });
       }
     });
+    // Eltern sehen hier zusätzlich, was noch auf ihre Freigabe wartet
+    const meForVotes = getActiveProfile();
+    if (!meForVotes || meForVotes.role === "parent") {
+      state.tasks.filter(t => t.approved === false).forEach(t =>
+        pendingVotes.push({ kind: "approve-task", label: `✅ Aufgabe: ${t.title}`, sub: "Freigabe nötig" }));
+      state.rewards.filter(r => r.approved === false).forEach(r =>
+        pendingVotes.push({ kind: "approve-task", label: `✅ Belohnung: ${r.title}`, sub: "Freigabe nötig" }));
+      (state.allowanceRequests || []).filter(r => r.status === "pending").forEach(r => {
+        const p = getProfile(r.profileId);
+        const what = r.type === "payout" ? `Auszahlung ${fmtEuro(r.amount)}` : `${r.amount} Punkte umwandeln`;
+        pendingVotes.push({ kind: "approve-allowance", label: `💰 ${p ? p.name : "?"}: ${what}`, sub: "Anfrage offen" });
+      });
+    }
     if (pendingVotes.length) {
-      const voteCard = widget("🗳️", "Offene Abstimmungen", "#B15CDE",
+      const voteCard = widget("🗳️", "Offen &amp; abzustimmen", "#B15CDE",
         pendingVotes.slice(0, 6).map((v, i) =>
           `<div class="widget-row vote-row" data-vote-idx="${i}" style="cursor:pointer;">
             <span class="wr-title">${escapeHtml(v.label)}</span><span class="wr-meta">${escapeHtml(v.sub)}</span>
@@ -2906,6 +2941,8 @@ body.sortable-active * { cursor: grabbing !important; }
           const v = pendingVotes[Number(row.dataset.voteIdx)];
           if (!v) return;
           if (v.kind === "meal") { mealPlanWeekCursor = startOfWeek(v.date); setView("mealplan"); }
+          else if (v.kind === "approve-task") { setView("tasks"); }
+          else if (v.kind === "approve-allowance") { setView("admin"); }
           else { setView("calendar"); setTimeout(() => openVacationManager(), 140); }
         };
       });
@@ -2957,7 +2994,8 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     }
 
-    // --- Zuletzt bearbeitet ---
+    // "Zuletzt bearbeitet" liegt jetzt im gemeinsamen Elternbereich statt auf dem Homescreen.
+    if (false) {
     const recent = state.items.filter(canSeeItemDetails).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4);
     widget("🕘", "Zuletzt bearbeitet", "#4A6572",
       recent.length ? recent.map(it => {
@@ -2965,6 +3003,8 @@ body.sortable-active * { cursor: grabbing !important; }
         return `<div class="widget-row" data-item="${it.id}" data-type="${it.type}" style="cursor:pointer;"><span class="wr-title">${icon} ${escapeHtml(it.title || "Ohne Titel")}</span><span class="wr-meta">${fmtDate(it.updatedAt).split(" ")[0]}</span></div>`;
       }).join("") : `<div class="widget-empty">Noch nichts angelegt.</div>`,
       null);
+    }
+
     grid.querySelectorAll("[data-item]").forEach(row => {
       row.onclick = () => openEditor(row.dataset.type, row.dataset.item);
     });
@@ -4652,10 +4692,13 @@ body.sortable-active * { cursor: grabbing !important; }
       sortTasks(chores).forEach(t => {
         const owner = getProfile(t.assignedTo);
         const card = document.createElement("div");
-        card.className = "card";
+        const ownerProfile = getProfile(t.assignedTo);
+        const isChildTask = ownerProfile && ownerProfile.role === "child";
+        card.className = "card" + (isChildTask ? " task-child" : " task-own");
         card.style.cursor = "default";
         card.dataset.sortId = t.id;
         card.innerHTML = `
+          ${isChildTask ? `<span class="task-owner-badge">🧒 Kind</span>` : ""}
           <div class="card-top">
             <div style="display:flex;align-items:center;gap:10px;">
               <input type="checkbox" ${t.done ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--accent);" class="task-check">
@@ -5032,6 +5075,22 @@ body.sortable-active * { cursor: grabbing !important; }
     while (isWeekendStr(d)) d = addDays(d, 1);
     return d;
   }
+  // Fällt zwischen letztem Schultag und Ferienbeginn ein Wochenende, gehört es
+  // gefühlt schon zu den Ferien — die App behandelt es deshalb auch so.
+  function isEffectiveHoliday(dateStr) {
+    if (getSchoolHolidayName(dateStr)) return true;
+    if (!isWeekendStr(dateStr)) return false;
+    const list = state.schoolHolidays[state.federalState];
+    if (!list || !list.length) return false;
+    // Nächster Werktag: liegt der bereits in den Ferien, zählt das Wochenende mit.
+    let d = dateStr;
+    for (let i = 0; i < 4; i++) {
+      d = addDays(d, 1);
+      if (!isWeekendStr(d)) return !!getSchoolHolidayName(d);
+    }
+    return false;
+  }
+
   function getVacationForDate(dateStr) {
     return (state.vacations || []).find(v => dateStr >= v.start && dateStr <= v.end) || null;
   }
@@ -5384,7 +5443,10 @@ body.sortable-active * { cursor: grabbing !important; }
     const headerHtml = showHeader ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;">
         ${dayNumHtml}<span style="display:flex;align-items:center;gap:3px;">${meal ? `<span title="${escapeHtml(meal)}" style="font-size:12px;">🍽️</span>` : ""}${custodyDotsHtml}</span>
       </div>` : (meal ? `<div class="week-meal-tag" title="${escapeHtml(meal)}">🍽️ ${escapeHtml(meal)}</div>` : "");
-    const ferienHtml = ferien ? `<div class="week-meal-tag" style="background:#F2D6A2;color:#6B4A22;" title="${escapeHtml(ferien)}">🏖️ ${escapeHtml(ferien)}</div>` : "";
+    const bridging = !ferien && isEffectiveHoliday(dateStr);
+    const ferienHtml = ferien
+      ? `<div class="week-meal-tag" style="background:#F2D6A2;color:#6B4A22;" title="${escapeHtml(ferien)}">🏖️ ${escapeHtml(ferien)}</div>`
+      : (bridging ? `<div class="week-meal-tag" style="background:#F7E6C6;color:#6B4A22;" title="Wochenende vor den Ferien">🏖️ Ferienwochenende</div>` : "");
     const vacation = getVacationForDate(dateStr);
     const vacationHtml = vacation ? `<div class="week-meal-tag vacation-tag" title="${escapeHtml(vacation.name)}">${vacation.emoji || "🏝️"} ${escapeHtml(vacation.name)}</div>` : "";
     const eventChips = dayEvents.slice(0, maxEvents).map(ev => {
@@ -5917,6 +5979,11 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="meal-options">${groupsHtml}</div>
         <div class="meal-add-row">
           <input type="text" class="meal-new-option" placeholder="Vorschlag hinzufügen, z. B. Spaghetti Bolognese">
+          ${state.recipes.length ? `<select class="meal-recipe-pick" title="Aus Rezepten wählen">
+            <option value="">📖 Rezept …</option>
+            ${state.recipes.slice().sort((a, b) => a.name.localeCompare(b.name, "de")).map(r =>
+              `<option value="${escapeHtml(r.name)}">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</option>`).join("")}
+          </select>` : ""}
           <button type="button" class="btn btn-sm meal-add-btn">+ Vorschlag</button>
         </div>
         <div class="meal-forwhom-checks">
@@ -5955,6 +6022,15 @@ body.sortable-active * { cursor: grabbing !important; }
       const addBtn = dayWrap.querySelector(".meal-add-btn");
       const addInput = dayWrap.querySelector(".meal-new-option");
       const addKinship = dayWrap.querySelector(".meal-new-kinship");
+      const recipePick = dayWrap.querySelector(".meal-recipe-pick");
+      if (recipePick) recipePick.onchange = () => {
+        if (!recipePick.value) return;
+        // Rezept direkt als Vorschlag übernehmen — Textfeld bleibt für eigene Ideen frei
+        const forWhomIds = Array.from(dayWrap.querySelectorAll(".meal-new-forwhom-cb:checked")).map(cb => cb.value);
+        addMealOption(dateStr, recipePick.value, forWhomIds, addKinship && addKinship.checked);
+        recipePick.value = "";
+        renderMealDay(dayWrap, dateStr, label);
+      };
       const doAdd = () => {
         if (!addInput.value.trim()) return;
         const forWhomIds = Array.from(dayWrap.querySelectorAll(".meal-new-forwhom-cb:checked")).map(cb => cb.value);
@@ -6510,18 +6586,45 @@ body.sortable-active * { cursor: grabbing !important; }
         lane.addEventListener(ev, () => { stopVoice(i); blob.classList.remove("singing"); }));
     });
 
-    wrap.querySelector("#choirAll").onclick = () => {
-      const chord = [196.00, 246.94, 293.66, 392.00];
-      chord.forEach((f, i) => {
-        startVoice(i, f);
-        const lane = wrap.querySelectorAll(".choir-lane")[i];
-        const blob = lane.querySelector(".choir-blob");
-        blob.classList.add("singing");
-        blob.style.bottom = `${20 + i * 26}px`;
+    // Tonhöhe aus der aktuellen Blob-Position ableiten, statt sie zu überschreiben
+    function freqFromBlobPosition(i) {
+      const lane = wrap.querySelectorAll(".choir-lane")[i];
+      const blob = lane.querySelector(".choir-blob");
+      const laneH = lane.getBoundingClientRect().height;
+      const bottom = parseFloat(blob.style.bottom || "8");
+      const rel = Math.max(0, Math.min(1, (bottom - 8) / Math.max(1, laneH - 74)));
+      return scale[Math.round(rel * (scale.length - 1))];
+    }
+    let allSinging = false;
+    const allBtn = wrap.querySelector("#choirAll");
+    allBtn.onclick = () => {
+      if (allSinging) { stopAll(); allSinging = false; allBtn.textContent = "🎶 Alle singen"; return; }
+      ensureCtx();
+      voices.forEach((_, i) => {
+        startVoice(i, freqFromBlobPosition(i));
+        wrap.querySelectorAll(".choir-lane")[i].querySelector(".choir-blob").classList.add("singing");
       });
-      setTimeout(stopAll, 2600);
+      allSinging = true;
+      allBtn.textContent = "⏸ Pause";
+      setupChoirMediaSession();
     };
-    wrap.querySelector("#choirStop").onclick = stopAll;
+    // Als Medienwiedergabe anmelden, damit der Ton beim Sperren/Wechseln weiterläuft
+    function setupChoirMediaSession() {
+      if (!("mediaSession" in navigator)) return;
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: "Singende Blobs", artist: "DApp", album: "Familien-Spielzeug"
+        });
+        navigator.mediaSession.playbackState = "playing";
+        navigator.mediaSession.setActionHandler("pause", () => { stopAll(); allSinging = false; allBtn.textContent = "🎶 Alle singen"; navigator.mediaSession.playbackState = "paused"; });
+        navigator.mediaSession.setActionHandler("play", () => allBtn.click());
+        navigator.mediaSession.setActionHandler("stop", () => { stopAll(); allSinging = false; allBtn.textContent = "🎶 Alle singen"; });
+      } catch (e) { /* nicht überall unterstützt */ }
+    }
+    wrap.querySelector("#choirStop").onclick = () => {
+      stopAll(); allSinging = false; allBtn.textContent = "🎶 Alle singen";
+      if ("mediaSession" in navigator) { try { navigator.mediaSession.playbackState = "paused"; } catch (e) {} }
+    };
 
     const observer = new MutationObserver(() => {
       if (!document.body.contains(wrap)) { stopAll(); observer.disconnect(); }
@@ -7077,6 +7180,18 @@ body.sortable-active * { cursor: grabbing !important; }
     state.allowanceLedger.push({ id: uid(), profileId, amount, reason, at: Date.now(), createdBy: state.activeProfileId || null });
     saveState();
   }
+
+  // Zahlungen der Eltern (Taschengeld, Zeugnisgeld) ins Haushaltsbuch übernehmen.
+  // Sie landen dort als einmalige Kosten unter "Kinder & Schule".
+  function bookToBudget(label, amount, category) {
+    if (!amount || amount <= 0) return;
+    state.budget = state.budget || { income: [], costs: [], loans: [] };
+    state.budget.costs.push({
+      id: uid(), name: label, category: category || "👶 Kinder & Schule",
+      amount: Math.abs(amount), frequency: "once", updatedAt: Date.now()
+    });
+    saveState();
+  }
   function fmtEuro(n) {
     return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
   }
@@ -7095,6 +7210,10 @@ body.sortable-active * { cursor: grabbing !important; }
     if (approve) {
       if (req.type === "payout") {
         allowanceAdd(req.profileId, -Math.abs(req.amount), "Auszahlung (angefragt): " + (req.note || ""));
+        const kidName = (getProfile(req.profileId) || {}).name || "Kind";
+        if (confirm("Auszahlung ins Haushaltsbuch übernehmen?")) {
+          bookToBudget(`Taschengeld ${kidName}${req.note ? " – " + req.note : ""}`, Math.abs(req.amount));
+        }
       } else if (req.type === "convert") {
         const pts = pointsBalance(req.profileId);
         const usePts = Math.min(pts, req.amount);
@@ -7298,6 +7417,10 @@ body.sortable-active * { cursor: grabbing !important; }
           if (Math.abs(amount) > balance) { if (!confirm("Betrag ist höher als das Guthaben — trotzdem auszahlen?")) return; }
           const reason = prompt("Wofür? (optional)") || "Ausgezahlt";
           allowanceAdd(kid.id, -Math.abs(amount), reason);
+          if (confirm("Auszahlung ins Haushaltsbuch übernehmen?")) {
+            bookToBudget(`Taschengeld ${kid.name}${reason && reason !== "Ausgezahlt" ? " – " + reason : ""}`, Math.abs(amount));
+            showToast("Ins Haushaltsbuch übernommen.");
+          }
           render();
         };
       } else {
@@ -7402,6 +7525,123 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(grid);
   }
 
+  function renderRecipesView(container) {
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">📖 Rezepte</h1><p class="view-sub">Eure Sammlung — daraus lassen sich Essensvorschläge direkt auswählen.</p></div>
+      <button class="btn btn-accent" id="addRecipeBtn">+ Rezept</button>`;
+    container.appendChild(header);
+    header.querySelector("#addRecipeBtn").onclick = () => openRecipeEditor();
+
+    if (!state.recipes.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = `<span class="empty-icon">📖</span>Noch keine Rezepte. Lege eins an — es taucht dann direkt im Essensplan zur Auswahl auf.`;
+      container.appendChild(empty);
+      return;
+    }
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    state.recipes.slice().sort((a, b) => a.name.localeCompare(b.name, "de")).forEach(r => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.cursor = "default";
+      const likers = (r.likes || []).map(pid => getProfile(pid)).filter(Boolean);
+      card.innerHTML = `
+        <div class="card-top">
+          <h3 class="card-title" style="margin:0;">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</h3>
+          <div style="display:flex;gap:4px;">
+            <button class="card-pin recipe-edit" title="Bearbeiten">✏️</button>
+            <button class="card-pin recipe-del" title="Löschen">✕</button>
+          </div>
+        </div>
+        ${r.tags ? `<div class="card-body"><span class="tag-chip">${escapeHtml(r.tags)}</span></div>` : ""}
+        ${r.ingredients ? `<div class="card-body" style="font-size:12.5px;">🛒 ${escapeHtml(r.ingredients)}</div>` : ""}
+        ${r.notes ? `<div class="card-body" style="font-size:12.5px;color:var(--text-muted);">${escapeHtml(r.notes)}</div>` : ""}
+        <div class="news-composer-actions" style="margin-top:8px;">
+          <button type="button" class="meal-vote-btn recipe-like${(r.likes || []).includes(state.activeProfileId) ? " voted" : ""}">❤️ ${(r.likes || []).length}</button>
+          <span class="meal-voters">${likers.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}</span>
+          ${r.ingredients ? `<button type="button" class="btn btn-sm recipe-to-shopping" style="margin-left:auto;">🛒 Auf die Einkaufsliste</button>` : ""}
+        </div>`;
+      card.querySelector(".recipe-edit").onclick = () => openRecipeEditor(r);
+      card.querySelector(".recipe-del").onclick = () => {
+        if (!confirm(`Rezept „${r.name}" löschen?`)) return;
+        markDeleted(r.id);
+        state.recipes = state.recipes.filter(x => x.id !== r.id);
+        saveState(); render();
+      };
+      card.querySelector(".recipe-like").onclick = () => {
+        if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+        r.likes = r.likes || [];
+        const i = r.likes.indexOf(state.activeProfileId);
+        if (i >= 0) r.likes.splice(i, 1); else r.likes.push(state.activeProfileId);
+        r.updatedAt = Date.now();
+        saveState(); render();
+      };
+      const toShop = card.querySelector(".recipe-to-shopping");
+      if (toShop) toShop.onclick = () => {
+        const list = (state.shoppingLists && state.shoppingLists[0]) || "Einkaufen";
+        r.ingredients.split(/[,;\n]/).map(s => s.trim()).filter(Boolean).forEach(zutat => {
+          state.shoppingList.push({
+            id: uid(), text: zutat, done: false, addedBy: state.activeProfileId,
+            forWhom: null, category: "", location: "", photo: "", list, updatedAt: Date.now()
+          });
+        });
+        saveState(); showToast(`Zutaten auf „${list}" gesetzt.`); render();
+      };
+      grid.appendChild(card);
+    });
+    container.appendChild(grid);
+  }
+
+  function openRecipeEditor(existing) {
+    const draft = existing ? { ...existing } : { id: uid(), name: "", emoji: "🍽️", tags: "", ingredients: "", notes: "", likes: [] };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:480px;">
+      <div class="modal-header"><h2>${existing ? "Rezept bearbeiten" : "Neues Rezept"}</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <div class="field"><label>Name</label><input type="text" id="rcName" value="${escapeHtml(draft.name)}" placeholder="z. B. Spaghetti Bolognese"></div>
+      <div class="field"><label>Symbol</label>
+        <div class="emoji-picker" id="rcEmojiPicker">
+          ${["🍽️","🍝","🍕","🍔","🥗","🍲","🥘","🍜","🌮","🥞","🍗","🐟"].map(e =>
+            `<button type="button" class="emoji-opt-btn${e === draft.emoji ? " active" : ""}" data-emoji="${e}">${e}</button>`).join("")}
+        </div>
+      </div>
+      <div class="field"><label>Schlagwort (optional)</label><input type="text" id="rcTags" value="${escapeHtml(draft.tags || "")}" placeholder="z. B. schnell, vegetarisch"></div>
+      <div class="field"><label>Zutaten (mit Komma trennen)</label><textarea id="rcIng" rows="3" placeholder="Nudeln, Hackfleisch, Tomaten">${escapeHtml(draft.ingredients || "")}</textarea></div>
+      <div class="field"><label>Notizen (optional)</label><textarea id="rcNotes" rows="2">${escapeHtml(draft.notes || "")}</textarea></div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="rcCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="rcSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#rcCancel").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(btn => {
+      btn.onclick = () => {
+        overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        draft.emoji = btn.dataset.emoji;
+      };
+    });
+    overlay.querySelector("#rcSave").onclick = () => {
+      draft.name = overlay.querySelector("#rcName").value.trim();
+      if (!draft.name) { showToast("Bitte einen Namen eingeben."); return; }
+      draft.tags = overlay.querySelector("#rcTags").value.trim();
+      draft.ingredients = overlay.querySelector("#rcIng").value.trim();
+      draft.notes = overlay.querySelector("#rcNotes").value.trim();
+      draft.updatedAt = Date.now();
+      const idx = state.recipes.findIndex(r => r.id === draft.id);
+      if (idx >= 0) state.recipes[idx] = draft; else state.recipes.push(draft);
+      saveState(); close(); render();
+      showToast(existing ? "Rezept aktualisiert." : "Rezept angelegt.");
+    };
+    setTimeout(() => overlay.querySelector("#rcName").focus(), 30);
+  }
+
   function renderLearnAiView(container) {
     const header = document.createElement("div");
     header.className = "view-header";
@@ -7459,6 +7699,17 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     }
 
+    const sortBar = document.createElement("div");
+    sortBar.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;";
+    sortBar.innerHTML = `<span class="hint" style="margin:0;">Sortieren:</span>
+      <select id="gradeSortSelect" class="hue-assign-select">
+        <option value="subject" ${gradeSortMode === "subject" ? "selected" : ""}>Nach Fach</option>
+        <option value="value" ${gradeSortMode === "value" ? "selected" : ""}>Beste Note zuerst</option>
+        <option value="date" ${gradeSortMode === "date" ? "selected" : ""}>Neueste zuerst</option>
+      </select>`;
+    container.appendChild(sortBar);
+    sortBar.querySelector("#gradeSortSelect").onchange = (e) => { gradeSortMode = e.target.value; render(); };
+
     const people = isParentView ? state.profiles.filter(p => p.role === "child") : [viewingEntity];
     people.forEach(person => {
       const all = gradesFor(person.id);
@@ -7466,6 +7717,12 @@ body.sortable-active * { cursor: grabbing !important; }
       const others = all.filter(g => g.type !== "report");
       const bySubject = {};
       all.forEach(g => { (bySubject[g.subject || "Ohne Fach"] ||= []).push(g); });
+      // Sortierung anwenden
+      Object.values(bySubject).forEach(list => list.sort((a, b) => {
+        if (gradeSortMode === "value") return a.value - b.value;
+        if (gradeSortMode === "date") return (b.date || "").localeCompare(a.date || "");
+        return 0;
+      }));
       const money = reportCardMoney(person.id);
 
       const card = document.createElement("div");
@@ -7523,6 +7780,10 @@ body.sortable-active * { cursor: grabbing !important; }
       if (payoutBtn) payoutBtn.onclick = () => {
         if (!confirm(`${fmtEuro(money)} Zeugnisgeld an ${person.name} auszahlen?`)) return;
         allowanceAdd(person.id, money, "🎓 Zeugnisgeld");
+        if (confirm("Zeugnisgeld ins Haushaltsbuch übernehmen?")) {
+          bookToBudget(`Zeugnisgeld ${person.name}`, money);
+          showToast("Ins Haushaltsbuch übernommen.");
+        }
         // Zeugnisnoten als ausgezahlt markieren, damit das Geld nicht doppelt gutgeschrieben wird.
         gradesFor(person.id).filter(g => g.type === "report").forEach(g => { g.type = "report-paid"; g.updatedAt = Date.now(); });
         if (state.reportCardBonus) { state.reportCardBonus[person.id] = 0; state.reportCardRatesUpdatedAt = Date.now(); }
@@ -7667,13 +7928,33 @@ body.sortable-active * { cursor: grabbing !important; }
               <div class="pool-amount">${fmtEuro(balance)}${goal > 0 ? ` <span class="pool-goal">von ${fmtEuro(goal)}</span>` : ""}</div>
             </div>
             <div style="display:flex;gap:4px;flex-shrink:0;">
-              ${pool.ownerId ? `<span class="tag-chip" title="Privater Pool">🔒</span>` : ""}
+              <span class="tag-chip" title="${pool.ownerId ? "Nur für " + escapeHtml((getProfile(pool.ownerId) || {}).name || "eine Person") : "Für die ganze Familie"}">${pool.ownerId ? "🔒 Privat" : "👨‍👩‍👧‍👦 Familie"}</span>
               ${isParentView ? `<button type="button" class="card-pin" data-pool-edit="${pool.id}" title="Pool bearbeiten">✏️</button>` : ""}
               ${isParentView ? `<button type="button" class="card-pin" data-pool-del="${pool.id}" title="Pool löschen">✕</button>` : ""}
             </div>
           </div>
           ${goal > 0 ? `<div class="card-progress"><div class="card-progress-bar" style="width:${pct.toFixed(1)}%;background:#3FA796;"></div></div>
             <div class="today-sub-stat" style="border:none;padding:4px 0;">${pct >= 100 ? "🎉 Sparziel erreicht!" : `Noch ${fmtEuro(Math.max(0, goal - balance))} bis zum Ziel`}</div>` : ""}
+          ${(() => {
+            const recent = state.poolLedger.filter(l => l.poolId === pool.id && l.amount > 0)
+              .sort((a, b) => b.at - a.at).slice(0, 4);
+            if (!recent.length) return "";
+            return `<div class="pool-feed">${recent.map(l => {
+              const who = l.profileId ? getProfile(l.profileId) : null;
+              const label = who ? escapeHtml(who.name) : (l.note ? escapeHtml(l.note) : "Geschenkt");
+              const reactions = l.reactions || {};
+              return `<div class="pool-feed-row">
+                <span class="pool-feed-text">${who ? `<span class="mini-avatar" style="background:${who.color};">${who.emoji || who.name.charAt(0)}</span>` : "🎁"} ${label} · <strong>${fmtEuro(l.amount)}</strong></span>
+                <span class="pool-feed-reactions">
+                  ${["👏", "❤️", "🎉", "😮"].map(emo => {
+                    const cnt = (reactions[emo] || []).length;
+                    const mine = state.activeProfileId && (reactions[emo] || []).includes(state.activeProfileId);
+                    return `<button type="button" class="news-reaction${mine ? " reacted" : ""}" data-pool-react="${l.id}" data-emo="${emo}">${emo}${cnt ? ` <span>${cnt}</span>` : ""}</button>`;
+                  }).join("")}
+                </span>
+              </div>`;
+            }).join("")}</div>`;
+          })()}
           ${contributors.length || gifts ? `<div class="pool-contributors">
             ${contributors.map(c => `<span class="pool-contrib-chip"><span class="mini-avatar" style="background:${c.p.color};">${c.p.emoji || c.p.name.charAt(0)}</span>${escapeHtml(c.p.name)}: ${fmtEuro(c.amount)}</span>`).join("")}
             ${gifts ? `<span class="pool-contrib-chip">🎁 Geschenkt: ${fmtEuro(gifts)}</span>` : ""}
@@ -7692,6 +7973,21 @@ body.sortable-active * { cursor: grabbing !important; }
         `;
         body.appendChild(card);
 
+        card.querySelectorAll("[data-pool-react]").forEach(btn => {
+          btn.onclick = (ev) => {
+            ev.preventDefault(); ev.stopPropagation();
+            if (!state.activeProfileId) { showToast("Bitte zuerst ein Profil auswählen."); return; }
+            const entry = state.poolLedger.find(l => l.id === btn.dataset.poolReact);
+            if (!entry) return;
+            const emo = btn.dataset.emo;
+            entry.reactions = entry.reactions || {};
+            entry.reactions[emo] = entry.reactions[emo] || [];
+            const i = entry.reactions[emo].indexOf(state.activeProfileId);
+            if (i >= 0) entry.reactions[emo].splice(i, 1); else entry.reactions[emo].push(state.activeProfileId);
+            entry.updatedAt = Date.now();
+            saveState(); render();
+          };
+        });
         const editBtn = card.querySelector(`[data-pool-edit="${pool.id}"]`);
         if (editBtn) editBtn.onclick = () => {
           const name = prompt("Name des Pools:", pool.name);
@@ -8266,7 +8562,13 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="field"><label>Wohin / Anlass</label><input type="text" id="vacName" placeholder="z. B. Nordsee"></div>
         <div class="field"><label>Von</label><input type="date" id="vacStart"></div>
         <div class="field"><label>Bis</label><input type="date" id="vacEnd"></div>
-        <div class="field"><label>Symbol</label><input type="text" id="vacEmoji" value="🏝️" maxlength="4"></div>
+        <div class="field"><label>Symbol</label>
+          <div class="emoji-picker" id="vacEmojiPicker">
+            ${["🏝️","⛰️","🏕️","🎿","🚢","✈️","🏖️","🎡","🏰","🚗","🧳","🌍"].map((e, i) =>
+              `<button type="button" class="emoji-opt-btn${i === 0 ? " active" : ""}" data-emoji="${e}">${e}</button>`).join("")}
+          </div>
+          <input type="hidden" id="vacEmoji" value="🏝️">
+        </div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:10px;">
         <input type="checkbox" id="vacVotable" style="width:16px;height:16px;accent-color:var(--accent);">
@@ -8319,6 +8621,13 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     paintList();
 
+    overlay.querySelectorAll("#vacEmojiPicker .emoji-opt-btn").forEach(btn => {
+      btn.onclick = () => {
+        overlay.querySelectorAll("#vacEmojiPicker .emoji-opt-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        overlay.querySelector("#vacEmoji").value = btn.dataset.emoji;
+      };
+    });
     overlay.querySelector("#vacAddBtn").onclick = () => {
       const name = overlay.querySelector("#vacName").value.trim();
       const start = overlay.querySelector("#vacStart").value;
@@ -8515,6 +8824,34 @@ body.sortable-active * { cursor: grabbing !important; }
 
   /* ============ EINKAUFSLISTE ============ */
   let activeShoppingList = null;
+  // Verschieben/Kopieren mit Auswahlliste statt Abtippen des Listennamens
+  function openMoveCopyDialog(itemLabel, lists, onConfirm) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:400px;">
+      <div class="modal-header"><h2>Eintrag verschieben</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <p class="hint">„${escapeHtml(itemLabel)}"</p>
+      <div class="field"><label>Zielliste</label>
+        <select id="mcTarget">${lists.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")}</select>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-right">
+          <button class="btn btn-ghost" id="mcCancel">Abbrechen</button>
+          <button class="btn" id="mcCopy">Kopieren</button>
+          <button class="btn btn-accent" id="mcMove">Verschieben</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#mcCancel").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#mcCopy").onclick = () => { const t = overlay.querySelector("#mcTarget").value; close(); onConfirm(t, "copy"); };
+    overlay.querySelector("#mcMove").onclick = () => { const t = overlay.querySelector("#mcTarget").value; close(); onConfirm(t, "move"); };
+  }
+
   function renderShoppingView(container) {
     if (!state.shoppingLists || !state.shoppingLists.length) state.shoppingLists = ["Einkaufen"];
     if (!activeShoppingList || !state.shoppingLists.includes(activeShoppingList)) activeShoppingList = state.shoppingLists[0];
@@ -8677,19 +9014,16 @@ body.sortable-active * { cursor: grabbing !important; }
         row.querySelector(".s-move").onclick = () => {
           const others = state.shoppingLists.filter(n => n !== activeShoppingList);
           if (!others.length) { showToast("Es gibt nur diese eine Liste."); return; }
-          const target = prompt(`In welche Liste? (${others.join(", ")})`, others[0]);
-          if (!target) return;
-          const match = state.shoppingLists.find(n => n.toLowerCase() === target.trim().toLowerCase());
-          if (!match) { showToast("Liste nicht gefunden."); return; }
-          const copy = confirm("Eintrag kopieren?\n\nOK = kopieren (bleibt auch hier)\nAbbrechen = verschieben");
-          if (copy) {
-            state.shoppingList.push({ ...item, id: uid(), list: match, done: false, updatedAt: Date.now() });
-            showToast(`Nach „${match}" kopiert.`);
-          } else {
-            item.list = match; item.updatedAt = Date.now();
-            showToast(`Nach „${match}" verschoben.`);
-          }
-          saveState(); render();
+          openMoveCopyDialog(item.text, others, (target, mode) => {
+            if (mode === "copy") {
+              state.shoppingList.push({ ...item, id: uid(), list: target, done: false, updatedAt: Date.now() });
+              showToast(`Nach „${target}" kopiert.`);
+            } else {
+              item.list = target; item.updatedAt = Date.now();
+              showToast(`Nach „${target}" verschoben.`);
+            }
+            saveState(); render();
+          });
         };
         row.querySelector(".s-del").onclick = () => { markDeleted(item.id); state.shoppingList = state.shoppingList.filter(x => x.id !== item.id); saveState(); render(); };
         card.appendChild(row);
@@ -8873,6 +9207,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.newsPosts = (state.newsPosts || []).filter(isLive);
     state.areaChat = (state.areaChat || []).filter(isLive);
     state.gameScores = (state.gameScores || []).filter(isLive);
+    state.recipes = (state.recipes || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
     state.items = unionById(state.items, remote.items).map(it => {
@@ -8933,7 +9268,7 @@ body.sortable-active * { cursor: grabbing !important; }
       state.reportCardBonus = { ...(state.reportCardBonus || {}), ...(remote.reportCardBonus || {}) };
       state.reportCardRatesUpdatedAt = remote.reportCardRatesUpdatedAt || Date.now();
     }
-    state.poolLedger = unionById(state.poolLedger || [], remote.poolLedger);
+    state.poolLedger = mergeByIdNewest(state.poolLedger || [], remote.poolLedger);
     state.events = mergeByIdNewest(state.events, remote.events);
     state.shoppingList = mergeByIdNewest(state.shoppingList, remote.shoppingList);
     state.shoppingLists = [...new Set([...(state.shoppingLists || ["Einkaufen"]), ...(remote.shoppingLists || [])])];
@@ -8946,6 +9281,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.newsPosts = mergeByIdNewest(state.newsPosts || [], remote.newsPosts);
     state.areaChat = mergeByIdNewest(state.areaChat || [], remote.areaChat);
     state.gameScores = unionById(state.gameScores || [], remote.gameScores);
+    state.recipes = mergeByIdNewest(state.recipes || [], remote.recipes);
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
@@ -9097,7 +9433,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const todayStr = new Date().toISOString().slice(0, 10);
     const inVacation = !!getVacationForDate(todayStr);
     const ferien = getFerienStatus();
-    const inFerien = ferien && ferien.type === "current";
+    const inFerien = (ferien && ferien.type === "current") || isEffectiveHoliday(todayStr);
     const on = inVacation || !!inFerien;
     document.body.classList.toggle("holiday-mood", on);
     const wrap = document.getElementById("holidaySparkles");
@@ -9315,6 +9651,30 @@ body.sortable-active * { cursor: grabbing !important; }
       try { localStorage.setItem("dapp_echo_show_mode", on ? "1" : "0"); } catch (e) {}
       render();
     };
+
+    // --- Homescreen-Kacheln ---
+    const tileNames = ["Familien-News", "Nächste Termine", "Offen & abzustimmen", "Für dich markiert", "Hausaufgaben", "Einkaufsliste", "Meine Lampen"];
+    let hiddenNow = [];
+    try { hiddenNow = JSON.parse(localStorage.getItem("dapp_hidden_widgets") || "[]"); } catch (e) {}
+    const tilesSection = document.createElement("div");
+    tilesSection.className = "settings-section";
+    tilesSection.innerHTML = `<h3>🧩 Homescreen-Kacheln</h3>
+      <p class="hint">Bestimme, welche Kacheln auf dem Homescreen erscheinen. Die Dashboard-Kachel bleibt immer sichtbar. Gilt nur für dieses Gerät.</p>
+      <div class="push-cat-row">
+        ${tileNames.map(n => `<label><input type="checkbox" class="tile-toggle" data-tile="${escapeHtml(n)}" ${hiddenNow.includes(n) ? "" : "checked"}> ${escapeHtml(n)}</label>`).join("")}
+      </div>`;
+    container.appendChild(tilesSection);
+    tilesSection.querySelectorAll(".tile-toggle").forEach(cb => {
+      cb.addEventListener("change", () => {
+        let hidden = [];
+        try { hidden = JSON.parse(localStorage.getItem("dapp_hidden_widgets") || "[]"); } catch (e) {}
+        const name = cb.dataset.tile;
+        if (cb.checked) hidden = hidden.filter(n => n !== name);
+        else if (!hidden.includes(name)) hidden.push(name);
+        try { localStorage.setItem("dapp_hidden_widgets", JSON.stringify(hidden)); } catch (e) {}
+        showToast("Gespeichert.");
+      });
+    });
 
     // --- Philips Hue ---
     const isParentForHue = !getActiveProfile() || getActiveProfile().role === "parent";
@@ -10307,6 +10667,25 @@ body.sortable-active * { cursor: grabbing !important; }
         budgetCard.querySelector("#openBudgetBtn").onclick = () => setView("budget");
       }
 
+      {
+        const recent = state.items.filter(canSeeItemDetails).slice()
+          .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).slice(0, 8);
+        const recentSection = document.createElement("div");
+        recentSection.className = "settings-section";
+        recentSection.innerHTML = `<h3>🕘 Zuletzt bearbeitet</h3>` + (recent.length ? recent.map(it => {
+          const icon = it.type === "note" ? "📝" : it.type === "checklist" ? "☑️" : "🖼️";
+          return `<div class="widget-row" data-recent="${it.id}" data-type="${it.type}" style="cursor:pointer;">
+            <span class="wr-title">${icon} ${escapeHtml(it.title || "Ohne Titel")}</span>
+            <span class="wr-meta">${fmtDate(it.updatedAt).split(" ")[0]}</span>
+          </div>`;
+        }).join("") : `<div class="widget-empty">Noch nichts angelegt.</div>`);
+        container.appendChild(recentSection);
+        recentSection.querySelectorAll("[data-recent]").forEach(row => {
+          row.onclick = () => openEditor(row.dataset.type, row.dataset.recent);
+        });
+        makeCollapsible(recentSection, "parent-recent", false);
+      }
+
       const allKids = state.profiles.filter(p => p.role === "child");
       if (allKids.length) {
         const sizesCard = document.createElement("div");
@@ -10966,9 +11345,42 @@ body.sortable-active * { cursor: grabbing !important; }
       borderRadius: "var(--radius)", boxShadow: "var(--shadow)", padding: "6px", zIndex: 70,
       display: "flex", flexDirection: "column", minWidth: "170px"
     });
+    // Schnelleintrag in eine bestehende Checkliste — spart den Umweg über die Liste selbst
+    const existingChecklists = state.items.filter(it => it.type === "checklist" && canSeeItemDetails(it));
+    if (existingChecklists.length) {
+      const quick = document.createElement("div");
+      quick.className = "quick-add-check";
+      quick.innerHTML = `
+        <input type="text" id="qaText" placeholder="Schnell auf eine Liste …">
+        <select id="qaList">${existingChecklists.map(cl => `<option value="${cl.id}">${escapeHtml(cl.title || "Ohne Titel")}</option>`).join("")}</select>
+        <button type="button" class="btn btn-sm btn-accent" id="qaAdd">+</button>`;
+      menu.appendChild(quick);
+      const qaText = quick.querySelector("#qaText");
+      const doQuickAdd = () => {
+        const text = qaText.value.trim();
+        if (!text) return;
+        const target = state.items.find(it => it.id === quick.querySelector("#qaList").value);
+        if (!target) return;
+        target.items = target.items || [];
+        target.items.push({ id: uid(), text, done: false });
+        target.updatedAt = Date.now();
+        saveState();
+        menu.remove();
+        showToast(`„${text}" hinzugefügt.`);
+        render();
+      };
+      quick.querySelector("#qaAdd").onclick = doQuickAdd;
+      qaText.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doQuickAdd(); } });
+      qaText.addEventListener("click", (e) => e.stopPropagation());
+      const sep = document.createElement("div");
+      sep.className = "nav-divider";
+      menu.appendChild(sep);
+      setTimeout(() => qaText.focus(), 40);
+    }
+
     const options = [
       { type: "note", label: "📝 Notiz" },
-      { type: "checklist", label: "☑️ Checkliste" },
+      { type: "checklist", label: "☑️ Neue Checkliste" },
       { type: "image", label: "🖼️ Bild" },
       { type: "news", label: "📰 Familien-News" },
     ];
@@ -11153,6 +11565,28 @@ body.sortable-active * { cursor: grabbing !important; }
         messages.push({ view: "home", text: `🌿 Hohe Pollenbelastung heute: ${POLLEN_NAMES[bestForTicker.type] || bestForTicker.type}` });
       }
     }
+    // Abstimmungen und Freigaben gehören in den Ticker, sonst gehen sie unter
+    {
+      const meT = getActiveProfile();
+      let openVotes = 0;
+      Array.from({ length: 14 }, (_, i) => addDays(todayStr, i)).forEach(d => {
+        const entry = getMealEntry(d);
+        if (entry.confirmed) return;
+        entry.options.forEach(o => {
+          if (!state.activeProfileId || !(o.votes || []).includes(state.activeProfileId)) openVotes++;
+        });
+      });
+      (state.vacations || []).filter(v => v.votable && v.end >= todayStr).forEach(v => {
+        if (!state.activeProfileId || !(v.votes || []).includes(state.activeProfileId)) openVotes++;
+      });
+      if (openVotes) messages.push({ view: "mealplan", text: `🗳️ ${openVotes} offene Abstimmung${openVotes === 1 ? "" : "en"} — deine Stimme fehlt noch` });
+      if (!meT || meT.role === "parent") {
+        const approvals = state.tasks.filter(t => t.approved === false).length
+          + state.rewards.filter(r => r.approved === false).length
+          + (state.allowanceRequests || []).filter(r => r.status === "pending").length;
+        if (approvals) messages.push({ view: "tasks", text: `✅ ${approvals} Freigabe${approvals === 1 ? "" : "n"} wartet auf dich` });
+      }
+    }
     const latestNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt)[0];
     if (latestNews && Date.now() - latestNews.createdAt < 24 * 60 * 60 * 1000) {
       const author = latestNews.createdBy ? getProfile(latestNews.createdBy) : null;
@@ -11211,6 +11645,8 @@ body.sortable-active * { cursor: grabbing !important; }
   }
 
   function init() {
+    // Browser soll die Scrollposition nicht selbst wiederherstellen
+    if ("scrollRestoration" in history) { try { history.scrollRestoration = "manual"; } catch (e) {} }
     applyTheme(state.theme || "papier");
     try { if (localStorage.getItem("dapp_echo_show_mode") === "1") document.body.classList.add("echo-show-mode"); } catch (e) {}
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
@@ -11235,7 +11671,7 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     const orgaSubmenu = document.getElementById("orgaSubmenu");
     const orgaArrow = document.getElementById("orgaArrow");
-    if (orgaSubmenu && ["tasks", "mealplan", "shopping", "calendar"].includes(currentView)) {
+    if (orgaSubmenu && ["tasks", "mealplan", "shopping", "calendar", "recipes"].includes(currentView)) {
       orgaSubmenu.classList.add("open");
       orgaArrow.textContent = "▾";
     }
