@@ -1221,6 +1221,38 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
   font-family: var(--font-display);
 }
 .g2-tile.empty { background: color-mix(in srgb, var(--border) 40%, transparent); }
+
+.choir-stage {
+  display: flex; gap: 10px; width: 100%; max-width: 520px; height: 320px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--surface2)), var(--surface2));
+  border-radius: var(--radius); padding: 10px; border: 1px solid var(--border);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.choir-lane { position: relative; flex: 1; border-radius: 10px; background: color-mix(in srgb, var(--border) 22%, transparent); cursor: grab; }
+.choir-lane:active { cursor: grabbing; }
+.choir-blob {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px;
+  width: 62px; height: 62px; border-radius: 50% 50% 46% 46%;
+  box-shadow: 0 6px 16px rgba(0,0,0,.22), inset 0 -6px 12px rgba(0,0,0,.12);
+  transition: bottom .06s linear, height .12s ease;
+}
+.choir-blob.singing { height: 74px; animation: blobWobble .5s ease-in-out infinite alternate; }
+@keyframes blobWobble {
+  from { border-radius: 50% 50% 46% 46%; }
+  to   { border-radius: 46% 54% 50% 42%; }
+}
+.choir-eye {
+  position: absolute; top: 20px; left: 17px; width: 8px; height: 10px;
+  background: #2B2621; border-radius: 50%;
+}
+.choir-eye.right { left: auto; right: 17px; }
+.choir-mouth {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  width: 14px; height: 8px; background: #2B2621; border-radius: 0 0 12px 12px;
+  transition: height .12s ease, width .12s ease;
+}
+.choir-blob.singing .choir-mouth { height: 18px; width: 20px; border-radius: 50%; }
+.choir-controls { display: flex; gap: 8px; margin-top: 12px; }
 .retro-touch-pad button[data-dir="up"], .retro-touch-pad button[data-dir="down"] { width: auto; padding: 0 18px; font-size: 15px; }
 .retro-memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 460px; }
 .retro-memory-card {
@@ -1559,8 +1591,10 @@ body.menu-open { overflow: hidden; }
 .quick-check-row { display: flex; gap: 6px; align-items: center; }
 .quick-check-row input[type=text] { flex: 2; min-width: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 13px; }
 .quick-check-row select { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 12.5px; }
-.checklist-row .sub { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 0 6px; }
-.checklist-row .sub:hover { color: var(--accent); }
+.checklist-row .sub, .checklist-row .indent, .checklist-row .outdent {
+  background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 0 5px;
+}
+.checklist-row .sub:hover, .checklist-row .indent:hover, .checklist-row .outdent:hover { color: var(--accent); }
 .drag-handle {
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; min-width: 22px; height: 26px; margin-right: 6px;
@@ -1763,18 +1797,23 @@ body.sortable-active * { cursor: grabbing !important; }
       <button class="nav-item" data-view="checklists">
         <span class="nav-icon">☑️</span><span class="nav-label">Checklisten</span>
       </button>
-      <button class="nav-item" data-view="tasks">
-        <span class="nav-icon">⭐</span><span class="nav-label">Aufgaben &amp; Belohnungen</span>
+      <button class="nav-item" id="orgaToggle" type="button">
+        <span class="nav-icon">🗂️</span><span class="nav-label">Orga</span><span class="nav-submenu-arrow" id="orgaArrow">▸</span>
       </button>
-      <button class="nav-item" data-view="mealplan">
-        <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
-      </button>
-      <button class="nav-item" data-view="shopping">
-        <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
-      </button>
-      <button class="nav-item" data-view="calendar">
-        <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
-      </button>
+      <div class="nav-submenu" id="orgaSubmenu">
+        <button class="nav-item nav-subitem" data-view="tasks">
+          <span class="nav-icon">⭐</span><span class="nav-label">Aufgaben &amp; Belohnungen</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="mealplan">
+          <span class="nav-icon">🍽️</span><span class="nav-label">Essensplan</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="shopping">
+          <span class="nav-icon">🛒</span><span class="nav-label">Einkaufsliste</span>
+        </button>
+        <button class="nav-item nav-subitem" data-view="calendar">
+          <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
+        </button>
+      </div>
       <button class="nav-item" id="schoolToggle" type="button">
         <span class="nav-icon">🎒</span><span class="nav-label">Schule</span><span class="nav-submenu-arrow" id="schoolArrow">▸</span>
       </button>
@@ -1865,7 +1904,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 106;
+  const APP_BUILD_NUMBER = 107;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2364,6 +2403,12 @@ body.sortable-active * { cursor: grabbing !important; }
       toolsSubmenuEl.classList.add("open");
       const arrowEl = document.getElementById("toolsArrow");
       if (arrowEl) arrowEl.textContent = "▾";
+    }
+    const orgaSubmenuEl = document.getElementById("orgaSubmenu");
+    if (orgaSubmenuEl && ["tasks", "mealplan", "shopping", "calendar"].includes(view)) {
+      orgaSubmenuEl.classList.add("open");
+      const oArrow = document.getElementById("orgaArrow");
+      if (oArrow) oArrow.textContent = "▾";
     }
     const schoolSubmenuEl = document.getElementById("schoolSubmenu");
     if (schoolSubmenuEl && ["homework", "grades", "learnai"].includes(view)) {
@@ -3044,7 +3089,19 @@ body.sortable-active * { cursor: grabbing !important; }
       cb.onclick = (e) => e.stopPropagation();
       cb.onchange = (e) => {
         const row = it.items.find(r => r.id === cb.dataset.itemId);
-        if (row) { row.done = cb.checked; it.updatedAt = Date.now(); saveState(); }
+        if (row) {
+          row.done = cb.checked;
+          // Unterpunkte mitziehen, danach Oberpunkte nachführen
+          const idx = it.items.indexOf(row);
+          const lvl = row.level || 0;
+          for (let j = idx + 1; j < it.items.length; j++) {
+            if ((it.items[j].level || 0) <= lvl) break;
+            it.items[j].done = cb.checked;
+          }
+          syncChecklistParents(it.items);
+          it.updatedAt = Date.now();
+          saveState();
+        }
         render();
       };
     });
@@ -3393,6 +3450,8 @@ body.sortable-active * { cursor: grabbing !important; }
           <button type="button" class="del" title="Entfernen">✕</button>` : `
           <input type="checkbox" ${row.done ? "checked" : ""}>
           <input type="text" value="${escapeHtml(row.text)}" placeholder="Aufgabe...">
+          <button type="button" class="outdent" title="Ausrücken">⇤</button>
+          <button type="button" class="indent" title="Einrücken">⇥</button>
           <button type="button" class="sub" title="Unterpunkt hinzufügen">↳</button>
           <button type="button" class="del" title="Entfernen">✕</button>`;
         // Unterpunkte werden eingerückt dargestellt
@@ -3416,7 +3475,20 @@ body.sortable-active * { cursor: grabbing !important; }
           rec.onchange = () => { row.recurring = rec.value; };
           del.onclick = () => { draft.items = draft.items.filter(x => x !== row); renderChecklistRows(); };
         } else {
-          const [cb, txt, subBtn, del] = r.children;
+          const [cb, txt, outdentBtn, indentBtn, subBtn, del] = r.children;
+          outdentBtn.onclick = () => {
+            row.level = Math.max(0, (row.level || 0) - 1);
+            syncChecklistParents(draft.items);
+            renderChecklistRows();
+          };
+          indentBtn.onclick = () => {
+            const idx = draft.items.indexOf(row);
+            // Nur einrücken, wenn es darüber einen passenden Oberpunkt gibt
+            const prevLevel = idx > 0 ? (draft.items[idx - 1].level || 0) : -1;
+            row.level = Math.min(3, Math.min((row.level || 0) + 1, prevLevel + 1));
+            syncChecklistParents(draft.items);
+            renderChecklistRows();
+          };
           subBtn.onclick = () => {
             const idx = draft.items.indexOf(row);
             draft.items.splice(idx + 1, 0, { id: uid(), text: "", done: false, level: Math.min(3, (row.level || 0) + 1) });
@@ -3432,6 +3504,13 @@ body.sortable-active * { cursor: grabbing !important; }
         const reordered = order.map(id => draft.items.find(x => x.id === id)).filter(Boolean);
         const rest = draft.items.filter(x => !order.includes(x.id));
         draft.items = [...reordered, ...rest];
+        // Nach dem Verschieben darf kein Punkt tiefer stehen als eine Ebene unter seinem Vorgänger
+        draft.items.forEach((it, i) => {
+          const prevLevel = i > 0 ? (draft.items[i - 1].level || 0) : -1;
+          it.level = Math.min(it.level || 0, prevLevel + 1);
+        });
+        syncChecklistParents(draft.items);
+        renderChecklistRows();
       });
     }
     if (type === "checklist") {
@@ -5535,7 +5614,7 @@ body.sortable-active * { cursor: grabbing !important; }
         <button id="calModeWeek" class="${calendarViewMode === "week" ? "active" : ""}">Woche</button>
       </div>
       <button class="btn btn-sm" id="calMeal">🍽️ Essensplan</button>
-      <button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>
+      ${(!getActiveProfile() || getActiveProfile().role === "parent") ? `<button class="btn btn-sm" id="calCustody">🔁 Betreuung</button>` : ""}
       <button class="btn btn-sm" id="calVacation">🏝️ Urlaub</button>
       <button class="btn btn-sm" id="calImport" title="Termine aus anderer Quelle hinzufügen (JSON oder ICS)">⊕ Termine importieren</button>
       <input type="file" id="calImportFile" accept=".json,.ics" style="display:none">
@@ -5681,7 +5760,8 @@ body.sortable-active * { cursor: grabbing !important; }
 
     toolbar.querySelector("#calToday").onclick = () => { calendarCursorStr = new Date().toISOString().slice(0, 10); render(); };
     toolbar.querySelector("#calAdd").onclick = () => openEventEditor(null, todayStr);
-    toolbar.querySelector("#calCustody").onclick = () => openCustodyManager();
+    const custodyBtn = toolbar.querySelector("#calCustody");
+    if (custodyBtn) custodyBtn.onclick = () => openCustodyManager();
     toolbar.querySelector("#calVacation").onclick = () => openVacationManager();
     toolbar.querySelector("#calMeal").onclick = () => setView("mealplan");
     toolbar.querySelector("#calModeMonth").onclick = () => { calendarViewMode = "month"; render(); };
@@ -6095,6 +6175,7 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "catcher", icon: "🧺", name: "Sternenfänger" },
     { id: "reaction", icon: "⚡", name: "Reaktionstest" },
     { id: "2048", icon: "🔢", name: "2048" },
+    { id: "choir", icon: "🎵", name: "Singende Blobs" },
   ];
 
   /* ---- Bestenliste ---- */
@@ -6166,6 +6247,7 @@ body.sortable-active * { cursor: grabbing !important; }
     else if (activeRetroGame === "catcher") renderCatcherGame(container);
     else if (activeRetroGame === "reaction") renderReactionGame(container);
     else if (activeRetroGame === "2048") render2048Game(container);
+    else if (activeRetroGame === "choir") renderChoirToy(container);
   }
 
   function renderSnakeGame(container) {
@@ -6178,17 +6260,18 @@ body.sortable-active * { cursor: grabbing !important; }
         <button data-dir="up">▲</button>
         <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
       </div>
-      <p class="hint" style="margin-top:8px;">Pfeiltasten oder die Knöpfe unten. Apfel essen, nicht in sich selbst oder die Wand fahren.</p>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten oder die Knöpfe unten. Apfel essen — durch die Wände geht's auf der anderen Seite weiter. Nur nicht in dich selbst fahren!</p>
     `;
     container.appendChild(wrap);
 
     const canvas = wrap.querySelector("#snakeCanvas");
     const ctx = canvas.getContext("2d");
-    const cell = 18, cols = canvas.width / cell, rows = canvas.height / cell;
-    let snake = [{ x: 8, y: 8 }];
+    const cell = 24, cols = Math.floor(canvas.width / cell), rows = Math.floor(canvas.height / cell);
+    let speed = 260; // gemütlicher Start für Kinder, wird mit jedem Apfel etwas schneller
+    let snake = [{ x: 4, y: 4 }];
     let dir = { x: 1, y: 0 };
     let nextDir = { x: 1, y: 0 };
-    let food = { x: 12, y: 8 };
+    let food = { x: 8, y: 4 };
     let score = 0;
     let gameOver = false;
 
@@ -6216,7 +6299,13 @@ body.sortable-active * { cursor: grabbing !important; }
       if (gameOver) return;
       dir = nextDir;
       const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-      if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
+      // Wände sind durchlässig: man kommt auf der anderen Seite wieder heraus,
+      // statt sofort zu verlieren — deutlich freundlicher für jüngere Kinder.
+      if (head.x < 0) head.x = cols - 1;
+      if (head.y < 0) head.y = rows - 1;
+      if (head.x >= cols) head.x = 0;
+      if (head.y >= rows) head.y = 0;
+      if (snake.some(s => s.x === head.x && s.y === head.y)) {
         gameOver = true; submitScore("snake", score); paint(); render(); return;
       }
       snake.unshift(head);
@@ -6224,6 +6313,12 @@ body.sortable-active * { cursor: grabbing !important; }
         score += 10;
         wrap.querySelector("#snakeScore").textContent = score;
         placeFood();
+        // Schrittweise schneller, aber nie hektisch
+        if (speed > 120) {
+          speed -= 6;
+          clearInterval(retroGameHandle);
+          retroGameHandle = setInterval(tick, speed);
+        }
       } else {
         snake.pop();
       }
@@ -6248,16 +6343,19 @@ body.sortable-active * { cursor: grabbing !important; }
     });
     canvas.onclick = () => {
       if (!gameOver) return;
-      snake = [{ x: 8, y: 8 }]; dir = { x: 1, y: 0 }; nextDir = { x: 1, y: 0 };
+      snake = [{ x: 4, y: 4 }]; dir = { x: 1, y: 0 }; nextDir = { x: 1, y: 0 };
       score = 0; wrap.querySelector("#snakeScore").textContent = "0";
       gameOver = false; placeFood(); paint();
+      speed = 260;
+      clearInterval(retroGameHandle);
+      retroGameHandle = setInterval(tick, speed);
     };
     const cleanup = () => document.removeEventListener("keydown", keyHandler);
     const observer = new MutationObserver(() => { if (!document.body.contains(canvas)) { cleanup(); observer.disconnect(); } });
     observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
 
     paint();
-    retroGameHandle = setInterval(tick, 130);
+    retroGameHandle = setInterval(tick, speed);
     renderHighscoreList(container, "snake", false, "");
   }
 
@@ -6320,6 +6418,115 @@ body.sortable-active * { cursor: grabbing !important; }
     paint();
     retroGameHandle = setInterval(tick, 20);
     renderHighscoreList(container, "pong", false, "");
+  }
+
+  // Kleines Gesangs-Spielzeug: vier Blobs, die zusammen einen Akkord singen.
+  // Höhe = Tonhöhe, Antippen/Ziehen steuert sie. Eigene Umsetzung, kein fremdes Vorbild.
+  function renderChoirToy(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Zieh die Blobs hoch und runter — sie singen mit!</div>
+      <div class="choir-stage" id="choirStage">
+        ${["#E88AA6", "#7EC9E0", "#8FD18A", "#EBC46A"].map((col, i) =>
+          `<div class="choir-lane" data-blob="${i}">
+             <div class="choir-blob" style="background:${col};">
+               <span class="choir-eye"></span><span class="choir-eye right"></span>
+               <span class="choir-mouth"></span>
+             </div>
+           </div>`).join("")}
+      </div>
+      <div class="choir-controls">
+        <button type="button" class="btn btn-sm" id="choirAll">🎶 Alle singen</button>
+        <button type="button" class="btn btn-sm" id="choirStop">⏹ Stopp</button>
+      </div>
+      <p class="hint" style="margin-top:8px;">Halte einen Blob gedrückt und bewege ihn nach oben oder unten. Mehrere gleichzeitig ergeben einen Akkord.</p>`;
+    container.appendChild(wrap);
+
+    let audioCtx = null;
+    const voices = [null, null, null, null];
+    // Pentatonik: klingt in jeder Kombination angenehm, egal was die Kinder treffen
+    const scale = [196.00, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88, 587.33];
+    function ensureCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+    function startVoice(i, freq) {
+      const ctx = ensureCtx();
+      stopVoice(i);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const vibrato = ctx.createOscillator();
+      const vibratoGain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      // leichtes Vibrato macht den Ton lebendig statt piepsig
+      vibrato.frequency.value = 5.2;
+      vibratoGain.gain.value = 3.4;
+      vibrato.connect(vibratoGain); vibratoGain.connect(osc.frequency);
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.13, ctx.currentTime + 0.08);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); vibrato.start();
+      voices[i] = { osc, gain, vibrato };
+    }
+    function setVoiceFreq(i, freq) {
+      if (!voices[i]) return;
+      voices[i].osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.05);
+    }
+    function stopVoice(i) {
+      const v = voices[i];
+      if (!v) return;
+      try {
+        v.gain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.06);
+        v.osc.stop(audioCtx.currentTime + 0.3);
+        v.vibrato.stop(audioCtx.currentTime + 0.3);
+      } catch (e) { /* Ton lief evtl. schon aus */ }
+      voices[i] = null;
+    }
+    function stopAll() { voices.forEach((_, i) => stopVoice(i)); wrap.querySelectorAll(".choir-blob").forEach(b => b.classList.remove("singing")); }
+
+    wrap.querySelectorAll(".choir-lane").forEach((lane, i) => {
+      const blob = lane.querySelector(".choir-blob");
+      function updateFromY(clientY) {
+        const rect = lane.getBoundingClientRect();
+        const rel = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
+        const step = Math.round(rel * (scale.length - 1));
+        blob.style.bottom = `${8 + rel * (rect.height - 74)}px`;
+        return scale[step];
+      }
+      lane.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        lane.setPointerCapture(e.pointerId);
+        startVoice(i, updateFromY(e.clientY));
+        blob.classList.add("singing");
+      });
+      lane.addEventListener("pointermove", (e) => {
+        if (!voices[i]) return;
+        setVoiceFreq(i, updateFromY(e.clientY));
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        lane.addEventListener(ev, () => { stopVoice(i); blob.classList.remove("singing"); }));
+    });
+
+    wrap.querySelector("#choirAll").onclick = () => {
+      const chord = [196.00, 246.94, 293.66, 392.00];
+      chord.forEach((f, i) => {
+        startVoice(i, f);
+        const lane = wrap.querySelectorAll(".choir-lane")[i];
+        const blob = lane.querySelector(".choir-blob");
+        blob.classList.add("singing");
+        blob.style.bottom = `${20 + i * 26}px`;
+      });
+      setTimeout(stopAll, 2600);
+    };
+    wrap.querySelector("#choirStop").onclick = stopAll;
+
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(wrap)) { stopAll(); observer.disconnect(); }
+    });
+    observer.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
   }
 
   function renderBreakoutGame(container) {
@@ -8130,6 +8337,9 @@ body.sortable-active * { cursor: grabbing !important; }
   }
 
   function openCustodyManager() {
+    // Betreuungspläne sind Elternsache — Kinderprofile bekommen hier keinen Zugriff.
+    const me = getActiveProfile();
+    if (me && me.role !== "parent") { showToast("Betreuungspläne können nur Eltern bearbeiten."); return; }
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     function renderList() {
@@ -8908,11 +9118,36 @@ body.sortable-active * { cursor: grabbing !important; }
   let collapsedSections = new Set();
   // Generisches Verschieben von Listeneinträgen: langes Drücken (Touch) bzw. Ziehen mit
   // gedrückter Maustaste hebt den Eintrag an, danach lässt er sich an eine neue Stelle ziehen.
+  // Ein Oberpunkt gilt als erledigt, sobald alle seine Unterpunkte erledigt sind.
+  function syncChecklistParents(items) {
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const lvl = items[i].level || 0;
+      const children = [];
+      for (let j = i + 1; j < items.length; j++) {
+        const childLvl = items[j].level || 0;
+        if (childLvl <= lvl) break;
+        if (childLvl === lvl + 1) children.push(items[j]);
+      }
+      if (children.length) items[i].done = children.every(ch => ch.done);
+    }
+  }
+
   function makeListSortable(containerEl, itemSelector, onReorder) {
     let dragEl = null, pressTimer = null, startY = 0, isDragging = false;
     const LONG_PRESS_MS = 320;
 
     function itemsOf() { return Array.from(containerEl.querySelectorAll(itemSelector)); }
+    // ":scope > x" funktioniert bei closest() nicht — für die Treffersuche brauchen wir
+    // den Selektor ohne diesen Zusatz und prüfen die direkte Kindschaft separat.
+    const closestSelector = itemSelector.replace(/^:scope\s*>\s*/, "");
+    const directChildOnly = itemSelector.startsWith(":scope");
+    function itemFromEvent(target) {
+      const el = target.closest(closestSelector);
+      if (!el || !containerEl.contains(el)) return null;
+      if (directChildOnly && el.parentElement !== containerEl) return null;
+      return el;
+    }
 
     function beginDrag(el) {
       isDragging = true;
@@ -8968,16 +9203,17 @@ body.sortable-active * { cursor: grabbing !important; }
     ensureHandles();
 
     containerEl.addEventListener("pointerdown", (e) => {
-      // Bedienelemente (Knöpfe, Eingaben) nicht als Ziehen missverstehen.
-      if (e.target.closest("button, input, select, textarea, a")) return;
-      const el = e.target.closest(itemSelector);
-      if (!el || !containerEl.contains(el)) return;
+      // Griff hat Vorrang — auch wenn der Eintrag selbst ein Knopf ist (z. B. Menüpunkte).
       const onHandle = !!e.target.closest(".drag-handle");
+      const el = itemFromEvent(e.target);
+      if (!el) return;
       if (onHandle) {
         e.preventDefault();
         beginDrag(el);
         return;
       }
+      // Sonstige Bedienelemente (Knöpfe, Eingaben) nicht als Ziehen missverstehen.
+      if (e.target.closest("button, input, select, textarea, a")) return;
       startY = e.clientY;
       // Textauswahl schon beim Gedrückthalten unterbinden — sonst markiert der Browser
       // beim Ziehen den Text unter dem Finger, was das Verschieben unangenehm macht.
@@ -10997,6 +11233,17 @@ body.sortable-active * { cursor: grabbing !important; }
       toolsSubmenu.classList.add("open");
       toolsArrow.textContent = "▾";
     }
+    const orgaSubmenu = document.getElementById("orgaSubmenu");
+    const orgaArrow = document.getElementById("orgaArrow");
+    if (orgaSubmenu && ["tasks", "mealplan", "shopping", "calendar"].includes(currentView)) {
+      orgaSubmenu.classList.add("open");
+      orgaArrow.textContent = "▾";
+    }
+    const orgaToggleBtn = document.getElementById("orgaToggle");
+    if (orgaToggleBtn) orgaToggleBtn.onclick = () => {
+      const open = orgaSubmenu.classList.toggle("open");
+      orgaArrow.textContent = open ? "▾" : "▸";
+    };
     const schoolSubmenu = document.getElementById("schoolSubmenu");
     const schoolArrow = document.getElementById("schoolArrow");
     if (schoolSubmenu && ["homework", "grades", "learnai"].includes(currentView)) {
@@ -11025,11 +11272,18 @@ body.sortable-active * { cursor: grabbing !important; }
           navEl.appendChild(el);
           // Untermenü direkt hinter seinem Kopf halten
           const sub = el.id === "toolsToggle" ? document.getElementById("toolsSubmenu")
-            : el.id === "schoolToggle" ? document.getElementById("schoolSubmenu") : null;
+            : el.id === "schoolToggle" ? document.getElementById("schoolSubmenu")
+            : el.id === "orgaToggle" ? document.getElementById("orgaSubmenu") : null;
           if (sub) navEl.appendChild(sub);
         });
       }
       makeListSortable(navEl, ":scope > .nav-item[data-sort-id]", (order) => {
+        // Untermenüs direkt hinter ihren Kopf nachziehen, damit sie nicht verwaisen
+        [["toolsToggle", "toolsSubmenu"], ["schoolToggle", "schoolSubmenu"], ["orgaToggle", "orgaSubmenu"]]
+          .forEach(([headId, subId]) => {
+            const head = document.getElementById(headId), sub = document.getElementById(subId);
+            if (head && sub && head.nextElementSibling !== sub) head.after(sub);
+          });
         try { localStorage.setItem("dapp_nav_order", JSON.stringify(order)); } catch (e) {}
         showToast("Menü-Reihenfolge gespeichert.");
       });
