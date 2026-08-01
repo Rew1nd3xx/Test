@@ -1628,7 +1628,8 @@ body.menu-open { overflow: hidden; }
 }
 .drag-handle:hover { opacity: 1; background: var(--surface2); }
 .drag-handle:active { cursor: grabbing; }
-.widget-card > .drag-handle { position: absolute; top: 10px; right: 12px; margin: 0; z-index: 3; }
+.widget-card > .drag-handle { position: absolute; top: 10px; left: 10px; right: auto; margin: 0; z-index: 3; }
+.widget-card > .drag-handle ~ .widget-head { padding-left: 26px; }
 .sortable-dragging {
   opacity: .85; transform: scale(1.02); box-shadow: 0 10px 26px rgba(0,0,0,.28) !important;
   position: relative; z-index: 20; cursor: grabbing;
@@ -1840,6 +1841,9 @@ body.sortable-active * { cursor: grabbing !important; }
         <button class="nav-item nav-subitem" data-view="calendar">
           <span class="nav-icon">📅</span><span class="nav-label">Familienkalender</span>
         </button>
+        <button class="nav-item nav-subitem" data-view="fitness">
+          <span class="nav-icon">💪</span><span class="nav-label">Fitnessplan</span>
+        </button>
       </div>
       <button class="nav-item" id="schoolToggle" type="button">
         <span class="nav-icon">🎒</span><span class="nav-label">Schule</span><span class="nav-submenu-arrow" id="schoolArrow">▸</span>
@@ -1931,7 +1935,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 108;
+  const APP_BUILD_NUMBER = 109;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -1986,6 +1990,8 @@ body.sortable-active * { cursor: grabbing !important; }
       areaChat: [],
       gameScores: [],
       recipes: [],
+      health: {}, healthEnabled: false,
+      fitness: {},
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
@@ -2067,7 +2073,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
-  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "homework", "learnai", "recipes", "admin", "settings"];
+  const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "homework", "learnai", "recipes", "fitness", "admin", "settings"];
   let currentView = (() => {
     try {
       const saved = localStorage.getItem(LAST_VIEW_KEY);
@@ -2266,6 +2272,50 @@ body.sortable-active * { cursor: grabbing !important; }
     setTimeout(() => overlay.querySelector("#switchPw").focus(), 30);
   }
 
+  function openHealthEditor(profileId) {
+    const p = getProfile(profileId);
+    if (!p) return;
+    const h = { ...(((state.health || {})[profileId]) || {}) };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:480px;">
+      <div class="modal-header"><h2>💊 ${escapeHtml(p.name)}</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <p class="hint">Diese Angaben sind nur im Elternbereich sichtbar und bearbeitbar.</p>
+      <div class="field"><label>Medikamente / Einnahmeplan</label>
+        <textarea id="hMeds" rows="2" placeholder="z. B. Asthmaspray morgens">${escapeHtml(h.meds || "")}</textarea></div>
+      <div class="field"><label>Allergien &amp; Unverträglichkeiten</label>
+        <textarea id="hAllergies" rows="2" placeholder="z. B. Nussallergie, Laktose">${escapeHtml(h.allergies || "")}</textarea></div>
+      <div class="field"><label>Isst gern</label>
+        <textarea id="hLikes" rows="2" placeholder="z. B. Nudeln, Pfannkuchen">${escapeHtml(h.likes || "")}</textarea></div>
+      <div class="field"><label>Mag gar nicht</label>
+        <textarea id="hDislikes" rows="2" placeholder="z. B. Rosenkohl">${escapeHtml(h.dislikes || "")}</textarea></div>
+      <div class="field"><label>Aktueller Trend / Lieblingssachen</label>
+        <textarea id="hTrends" rows="2" placeholder="z. B. gerade großer Dino-Fan">${escapeHtml(h.trends || "")}</textarea></div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="hCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="hSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#hCancel").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#hSave").onclick = () => {
+      state.health = state.health || {};
+      state.health[profileId] = {
+        meds: overlay.querySelector("#hMeds").value.trim(),
+        allergies: overlay.querySelector("#hAllergies").value.trim(),
+        likes: overlay.querySelector("#hLikes").value.trim(),
+        dislikes: overlay.querySelector("#hDislikes").value.trim(),
+        trends: overlay.querySelector("#hTrends").value.trim(),
+        updatedAt: Date.now()
+      };
+      saveState(); close(); render();
+      showToast("Gespeichert.");
+    };
+  }
+
   function openProfileEditor(id) {
     const existing = id ? getProfile(id) : null;
     const isParentForReset = !getActiveProfile() || getActiveProfile().role === "parent";
@@ -2438,7 +2488,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (arrowEl) arrowEl.textContent = "▾";
     }
     const orgaSubmenuEl = document.getElementById("orgaSubmenu");
-    if (orgaSubmenuEl && ["tasks", "mealplan", "shopping", "calendar", "recipes"].includes(view)) {
+    if (orgaSubmenuEl && ["tasks", "mealplan", "shopping", "calendar", "recipes", "fitness"].includes(view)) {
       orgaSubmenuEl.classList.add("open");
       const oArrow = document.getElementById("orgaArrow");
       if (oArrow) oArrow.textContent = "▾";
@@ -2493,6 +2543,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (currentView === "homework") return renderHomeworkView(c);
     if (currentView === "learnai") return renderLearnAiView(c);
     if (currentView === "recipes") return renderRecipesView(c);
+    if (currentView === "fitness") return renderFitnessView(c);
     if (currentView === "settings") return renderSettingsView(c);
     if (currentView === "admin") return renderAdminView(c);
   }
@@ -2772,6 +2823,8 @@ body.sortable-active * { cursor: grabbing !important; }
                     ? `🏖️ ${ferienStatus.days === 0 ? "Heute ist der letzte Ferientag" : "Morgen geht die Schule wieder los"}`
                     : `🏖️ Ferien! Noch ${ferienStatus.days} Tage bis Schulbeginn (${escapeHtml(ferienStatus.name)})`)
                 : (() => {
+                    // Liegt heute schon im Brücken-Wochenende, sind faktisch Ferien
+                    if (isEffectiveHoliday(todayStr)) return `🏖️ Ferienwochenende — die Schule ist schon vorbei!`;
                     const sd = countSchoolDays(todayStr, ferienStatus.lastSchoolDay);
                     if (sd === 0) return `🏖️ Heute ist der letzte Schultag`;
                     return `🏖️ Noch ${sd} Schultag${sd === 1 ? "" : "e"} bis ${escapeHtml(ferienStatus.name)}. Letzter Schultag ${formatDateWithWeekday(ferienStatus.lastSchoolDay)}`;
@@ -2814,6 +2867,24 @@ body.sortable-active * { cursor: grabbing !important; }
         <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">⭐ ${openTasksCount ? `${openTasksCount} offene Aufgabe${openTasksCount === 1 ? "" : "n"}` : "Keine offenen Aufgaben 🎉"}${pointsPills ? `<span class="points-pill-row">${pointsPills}</span>` : ""}</span>
         <span class="widget-link" data-goto="tasks" style="cursor:pointer;white-space:nowrap;">Aufgaben ›</span>
       </div>`;
+      const openHw = state.tasks.filter(t => t.category === "homework" && !t.done && t.approved !== false);
+      const hwToday = openHw.filter(t => !t.dueDate || t.dueDate <= todayStr);
+      const hwPart = `<div class="today-sub-stat" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span>📚 ${openHw.length
+          ? `${hwToday.length ? `${hwToday.length} Hausi heute` : `${openHw.length} Hausi offen`}${openHw.length > hwToday.length && hwToday.length ? ` · ${openHw.length - hwToday.length} später` : ""}`
+          : "Heute keine Hausi 🎉"}</span>
+        <span class="widget-link" data-goto="homework" style="cursor:pointer;white-space:nowrap;">Hausi ›</span>
+      </div>`;
+      const medsPart = (() => {
+        if (!state.healthEnabled) return "";
+        const meds = [];
+        state.profiles.forEach(p => {
+          ((state.health || {})[p.id] || {}).meds && ((state.health[p.id].meds || "").trim()) &&
+            meds.push(`${p.emoji || p.name.charAt(0)} ${escapeHtml(p.name)}: ${escapeHtml(state.health[p.id].meds)}`);
+        });
+        if (!meds.length) return "";
+        return `<div class="today-sub-stat dash-clickable" data-goto="admin">💊 ${meds.join(" · ")}</div>`;
+      })();
       const auroraPart = `<div class="today-sub-stat dash-clickable" data-goto="settings" id="auroraWidgetBody">Lade Nordlicht-Vorschau …</div>`;
       const warnPart = state.federalState
         ? `<div class="today-sub-stat dash-clickable" data-goto="settings" id="warnBadgeBody">Lade Wetterwarnungen …</div>`
@@ -2826,7 +2897,7 @@ body.sortable-active * { cursor: grabbing !important; }
       try { clockSide = localStorage.getItem("dapp_clock_side") || "left"; } catch (e) {}
       dashCard.className = "widget-card dashboard-card" + (clockSide === "right" ? " clock-right" : "");
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + tasksPart + auroraPart + warnPart + pollenPart;
+      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + tasksPart + hwPart + medsPart + auroraPart + warnPart + pollenPart;
       dashCard.innerHTML = `
         <button type="button" class="clock-side-toggle" id="clockSideToggle" title="Uhr links/rechts">⇄ Uhr ${clockSide === "left" ? "rechts" : "links"}</button>
         <div class="dash-clock" id="dashClock"></div>
@@ -7240,7 +7311,7 @@ body.sortable-active * { cursor: grabbing !important; }
   }
   function createSavingsPool(name, emoji, goalAmount) {
     const pool = {
-      id: uid(), name, emoji: emoji || "🎯", goalAmount: goalAmount || 0, ownerId: null,
+      id: uid(), name, emoji: emoji || "🎯", goalAmount: goalAmount || 0, ownerId: null, scope: "family",
       createdBy: state.activeProfileId || null, createdAt: Date.now(), updatedAt: Date.now()
     };
     state.savingsPools.push(pool);
@@ -7523,6 +7594,102 @@ body.sortable-active * { cursor: grabbing !important; }
       grid.appendChild(card);
     });
     container.appendChild(grid);
+  }
+
+  function renderFitnessView(container) {
+    const me = getActiveProfile();
+    const isParent = !me || me.role === "parent";
+    const header = document.createElement("div");
+    header.className = "view-header";
+    header.innerHTML = `<div><h1 class="view-title">💪 Fitnessplan</h1><p class="view-sub">Körperdaten und Ziele — später mit KI-Unterstützung.</p></div>`;
+    container.appendChild(header);
+
+    const info = document.createElement("div");
+    info.className = "calendar-card";
+    info.style.marginBottom = "18px";
+    info.innerHTML = `
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:26px;">🤖</span>
+        <div style="font-size:13px;line-height:1.55;color:var(--text-muted);">
+          Hier sollen später passende Trainingspläne entstehen. Die Angaben unten sind die Grundlage dafür.
+          <strong style="color:var(--text);">Bei Kindern legen ausschließlich Eltern die Werte und Ziele fest</strong> —
+          Trainingsempfehlungen für Heranwachsende gehören in erwachsene Hände.
+        </div>
+      </div>`;
+    container.appendChild(info);
+
+    // Kinder sehen nur sich selbst, Eltern sehen und bearbeiten alle
+    const people = isParent ? state.profiles : state.profiles.filter(p => p.id === (me && me.id));
+    people.forEach(p => {
+      const f = (state.fitness || {})[p.id] || {};
+      const editable = isParent || p.role !== "child";
+      const card = document.createElement("div");
+      card.className = "calendar-card";
+      card.style.marginBottom = "14px";
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <span class="mini-avatar" style="background:${p.color};width:36px;height:36px;font-size:16px;">${p.emoji || p.name.charAt(0)}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700;">${escapeHtml(p.name)}${p.role === "child" ? ` <span class="tag-chip">nur von Eltern änderbar</span>` : ""}</div>
+            <div style="font-size:12.5px;color:var(--text-muted);">
+              ${[f.height && `${escapeHtml(f.height)} cm`, f.weight && `${escapeHtml(f.weight)} kg`, f.goal && `Ziel: ${escapeHtml(f.goal)}`].filter(Boolean).join(" · ") || "Noch nichts hinterlegt"}
+            </div>
+          </div>
+          ${editable ? `<button class="card-pin" data-fit="${p.id}" title="Bearbeiten">✏️</button>` : ""}
+        </div>
+        ${f.notes ? `<div class="today-sub-stat">${escapeHtml(f.notes)}</div>` : ""}`;
+      container.appendChild(card);
+      const btn = card.querySelector(`[data-fit="${p.id}"]`);
+      if (btn) btn.onclick = () => openFitnessEditor(p.id);
+    });
+  }
+
+  function openFitnessEditor(profileId) {
+    const p = getProfile(profileId);
+    if (!p) return;
+    const me = getActiveProfile();
+    if (p.role === "child" && me && me.role !== "parent") {
+      showToast("Fitnessdaten von Kindern können nur Eltern bearbeiten.");
+      return;
+    }
+    const f = { ...(((state.fitness || {})[profileId]) || {}) };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:440px;">
+      <div class="modal-header"><h2>💪 ${escapeHtml(p.name)}</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <div class="size-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field"><label>Größe (cm)</label><input type="text" id="fHeight" value="${escapeHtml(f.height || "")}" inputmode="numeric"></div>
+        <div class="field"><label>Gewicht (kg)</label><input type="text" id="fWeight" value="${escapeHtml(f.weight || "")}" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label>Ziel / Richtung</label>
+        <select id="fGoal">
+          ${["", "Ausdauer", "Kraft", "Beweglichkeit", "Allgemein fit bleiben", "Reha / vorsichtig"].map(g =>
+            `<option value="${g}" ${f.goal === g ? "selected" : ""}>${g || "– kein Ziel –"}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field"><label>Notizen (z. B. Einschränkungen)</label><textarea id="fNotes" rows="3">${escapeHtml(f.notes || "")}</textarea></div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="fCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="fSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#fCancel").onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    overlay.querySelector("#fSave").onclick = () => {
+      state.fitness = state.fitness || {};
+      state.fitness[profileId] = {
+        height: overlay.querySelector("#fHeight").value.trim(),
+        weight: overlay.querySelector("#fWeight").value.trim(),
+        goal: overlay.querySelector("#fGoal").value,
+        notes: overlay.querySelector("#fNotes").value.trim(),
+        updatedAt: Date.now()
+      };
+      saveState(); close(); render();
+      showToast("Gespeichert.");
+    };
   }
 
   function renderRecipesView(container) {
@@ -7896,6 +8063,36 @@ body.sortable-active * { cursor: grabbing !important; }
     setTimeout(() => { feed.scrollTop = feed.scrollHeight; }, 30);
   }
 
+  // Sichtbarkeit eines Pools festlegen — als Auswahl statt Tipp-Abfragen
+  function openPoolScopeDialog(pool, onDone) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    const cur = pool.ownerId ? "private" : (pool.scope || "family");
+    overlay.innerHTML = `<div class="modal" style="max-width:420px;">
+      <div class="modal-header"><h2>Wer sieht diesen Pool?</h2><button class="close-btn" id="closeModal">✕</button></div>
+      <div class="push-cat-row">
+        <label><input type="radio" name="poolScope" value="family" ${cur === "family" ? "checked" : ""}> 👨‍👩‍👧‍👦 Ganze Familie</label>
+        <label><input type="radio" name="poolScope" value="parents" ${cur === "parents" ? "checked" : ""}> 👨‍👩 Nur Elternbereich</label>
+        <label><input type="radio" name="poolScope" value="kids" ${cur === "kids" ? "checked" : ""}> 🧒 Nur Kinderbereich</label>
+        <label><input type="radio" name="poolScope" value="private" ${cur === "private" ? "checked" : ""}> 🔒 Nur für mich</label>
+      </div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-accent" id="psSave">Übernehmen</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = () => { close(); onDone && onDone(); };
+    overlay.onclick = (e) => { if (e.target === overlay) { close(); onDone && onDone(); } };
+    overlay.querySelector("#psSave").onclick = () => {
+      const val = overlay.querySelector('input[name="poolScope"]:checked').value;
+      if (val === "private") { pool.ownerId = state.activeProfileId || null; pool.scope = "family"; }
+      else { pool.ownerId = null; pool.scope = val; }
+      pool.updatedAt = Date.now();
+      saveState(); close(); onDone && onDone();
+    };
+  }
+
   function renderSavingsPools(container, isParentView, viewingEntity) {
     const isSharedView = !!(viewingEntity && viewingEntity.shared);
     const section = document.createElement("div");
@@ -7905,9 +8102,17 @@ body.sortable-active * { cursor: grabbing !important; }
     body.innerHTML = `<p class="hint">Gemeinsam auf etwas sparen — Kinder zahlen aus ihrem Taschengeld oder mit Punkten ein, Eltern und Verwandte können beisteuern.</p>`;
 
     // Private Pools sieht nur ihr Besitzer (und Eltern, die alles verwalten dürfen).
-    const visiblePools = state.savingsPools.filter(p =>
-      !p.ownerId || p.ownerId === state.activeProfileId || isParentView
-    );
+    // Sichtbarkeit: privat nur für den Besitzer, Elternpools nur im Elternbereich,
+    // Kinderpools nur im Kinderbereich — die jeweils andere Seite sieht sie gar nicht.
+    const areaScope = viewingEntity && viewingEntity.shared
+      ? (viewingEntity.role === "parent" ? "parents" : "kids")
+      : (viewingEntity && viewingEntity.role === "parent" ? "parents" : "kids");
+    const visiblePools = state.savingsPools.filter(p => {
+      if (p.ownerId) return p.ownerId === state.activeProfileId;
+      const scope = p.scope || "family";
+      if (scope === "family") return true;
+      return scope === areaScope;
+    });
     if (!visiblePools.length) {
       body.innerHTML += `<div class="widget-empty">Noch kein Spar-Pool angelegt.</div>`;
     } else {
@@ -7928,7 +8133,9 @@ body.sortable-active * { cursor: grabbing !important; }
               <div class="pool-amount">${fmtEuro(balance)}${goal > 0 ? ` <span class="pool-goal">von ${fmtEuro(goal)}</span>` : ""}</div>
             </div>
             <div style="display:flex;gap:4px;flex-shrink:0;">
-              <span class="tag-chip" title="${pool.ownerId ? "Nur für " + escapeHtml((getProfile(pool.ownerId) || {}).name || "eine Person") : "Für die ganze Familie"}">${pool.ownerId ? "🔒 Privat" : "👨‍👩‍👧‍👦 Familie"}</span>
+              <span class="tag-chip">${pool.ownerId ? "🔒 Privat"
+                : (pool.scope === "parents" ? "👨‍👩 Eltern"
+                : pool.scope === "kids" ? "🧒 Kinder" : "👨‍👩‍👧‍👦 Familie")}</span>
               ${isParentView ? `<button type="button" class="card-pin" data-pool-edit="${pool.id}" title="Pool bearbeiten">✏️</button>` : ""}
               ${isParentView ? `<button type="button" class="card-pin" data-pool-del="${pool.id}" title="Pool löschen">✕</button>` : ""}
             </div>
@@ -7997,17 +8204,12 @@ body.sortable-active * { cursor: grabbing !important; }
           const goalRaw = prompt("Sparziel in € (leer = kein Ziel):", pool.goalAmount || "");
           if (goalRaw === null) return;
           const goal = goalRaw ? parseFloat(goalRaw.replace(",", ".")) : 0;
-          const owners = state.profiles.map(p => p.name).join(", ");
-          const ownerName = prompt(`Privat für wen? (${owners})\nLeer lassen = für alle sichtbar`,
-            pool.ownerId ? ((getProfile(pool.ownerId) || {}).name || "") : "");
-          if (ownerName === null) return;
-          const owner = state.profiles.find(p => p.name.toLowerCase() === ownerName.trim().toLowerCase());
           pool.name = name.trim() || pool.name;
           pool.emoji = emoji.trim() || pool.emoji;
           pool.goalAmount = isNaN(goal) ? 0 : goal;
-          pool.ownerId = ownerName.trim() ? (owner ? owner.id : pool.ownerId) : null;
           pool.updatedAt = Date.now();
-          saveState(); render();
+          saveState();
+          openPoolScopeDialog(pool, () => render());
         };
         const delBtn = card.querySelector(`[data-pool-del="${pool.id}"]`);
         if (delBtn) delBtn.onclick = () => {
@@ -8080,12 +8282,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const goalRaw = prompt("Sparziel in € (optional, leer lassen für kein Ziel):", "");
       const goal = goalRaw ? parseFloat(goalRaw.replace(",", ".")) : 0;
       const pool = createSavingsPool(name.trim(), emoji.trim(), isNaN(goal) ? 0 : goal);
-      if (state.activeProfileId && confirm("Soll das ein privater Pool sein?\n\nOK = nur für dich (und Eltern)\nAbbrechen = für alle sichtbar")) {
-        pool.ownerId = state.activeProfileId;
-        pool.updatedAt = Date.now();
-        saveState();
-      }
-      render();
+      openPoolScopeDialog(pool, () => render());
     };
     body.appendChild(addBtn);
 
@@ -9282,6 +9479,20 @@ body.sortable-active * { cursor: grabbing !important; }
     state.areaChat = mergeByIdNewest(state.areaChat || [], remote.areaChat);
     state.gameScores = unionById(state.gameScores || [], remote.gameScores);
     state.recipes = mergeByIdNewest(state.recipes || [], remote.recipes);
+    if (remote.fitness) {
+      state.fitness = state.fitness || {};
+      Object.entries(remote.fitness).forEach(([pid, rf]) => {
+        const local = state.fitness[pid];
+        if (!local || (rf.updatedAt || 0) > (local.updatedAt || 0)) state.fitness[pid] = rf;
+      });
+    }
+    if (remote.health) {
+      state.health = state.health || {};
+      Object.entries(remote.health).forEach(([pid, rh]) => {
+        const local = state.health[pid];
+        if (!local || (rh.updatedAt || 0) > (local.updatedAt || 0)) state.health[pid] = rh;
+      });
+    }
     mergeMindmapsFrom(remote.mindmaps || (remote.mindmap ? [remote.mindmap] : []));
     if (!state.activeProfileId && state.profiles.length) state.activeProfileId = state.profiles[0].id;
   }
@@ -9653,7 +9864,7 @@ body.sortable-active * { cursor: grabbing !important; }
     };
 
     // --- Homescreen-Kacheln ---
-    const tileNames = ["Familien-News", "Nächste Termine", "Offen & abzustimmen", "Für dich markiert", "Hausaufgaben", "Einkaufsliste", "Meine Lampen"];
+    const tileNames = ["Familien-News", "Nächste Termine", "Offen &amp; abzustimmen", "Für dich markiert", "Hausi", "Einkaufsliste", "Meine Lampen"];
     let hiddenNow = [];
     try { hiddenNow = JSON.parse(localStorage.getItem("dapp_hidden_widgets") || "[]"); } catch (e) {}
     const tilesSection = document.createElement("div");
@@ -9661,7 +9872,7 @@ body.sortable-active * { cursor: grabbing !important; }
     tilesSection.innerHTML = `<h3>🧩 Homescreen-Kacheln</h3>
       <p class="hint">Bestimme, welche Kacheln auf dem Homescreen erscheinen. Die Dashboard-Kachel bleibt immer sichtbar. Gilt nur für dieses Gerät.</p>
       <div class="push-cat-row">
-        ${tileNames.map(n => `<label><input type="checkbox" class="tile-toggle" data-tile="${escapeHtml(n)}" ${hiddenNow.includes(n) ? "" : "checked"}> ${escapeHtml(n)}</label>`).join("")}
+        ${tileNames.map(n => `<label><input type="checkbox" class="tile-toggle" data-tile="${escapeHtml(n)}" ${hiddenNow.includes(n) ? "" : "checked"}> ${n.replace("&amp;", "&")}</label>`).join("")}
       </div>`;
     container.appendChild(tilesSection);
     tilesSection.querySelectorAll(".tile-toggle").forEach(cb => {
@@ -10686,6 +10897,43 @@ body.sortable-active * { cursor: grabbing !important; }
         makeCollapsible(recentSection, "parent-recent", false);
       }
 
+      {
+        const healthSection = document.createElement("div");
+        healthSection.className = "settings-section";
+        healthSection.innerHTML = `<h3>💊 Gesundheit &amp; Vorlieben</h3>
+          <p class="hint">Medikamente, Allergien und Unverträglichkeiten sowie Essensvorlieben — nur hier im Elternbereich bearbeitbar. Wichtige Hinweise erscheinen auf Wunsch in der Dashboard-Kachel.</p>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:12px;">
+            <input type="checkbox" id="healthToggle" ${state.healthEnabled ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
+            Hinweise auf dem Dashboard anzeigen
+          </label>
+          <div id="healthList"></div>`;
+        container.appendChild(healthSection);
+        healthSection.querySelector("#healthToggle").onchange = (e) => {
+          state.healthEnabled = e.target.checked;
+          saveState(); render();
+        };
+        const listEl = healthSection.querySelector("#healthList");
+        listEl.innerHTML = state.profiles.map(p => {
+          const h = (state.health || {})[p.id] || {};
+          const bits = [
+            h.meds && `💊 ${escapeHtml(h.meds)}`,
+            h.allergies && `⚠️ ${escapeHtml(h.allergies)}`,
+            h.likes && `😋 ${escapeHtml(h.likes)}`,
+            h.dislikes && `🙅 ${escapeHtml(h.dislikes)}`,
+          ].filter(Boolean).join(" · ");
+          return `<div class="widget-row">
+            <span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>
+            <span class="wr-title">${escapeHtml(p.name)}</span>
+            <span class="wr-meta" style="text-align:right;max-width:52%;">${bits || "<em>Nichts hinterlegt</em>"}</span>
+            <button class="card-pin" data-health="${p.id}" title="Bearbeiten" style="margin-left:8px;">✏️</button>
+          </div>`;
+        }).join("");
+        listEl.querySelectorAll("[data-health]").forEach(btn => {
+          btn.onclick = () => openHealthEditor(btn.dataset.health);
+        });
+        makeCollapsible(healthSection, "parent-health", false);
+      }
+
       const allKids = state.profiles.filter(p => p.role === "child");
       if (allKids.length) {
         const sizesCard = document.createElement("div");
@@ -11510,6 +11758,7 @@ body.sortable-active * { cursor: grabbing !important; }
             ? `🏖️ ${ferienForTicker.days === 0 ? "Heute ist der letzte Ferientag" : "Morgen geht die Schule wieder los"}`
             : `🏖️ Ferien! Noch ${ferienForTicker.days} Tage bis Schulbeginn (${ferienForTicker.name})`)
         : (() => {
+            if (isEffectiveHoliday(todayStr)) return `🏖️ Ferienwochenende — die Schule ist schon vorbei!`;
             const sd = countSchoolDays(todayStr, ferienForTicker.lastSchoolDay);
             if (sd === 0) return `🏖️ Heute ist der letzte Schultag`;
             return `🏖️ Noch ${sd} Schultag${sd === 1 ? "" : "e"} bis ${ferienForTicker.name}. Letzter Schultag ${formatDateWithWeekday(ferienForTicker.lastSchoolDay)}`;
@@ -11584,7 +11833,10 @@ body.sortable-active * { cursor: grabbing !important; }
         const approvals = state.tasks.filter(t => t.approved === false).length
           + state.rewards.filter(r => r.approved === false).length
           + (state.allowanceRequests || []).filter(r => r.status === "pending").length;
-        if (approvals) messages.push({ view: "tasks", text: `✅ ${approvals} Freigabe${approvals === 1 ? "" : "n"} wartet auf dich` });
+        const taskApprovals = state.tasks.filter(t => t.approved === false).length + state.rewards.filter(r => r.approved === false).length;
+        const moneyApprovals = (state.allowanceRequests || []).filter(r => r.status === "pending").length;
+        if (taskApprovals) messages.push({ view: "tasks", text: `✅ ${taskApprovals} Freigabe${taskApprovals === 1 ? "" : "n"} bei Aufgaben/Belohnungen` });
+        if (moneyApprovals) messages.push({ view: "admin", text: `💰 ${moneyApprovals} Taschengeld-Anfrage${moneyApprovals === 1 ? "" : "n"} wartet auf dich` });
       }
     }
     const latestNews = state.newsPosts.slice().sort((a, b) => b.createdAt - a.createdAt)[0];
@@ -11671,7 +11923,7 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     const orgaSubmenu = document.getElementById("orgaSubmenu");
     const orgaArrow = document.getElementById("orgaArrow");
-    if (orgaSubmenu && ["tasks", "mealplan", "shopping", "calendar", "recipes"].includes(currentView)) {
+    if (orgaSubmenu && ["tasks", "mealplan", "shopping", "calendar", "recipes", "fitness"].includes(currentView)) {
       orgaSubmenu.classList.add("open");
       orgaArrow.textContent = "▾";
     }
