@@ -1354,7 +1354,13 @@ body.echo-show-mode .dashboard-card.clock-right .widget-body { order: 3; }
 .hub-back-link { display: block; background: none; border: none; color: var(--text-muted); font-size: 12px; padding: 0; margin-bottom: 6px; cursor: pointer; }
 .hub-back-link:hover { color: var(--accent); }
 .hub-profile-row { display: flex; flex-wrap: wrap; gap: 14px; }
+.hub-unlocked { border-color: var(--accent) !important; }
+.hub-unlocked::after {
+  content: "🔓 offen"; position: absolute; top: 6px; right: 8px;
+  font-size: 10px; color: var(--accent); font-weight: 600;
+}
 .hub-profile-card {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; min-width: 110px;
   box-shadow: var(--shadow); transition: transform .15s ease;
@@ -1978,7 +1984,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 112;
+  const APP_BUILD_NUMBER = 113;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2291,8 +2297,12 @@ body.sortable-active * { cursor: grabbing !important; }
 
     function doSwitch() {
       close();
-      personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
+      // Beim Wechsel wurde gerade PIN/Face ID geprüft — der eigene Bereich darf
+      // deshalb direkt offen sein, statt dieselbe Abfrage nochmal zu verlangen.
+      personalAreaUnlockedFor = p.id;
+      personalAreaViewingProfileId = p.id;
       state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
+      showToast(`Angemeldet als ${p.name} — dein Bereich ist offen.`);
     }
     if (hasBiometricSetup("profile-" + p.id)) {
       overlay.querySelector("#switchBioRow").innerHTML = `<button type="button" class="btn" id="switchBioBtn" style="width:100%;margin-bottom:12px;">👆 Mit Face ID / Fingerabdruck</button>`;
@@ -9981,6 +9991,26 @@ body.sortable-active * { cursor: grabbing !important; }
     document.body.className = "theme-" + themeId;
     keep.forEach(c => document.body.classList.add(c));
     state.theme = themeId;
+    syncBrowserThemeColor();
+  }
+
+  // Titelleiste von Browser/App an das gewählte Theme angleichen — sonst bleibt sie
+  // dauerhaft grün, egal welches Theme eingestellt ist.
+  function syncBrowserThemeColor() {
+    try {
+      const styles = getComputedStyle(document.body);
+      const surface = (styles.getPropertyValue("--surface") || "").trim();
+      const bg = (styles.getPropertyValue("--bg") || "").trim();
+      const color = surface || bg;
+      if (!color) return;
+      let meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = "theme-color";
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", color);
+    } catch (e) { /* nicht kritisch */ }
   }
 
   function applyHolidayMood() {
@@ -10992,6 +11022,8 @@ body.sortable-active * { cursor: grabbing !important; }
             <span class="hub-profile-status">${p.pinHash ? "🔒 gesperrt" : "einrichten"}</span>
           `;
           card.onclick = () => { personalAreaViewingProfileId = p.id; render(); };
+          // Sichtbar machen, welcher Bereich durch die Anmeldung bereits offen ist
+          if (personalAreaUnlockedFor === p.id) card.classList.add("hub-unlocked");
           row.appendChild(card);
         });
         box.appendChild(row);
