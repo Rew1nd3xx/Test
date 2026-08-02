@@ -1496,6 +1496,13 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
   user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .retro-memory-card, .retro-game-card { touch-action: manipulation; }
+.traffic-hint {
+  width: 100%; max-width: 520px; margin-top: 10px; padding: 9px 14px;
+  border-radius: var(--radius); background: var(--surface2);
+  border: 1px solid var(--border); font-size: 13px; text-align: center;
+}
+.traffic-hint.good { background: color-mix(in srgb, #3FA796 18%, var(--surface2)); border-color: #3FA796; }
+.traffic-hint.bad { background: color-mix(in srgb, #C0453B 18%, var(--surface2)); border-color: #C0453B; }
 .retro-highscores { margin-top: 18px; width: 100%; max-width: 560px; border-top: 1px dashed var(--border); padding-top: 12px; }
 .retro-highscores h4 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
 .retro-score-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed var(--border); }
@@ -1560,6 +1567,11 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 .choir-blob.singing .choir-mouth { height: 18px; width: 20px; border-radius: 50%; }
 .choir-controls { display: flex; gap: 8px; margin-top: 12px; }
 .emoji-picker { display: flex; flex-wrap: wrap; gap: 5px; }
+.emoji-select {
+  width: 100%; padding: 9px 11px; font-size: 15px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text);
+}
 .emoji-opt-btn {
   width: 38px; height: 38px; font-size: 19px; border-radius: 10px; cursor: pointer;
   border: 1.5px solid var(--border); background: var(--surface2); line-height: 1;
@@ -2292,7 +2304,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 118;
+  const APP_BUILD_NUMBER = 120;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -6025,8 +6037,12 @@ body.sortable-active * { cursor: grabbing !important; }
       if (hwChip) { setView("tasks"); return; }
       const evChip = e.target.closest(".cal-event");
       if (evChip) {
+        // Termine aus dem Verwandtschaftskreis haben keine eigene ID und gehören
+        // uns nicht — sie dürfen hier nicht als „neuer Termin" aufgehen.
+        if (!evChip.dataset.id) { openDayOverview(dateStr); return; }
         const ev = state.events.find(x => x.id === evChip.dataset.id);
-        if (ev && !canSeeEventDetails(ev)) { showToast("🔒 Dieser Termin ist privat."); return; }
+        if (!ev) { openDayOverview(dateStr); return; }
+        if (!canSeeEventDetails(ev)) { showToast("🔒 Dieser Termin ist privat."); return; }
         openEventEditor(ev);
         return;
       }
@@ -6783,6 +6799,9 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "runner", icon: "🏃", name: "Hüpfburg-Rennen" },
     { id: "bike", icon: "🚵", name: "Downhill-Bike" },
     { id: "race", icon: "🏎️", name: "Rundkurs-Rennen" },
+    { id: "cockpit", icon: "🏁", name: "Cockpit-Racer" },
+    { id: "digger", icon: "⛏️", name: "Tunnelgräber" },
+    { id: "traffic", icon: "🚦", name: "Verkehrsschule" },
     { id: "skate", icon: "🛹", name: "Skate-Park" },
     { id: "lander", icon: "🚀", name: "Mondlandung" },
   ];
@@ -6893,6 +6912,9 @@ body.sortable-active * { cursor: grabbing !important; }
     else if (activeRetroGame === "runner") renderRunnerGame(container);
     else if (activeRetroGame === "bike") renderBikeGame(container);
     else if (activeRetroGame === "race") renderRaceGame(container);
+    else if (activeRetroGame === "cockpit") renderCockpitGame(container);
+    else if (activeRetroGame === "digger") renderDiggerGame(container);
+    else if (activeRetroGame === "traffic") renderTrafficGame(container);
     else if (activeRetroGame === "skate") renderSkateGame(container);
     else if (activeRetroGame === "lander") renderLanderGame(container);
   }
@@ -7312,6 +7334,636 @@ body.sortable-active * { cursor: grabbing !important; }
     paint();
     retroGameHandle = setInterval(tick, 16);
     renderHighscoreList(container, "race", true, " (Hundertstel)");
+  }
+
+  // ---- Verkehrsschule: mit dem Fahrrad regelkonform durch die Stadt ----
+  // Eigene Umsetzung im Geist klassischer Verkehrserziehungsspiele: deutsche
+  // Regeln (Ampel, rechts vor links, Zebrastreifen, Handzeichen) zum Üben.
+  function renderTrafficGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="tfPts">0</strong> · Ziele: <strong id="tfGoals">0</strong>/5 · Verwarnungen: <strong id="tfWarn">0</strong>/3</div>
+      <canvas id="tfCanvas" width="520" height="420" class="retro-canvas"></canvas>
+      <div class="traffic-hint" id="tfMsg">Fahr los! Halte dich an die Regeln.</div>
+      <div class="retro-touch-pad">
+        <div class="retro-touch-row"><button data-sig="left">⬅ Handzeichen</button><button data-sig="right">Handzeichen ➡</button></div>
+        <button data-dir="up">▲</button>
+        <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten zum Fahren, <b>A</b> und <b>D</b> für das Handzeichen.
+      Halte an roten Ampeln, lass Fußgänger am Zebrastreifen vorbei, beachte rechts vor links —
+      und zeig vor dem Abbiegen an.</p>`;
+    container.appendChild(wrap);
+
+    const canvas = wrap.querySelector("#tfCanvas");
+    const ctx = canvas.getContext("2d");
+    const msgEl = wrap.querySelector("#tfMsg");
+    const CELL = 52, COLS = 10, ROWS = 8;
+
+    // Straßennetz: waagerechte und senkrechte Straßen
+    const roadRows = [1, 4, 6], roadCols = [1, 4, 7];
+    const isRoad = (col, r) => roadRows.includes(r) || roadCols.includes(col);
+    const isCross = (col, r) => roadRows.includes(r) && roadCols.includes(col);
+
+    let px = 1, py = 1, facing = "right";
+    let pts = 0, warns = 0, goals = 0, over = false, tickN = 0;
+    let signal = null, signalT = 0;
+    let msgT = 0;
+
+    // Ampeln an ausgewählten Kreuzungen
+    const lights = [
+      { x: 4, y: 4, phase: 0 }, { x: 7, y: 1, phase: 90 }, { x: 1, y: 6, phase: 45 },
+    ];
+    // Zebrastreifen mit querenden Fußgängern
+    const crossings = [
+      { x: 2, y: 1, walker: 0, active: false },
+      { x: 5, y: 4, walker: 0, active: false },
+      { x: 3, y: 6, walker: 0, active: false },
+    ];
+    // Querverkehr für „rechts vor links"
+    let cars = [
+      { x: 4, y: 6, dir: "up", t: 0 },
+      { x: 7, y: 4, dir: "down", t: 0 },
+    ];
+    let target = pickTarget();
+
+    function pickTarget() {
+      const spots = [{ x: 7, y: 6 }, { x: 1, y: 4 }, { x: 4, y: 1 }, { x: 7, y: 4 }, { x: 1, y: 1 }];
+      let t;
+      do { t = spots[Math.floor(Math.random() * spots.length)]; } while (t.x === px && t.y === py);
+      return t;
+    }
+    function say(text, good) {
+      msgEl.textContent = text;
+      msgEl.className = "traffic-hint " + (good ? "good" : "bad");
+      msgT = 150;
+    }
+    function lightState(l) {
+      const p = (tickN + l.phase) % 180;
+      return p < 100 ? "green" : (p < 120 ? "yellow" : "red");
+    }
+    function warn(text) {
+      warns++;
+      wrap.querySelector("#tfWarn").textContent = warns;
+      pts = Math.max(0, pts - 30);
+      wrap.querySelector("#tfPts").textContent = pts;
+      say("⚠️ " + text, false);
+      if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+      if (warns >= 3) { over = true; submitScore("traffic", pts); render(); }
+    }
+
+    function tryMove(dx, dy) {
+      if (over) { restart(); return; }
+      const nx = px + dx, ny = py + dy;
+      if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
+      if (!isRoad(nx, ny)) { say("Das ist keine Straße — bleib auf dem Radweg.", false); return; }
+
+      const newFacing = dx > 0 ? "right" : dx < 0 ? "left" : dy > 0 ? "down" : "up";
+      const turning = newFacing !== facing && (facing === "left" || facing === "right") !== (newFacing === "left" || newFacing === "right");
+
+      // Vor dem Abbiegen muss das Handzeichen passen
+      if (turning) {
+        const needed = (facing === "right" && newFacing === "up") || (facing === "left" && newFacing === "down") ||
+                       (facing === "up" && newFacing === "left") || (facing === "down" && newFacing === "right")
+                       ? "left" : "right";
+        if (signal !== needed) {
+          warn("Abbiegen ohne Handzeichen! Erst anzeigen, dann abbiegen.");
+          return;
+        }
+        pts += 15; say("👍 Sauber angezeigt und abgebogen.", true);
+      }
+
+      // Rote Ampel an der Kreuzung, auf die wir fahren
+      const li = lights.find(l => l.x === nx && l.y === ny);
+      if (li) {
+        const st = lightState(li);
+        if (st === "red") { warn("Bei Rot gefahren! Immer anhalten."); return; }
+        if (st === "yellow") { say("Gelb — besser wäre gewesen zu warten.", false); pts = Math.max(0, pts - 5); }
+        else { pts += 10; }
+      }
+
+      // Fußgänger am Zebrastreifen
+      const cr = crossings.find(z => z.x === nx && z.y === ny);
+      if (cr && cr.active) { warn("Fußgänger am Zebrastreifen — die haben Vorrang!"); return; }
+
+      // Rechts vor links an Kreuzungen ohne Ampel
+      if (isCross(nx, ny) && !li) {
+        const rightOf = { right: { dx: 0, dy: 1 }, left: { dx: 0, dy: -1 }, up: { dx: 1, dy: 0 }, down: { dx: -1, dy: 0 } }[newFacing];
+        const other = cars.find(cc => cc.x === nx + rightOf.dx && cc.y === ny + rightOf.dy);
+        if (other) { warn("Rechts vor links! Der andere hatte Vorfahrt."); return; }
+      }
+
+      if (cars.some(cc => cc.x === nx && cc.y === ny)) { warn("Zusammenstoß — mehr Abstand halten!"); return; }
+
+      px = nx; py = ny; facing = newFacing;
+      signal = null;
+      pts += 2;
+      wrap.querySelector("#tfPts").textContent = pts;
+
+      if (px === target.x && py === target.y) {
+        goals++; pts += 50;
+        wrap.querySelector("#tfGoals").textContent = goals;
+        wrap.querySelector("#tfPts").textContent = pts;
+        say("🎯 Ziel erreicht!", true);
+        if (goals >= 5) { over = true; submitScore("traffic", pts); render(); return; }
+        target = pickTarget();
+      }
+    }
+    function restart() {
+      px = 1; py = 1; facing = "right"; pts = 0; warns = 0; goals = 0; over = false; signal = null;
+      wrap.querySelector("#tfPts").textContent = "0";
+      wrap.querySelector("#tfWarn").textContent = "0";
+      wrap.querySelector("#tfGoals").textContent = "0";
+      target = pickTarget();
+      say("Neue Runde — viel Erfolg!", true);
+    }
+    function setSignal(side) {
+      if (over) return;
+      signal = side; signalT = 90;
+      say(side === "left" ? "⬅ Handzeichen links" : "Handzeichen rechts ➡", true);
+    }
+    function keyHandler(e) {
+      const map = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      if (map[e.key]) { e.preventDefault(); tryMove(map[e.key][0], map[e.key][1]); return; }
+      if (e.key === "a" || e.key === "A") setSignal("left");
+      if (e.key === "d" || e.key === "D") setSignal("right");
+    }
+    document.addEventListener("keydown", keyHandler);
+    wrap.querySelectorAll("[data-dir]").forEach(b => {
+      const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[b.dataset.dir];
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); tryMove(d[0], d[1]); });
+    });
+    wrap.querySelectorAll("[data-sig]").forEach(b =>
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); setSignal(b.dataset.sig); }));
+    canvas.addEventListener("pointerdown", () => { if (over) restart(); });
+
+    function paint() {
+      // Wiesen und Häuser
+      ctx.fillStyle = "#4B6B45"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+        const x = col * CELL, y = r * CELL;
+        if (!isRoad(col, r)) {
+          if ((col * 7 + r * 3) % 5 === 0) {
+            ctx.fillStyle = ["#8C6A4F", "#9C7A5A", "#7A5C46"][(col + r) % 3];
+            ctx.fillRect(x + 7, y + 9, CELL - 14, CELL - 16);
+            ctx.fillStyle = "#5E4636";
+            ctx.beginPath(); ctx.moveTo(x + 4, y + 9); ctx.lineTo(x + CELL / 2, y + 1); ctx.lineTo(x + CELL - 4, y + 9); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = "#E8D9A8"; ctx.fillRect(x + CELL / 2 - 5, y + 20, 10, 12);
+          }
+          continue;
+        }
+        ctx.fillStyle = "#4A4F54"; ctx.fillRect(x, y, CELL, CELL);
+        // Mittelstreifen
+        ctx.fillStyle = "rgba(255,255,255,.5)";
+        if (roadRows.includes(r) && !roadCols.includes(col)) ctx.fillRect(x + 8, y + CELL / 2 - 1.5, CELL - 16, 3);
+        if (roadCols.includes(col) && !roadRows.includes(r)) ctx.fillRect(x + CELL / 2 - 1.5, y + 8, 3, CELL - 16);
+      }
+      // Zebrastreifen
+      crossings.forEach(z => {
+        const x = z.x * CELL, y = z.y * CELL;
+        ctx.fillStyle = "#F2F2F2";
+        for (let i = 0; i < 5; i++) ctx.fillRect(x + 5 + i * 9, y + 6, 5, CELL - 12);
+        if (z.active) {
+          const wy = y + 8 + (z.walker % 36);
+          ctx.fillStyle = "#2B2621";
+          ctx.beginPath(); ctx.arc(x + CELL / 2, wy, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillRect(x + CELL / 2 - 3, wy + 5, 6, 10);
+        }
+      });
+      // Ampeln
+      lights.forEach(l => {
+        const st = lightState(l);
+        const x = l.x * CELL + CELL - 13, y = l.y * CELL + 4;
+        ctx.fillStyle = "#20242A"; ctx.fillRect(x - 5, y, 11, 27);
+        const cols = { red: ["#E23B36", "#4A2020", "#204020"], yellow: ["#4A2020", "#E8C44A", "#204020"], green: ["#4A2020", "#4A4020", "#4CD164"] };
+        cols[st].forEach((cc, i) => {
+          ctx.fillStyle = cc;
+          ctx.beginPath(); ctx.arc(x, y + 5 + i * 8.5, 3.4, 0, Math.PI * 2); ctx.fill();
+        });
+      });
+      // Querverkehr
+      cars.forEach(cc => {
+        const x = cc.x * CELL + CELL / 2, y = cc.y * CELL + CELL / 2;
+        ctx.fillStyle = "#3A5A9B";
+        ctx.fillRect(x - 11, y - 8, 22, 16);
+        ctx.fillStyle = "#B8CBE8"; ctx.fillRect(x - 6, y - 5, 12, 10);
+      });
+      // Ziel
+      ctx.strokeStyle = "#E8A33D"; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
+      ctx.strokeRect(target.x * CELL + 5, target.y * CELL + 5, CELL - 10, CELL - 10);
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#E8A33D"; ctx.font = "16px serif"; ctx.textAlign = "center";
+      ctx.fillText("🎯", target.x * CELL + CELL / 2, target.y * CELL + CELL / 2 + 6);
+      // Radfahrer
+      const cx = px * CELL + CELL / 2, cy = py * CELL + CELL / 2;
+      ctx.strokeStyle = "#14181B"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx - 8, cy + 7, 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + 8, cy + 7, 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#3FA796";
+      ctx.beginPath(); ctx.ellipse(cx, cy - 3, 7, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#E8A33D";
+      ctx.beginPath(); ctx.arc(cx, cy - 15, 6, 0, Math.PI * 2); ctx.fill();
+      // Handzeichen
+      if (signal) {
+        ctx.strokeStyle = "#E8C44A"; ctx.lineWidth = 3.5;
+        const dir = signal === "left" ? -1 : 1;
+        ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx + dir * 19, cy - 9); ctx.stroke();
+        ctx.fillStyle = "#E8C44A";
+        ctx.beginPath(); ctx.arc(cx + dir * 21, cy - 9, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.7)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(goals >= 5 ? "Prüfung bestanden! 🎉" : "Zu viele Verwarnungen", canvas.width / 2, canvas.height / 2 - 12);
+        ctx.font = "15px sans-serif";
+        ctx.fillText(`${pts} Punkte · ${goals} Ziel${goals === 1 ? "" : "e"}`, canvas.width / 2, canvas.height / 2 + 14);
+        ctx.font = "13px sans-serif";
+        ctx.fillText("Tippen für eine neue Runde", canvas.width / 2, canvas.height / 2 + 38);
+      }
+    }
+    function tick() {
+      tickN++;
+      if (msgT > 0 && --msgT === 0) { msgEl.textContent = "Fahr weiter — Regeln beachten."; msgEl.className = "traffic-hint"; }
+      if (signalT > 0 && --signalT === 0) signal = null;
+      if (!over) {
+        // Fußgänger queren gelegentlich
+        crossings.forEach(z => {
+          if (z.active) { z.walker += 1; if (z.walker > 36) { z.active = false; z.walker = 0; } }
+          else if (Math.random() < 0.004) z.active = true;
+        });
+        // Querverkehr fährt auf seinen Straßen
+        if (tickN % 26 === 0) {
+          cars.forEach(cc => {
+            const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[cc.dir];
+            let nx = cc.x + d[0], ny = cc.y + d[1];
+            if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || !isRoad(nx, ny)) {
+              cc.dir = { up: "down", down: "up", left: "right", right: "left" }[cc.dir];
+            } else if (!(nx === px && ny === py)) { cc.x = nx; cc.y = ny; }
+          });
+        }
+      }
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) { document.removeEventListener("keydown", keyHandler); obs.disconnect(); }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 60);
+    renderHighscoreList(container, "traffic", false, " Pkt");
+  }
+
+  // ---- Cockpit-Racer: Rennen aus der Fahrerperspektive ----
+  function renderCockpitGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Tempo: <strong id="cpSpd">0</strong> km/h · Strecke: <strong id="cpM">0</strong> m · Beste: <strong id="cpBest">–</strong> m</div>
+      <canvas id="cpCanvas" width="560" height="360" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-act="gas">⬆ Gas</button>
+        <div class="retro-touch-row"><button data-act="left">◀</button><button data-act="brake">⬇ Bremse</button><button data-act="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Blick aus dem Cockpit. Bleib auf der Bahn und weiche den anderen Wagen aus —
+      je schneller du fährst, desto weiter kommst du.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#cpCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const HORIZON = 132;
+    let spd = 0, posX = 0, dist = 0, curve = 0, curveTarget = 0, over = false, best = 0;
+    let gas = false, brake = false, left = false, right = false;
+    let rivals = [];
+
+    function keyDown(e) {
+      if (e.key === "ArrowUp" || e.code === "Space") { e.preventDefault(); gas = true; }
+      if (e.key === "ArrowDown") { e.preventDefault(); brake = true; }
+      if (e.key === "ArrowLeft") left = true;
+      if (e.key === "ArrowRight") right = true;
+    }
+    function keyUp(e) {
+      if (e.key === "ArrowUp" || e.code === "Space") gas = false;
+      if (e.key === "ArrowDown") brake = false;
+      if (e.key === "ArrowLeft") left = false;
+      if (e.key === "ArrowRight") right = false;
+    }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-act]").forEach(b => {
+      const a = b.dataset.act;
+      b.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        if (over) { restart(); return; }
+        if (a === "gas") gas = true; else if (a === "brake") brake = true;
+        else if (a === "left") left = true; else right = true;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        b.addEventListener(ev, () => { gas = brake = left = right = false; }));
+    });
+    canvas.addEventListener("pointerdown", () => { if (over) restart(); });
+
+    function restart() {
+      spd = 0; posX = 0; dist = 0; curve = 0; curveTarget = 0; over = false; rivals = [];
+      wrap.querySelector("#cpM").textContent = "0";
+    }
+    // Perspektive: Zeile y auf der Straße -> Breite und Mitte
+    function roadAt(y) {
+      const p = (y - HORIZON) / (H - HORIZON);           // 0 = Horizont, 1 = ganz vorn
+      const w = 24 + p * p * 300;                         // Fahrbahnbreite
+      const cx = W / 2 + curve * (1 - p) * 260 - posX * p * 200;
+      return { w, cx, p };
+    }
+    function paint() {
+      // Himmel und Landschaft
+      const sky = ctx.createLinearGradient(0, 0, 0, HORIZON);
+      sky.addColorStop(0, "#25415E"); sky.addColorStop(1, "#7C93A6");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, HORIZON);
+      ctx.fillStyle = "#E8C46A";
+      ctx.beginPath(); ctx.arc(W * 0.72 - curve * 90, HORIZON - 34, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#2C4A38"; ctx.fillRect(0, HORIZON, W, H - HORIZON);
+
+      // Fahrbahn zeilenweise zeichnen
+      for (let y = HORIZON; y < H; y++) {
+        const { w, cx, p } = roadAt(y);
+        const stripe = Math.floor((dist / 6 + p * 22)) % 2 === 0;
+        ctx.fillStyle = stripe ? "#3C4147" : "#363B41";
+        ctx.fillRect(cx - w, y, w * 2, 1);
+        // Randstreifen
+        ctx.fillStyle = stripe ? "#D9534F" : "#F2F2F2";
+        ctx.fillRect(cx - w - 7, y, 7, 1);
+        ctx.fillRect(cx + w, y, 7, 1);
+        // Mittellinie
+        if (stripe && p > 0.12) { ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fillRect(cx - 2, y, 4, 1); }
+      }
+      // Gegner in der Tiefe
+      rivals.slice().sort((a, b) => a.z - b.z).forEach(r => {
+        const y = HORIZON + (1 - r.z) * (H - HORIZON);
+        if (y < HORIZON + 4) return;
+        const { w, cx, p } = roadAt(y);
+        const cw = 26 + p * p * 130;
+        const rx = cx + r.lane * w * 0.55;
+        ctx.fillStyle = r.color;
+        ctx.fillRect(rx - cw / 2, y - cw * 0.42, cw, cw * 0.42);
+        ctx.fillStyle = "rgba(0,0,0,.35)";
+        ctx.fillRect(rx - cw * 0.32, y - cw * 0.36, cw * 0.64, cw * 0.16);
+      });
+      // Cockpit: Lenkrad und Armaturenbrett
+      ctx.fillStyle = "#14181B";
+      ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, H - 54);
+      ctx.quadraticCurveTo(W / 2, H - 88, W, H - 54); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.translate(W / 2, H - 6); ctx.rotate((left ? -0.3 : 0) + (right ? 0.3 : 0));
+      ctx.strokeStyle = "#3A3F44"; ctx.lineWidth = 11;
+      ctx.beginPath(); ctx.arc(0, 0, 54, Math.PI, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "#C0453B"; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(-8, -52); ctx.lineTo(8, -52); ctx.stroke();
+      ctx.restore();
+      // Drehzahlband
+      const pct = Math.min(1, spd / 5.6);
+      ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(W - 148, H - 44, 130, 9);
+      ctx.fillStyle = pct > 0.85 ? "#C0453B" : "#3FA796";
+      ctx.fillRect(W - 148, H - 44, 130 * pct, 9);
+
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.68)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("Crash!", W / 2, H / 2 - 10);
+        ctx.font = "15px sans-serif"; ctx.fillText(`${Math.floor(dist / 8)} m`, W / 2, H / 2 + 16);
+        ctx.font = "13px sans-serif"; ctx.fillText("Tippen für einen neuen Start", W / 2, H / 2 + 40);
+      }
+    }
+    function tick() {
+      if (over) { paint(); return; }
+      if (gas) spd += 0.055; if (brake) spd -= 0.14;
+      spd = Math.max(0, Math.min(5.8, spd * 0.995));
+      // Kurvenverlauf sanft wechseln
+      if (Math.random() < 0.006) curveTarget = (Math.random() - 0.5) * 1.5;
+      curve += (curveTarget - curve) * 0.02;
+      // Lenken, dazu Fliehkraft in der Kurve
+      const steer = 0.03 * Math.min(1, spd / 1.6);
+      if (left) posX -= steer; if (right) posX += steer;
+      posX += curve * spd * 0.0055;
+      dist += spd;
+      wrap.querySelector("#cpSpd").textContent = Math.round(spd * 46);
+      if (Math.floor(dist) % 8 === 0) wrap.querySelector("#cpM").textContent = Math.floor(dist / 8);
+
+      if (Math.abs(posX) > 1.15) { // von der Bahn abgekommen
+        spd *= 0.93;
+        if (Math.abs(posX) > 1.6) { finish(); return; }
+      }
+      // Gegner
+      if (Math.random() < 0.012 && spd > 1) {
+        rivals.push({ z: 1, lane: (Math.random() - 0.5) * 1.5, color: ["#C0453B", "#3A5A9B", "#86B35A", "#E8A33D"][Math.floor(Math.random() * 4)] });
+      }
+      rivals.forEach(r => r.z -= spd * 0.0028);
+      for (const r of rivals) {
+        if (r.z < 0.06 && r.z > -0.02 && Math.abs(r.lane - posX) < 0.42) { finish(); return; }
+      }
+      rivals = rivals.filter(r => r.z > -0.05);
+      paint();
+    }
+    function finish() {
+      over = true;
+      const m = Math.floor(dist / 8);
+      if (m > best) { best = m; wrap.querySelector("#cpBest").textContent = m; }
+      submitScore("cockpit", m);
+      paint(); render();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "cockpit", false, " m");
+  }
+
+  // ---- Tunnelgräber: Gänge graben, Gegner ausweichen, Steine fallen lassen ----
+  function renderDiggerGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="dgPts">0</strong> · Leben: <strong id="dgLife">3</strong> · Ebene: <strong id="dgLvl">1</strong></div>
+      <canvas id="dgCanvas" width="480" height="400" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-dir="up">▲</button>
+        <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Grab dich durch die Erde und sammle die Kristalle.
+      Untergrabene Steine fallen — damit erwischst du die Verfolger.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#dgCanvas");
+    const ctx = canvas.getContext("2d");
+    const CELL = 32, COLS = 15, ROWS = 12;
+    // 0 = Erde, 1 = gegraben, 2 = Stein, 3 = Kristall
+    let grid, px, py, pts = 0, life = 3, level = 1, enemies = [], rocks = [], over = false, tickCount = 0;
+
+    function buildLevel() {
+      grid = [];
+      for (let r = 0; r < ROWS; r++) {
+        grid[r] = [];
+        for (let col = 0; col < COLS; col++) {
+          const rnd = Math.random();
+          grid[r][col] = rnd < 0.07 ? 2 : (rnd < 0.17 ? 3 : 0);
+        }
+      }
+      px = 1; py = 1; grid[py][px] = 1;
+      enemies = [];
+      const count = Math.min(4, 1 + Math.floor(level / 2));
+      for (let i = 0; i < count; i++) {
+        enemies.push({ x: COLS - 1 - i, y: ROWS - 1, cool: 0 });
+        grid[ROWS - 1][COLS - 1 - i] = 1;
+      }
+      rocks = [];
+      for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++)
+        if (grid[r][col] === 2) rocks.push({ x: col, y: r, falling: false, fall: 0 });
+    }
+    buildLevel();
+
+    function move(dx, dy) {
+      if (over) { restart(); return; }
+      const nx = px + dx, ny = py + dy;
+      if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
+      if (grid[ny][nx] === 2) return;               // Steine blockieren
+      if (grid[ny][nx] === 3) { pts += 25; wrap.querySelector("#dgPts").textContent = pts; }
+      grid[ny][nx] = 1; px = nx; py = ny;
+      if (!grid.flat().includes(3)) {               // Ebene geschafft
+        level++; pts += 100;
+        wrap.querySelector("#dgLvl").textContent = level;
+        wrap.querySelector("#dgPts").textContent = pts;
+        buildLevel();
+      }
+    }
+    function restart() {
+      pts = 0; life = 3; level = 1; over = false;
+      wrap.querySelector("#dgPts").textContent = "0";
+      wrap.querySelector("#dgLife").textContent = "3";
+      wrap.querySelector("#dgLvl").textContent = "1";
+      buildLevel();
+    }
+    function keyHandler(e) {
+      const map = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      const m = map[e.key];
+      if (m) { e.preventDefault(); move(m[0], m[1]); }
+    }
+    document.addEventListener("keydown", keyHandler);
+    wrap.querySelectorAll("[data-dir]").forEach(b => {
+      const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[b.dataset.dir];
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); move(d[0], d[1]); });
+    });
+    canvas.addEventListener("pointerdown", () => { if (over) restart(); });
+
+    function paint() {
+      ctx.fillStyle = "#3A2A1C"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+        const x = col * CELL, y = r * CELL, v = grid[r][col];
+        if (v === 0) {
+          ctx.fillStyle = (r + col) % 2 ? "#5A4230" : "#523A2A";
+          ctx.fillRect(x, y, CELL, CELL);
+        } else {
+          ctx.fillStyle = "#241A12"; ctx.fillRect(x, y, CELL, CELL);
+        }
+        if (v === 3) {
+          ctx.fillStyle = "#5AC8E0";
+          ctx.beginPath();
+          ctx.moveTo(x + CELL / 2, y + 7); ctx.lineTo(x + CELL - 8, y + CELL / 2);
+          ctx.lineTo(x + CELL / 2, y + CELL - 7); ctx.lineTo(x + 8, y + CELL / 2);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+      rocks.forEach(rk => {
+        const y = rk.y * CELL + rk.fall;
+        ctx.fillStyle = "#8A8477";
+        ctx.beginPath(); ctx.ellipse(rk.x * CELL + CELL / 2, y + CELL / 2, CELL / 2 - 3, CELL / 2 - 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.18)";
+        ctx.beginPath(); ctx.ellipse(rk.x * CELL + CELL / 2 - 4, y + CELL / 2 - 4, 5, 3.5, -.5, 0, Math.PI * 2); ctx.fill();
+      });
+      enemies.forEach(en => {
+        const x = en.x * CELL + CELL / 2, y = en.y * CELL + CELL / 2;
+        ctx.fillStyle = "#C0453B";
+        ctx.beginPath(); ctx.arc(x, y, CELL / 2 - 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(x - 4, y - 3, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x + 4, y - 3, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#14181B";
+        ctx.beginPath(); ctx.arc(x - 4, y - 3, 1.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x + 4, y - 3, 1.4, 0, Math.PI * 2); ctx.fill();
+      });
+      // Spieler
+      const cx = px * CELL + CELL / 2, cy = py * CELL + CELL / 2;
+      ctx.fillStyle = "#E8A33D";
+      ctx.beginPath(); ctx.arc(cx, cy, CELL / 2 - 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3A2A1C";
+      ctx.beginPath(); ctx.arc(cx - 4, cy - 3, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 4, cy - 3, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#3A2A1C"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy + 2, 5, 0.2, Math.PI - 0.2); ctx.stroke();
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.68)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 23px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("Erwischt!", canvas.width / 2, canvas.height / 2 - 10);
+        ctx.font = "15px sans-serif";
+        ctx.fillText(`${pts} Punkte · Ebene ${level}`, canvas.width / 2, canvas.height / 2 + 16);
+        ctx.font = "13px sans-serif"; ctx.fillText("Tippen für eine neue Runde", canvas.width / 2, canvas.height / 2 + 40);
+      }
+    }
+    function loseLife() {
+      life--;
+      wrap.querySelector("#dgLife").textContent = Math.max(0, life);
+      if (life <= 0) { over = true; submitScore("digger", pts); render(); }
+      else buildLevel();
+    }
+    function tick() {
+      if (over) { paint(); return; }
+      tickCount++;
+      // Steine fallen, wenn darunter gegraben wurde
+      rocks.forEach(rk => {
+        const below = rk.y + 1;
+        if (!rk.falling && below < ROWS && grid[below][rk.x] === 1 && !(px === rk.x && py === rk.y)) {
+          rk.falling = true;
+        }
+        if (rk.falling) {
+          rk.fall += 5;
+          if (rk.fall >= CELL) {
+            grid[rk.y][rk.x] = 1;
+            rk.y++; rk.fall = 0;
+            if (rk.y >= ROWS - 1 || grid[rk.y + 1] === undefined || grid[rk.y + 1][rk.x] !== 1) {
+              rk.falling = false; grid[rk.y][rk.x] = 2;
+            }
+            // Trifft der Stein jemanden?
+            enemies = enemies.filter(en => {
+              if (en.x === rk.x && en.y === rk.y) { pts += 50; wrap.querySelector("#dgPts").textContent = pts; return false; }
+              return true;
+            });
+            if (px === rk.x && py === rk.y) { loseLife(); return; }
+          }
+        }
+      });
+      // Gegner bewegen sich gemächlich in gegrabenen Gängen Richtung Spieler
+      if (tickCount % Math.max(9, 22 - level * 2) === 0) {
+        enemies.forEach(en => {
+          const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+            .map(([dx, dy]) => ({ x: en.x + dx, y: en.y + dy }))
+            .filter(p => p.x >= 0 && p.y >= 0 && p.x < COLS && p.y < ROWS && grid[p.y][p.x] === 1);
+          if (!opts.length) return;
+          opts.sort((a, b) =>
+            (Math.abs(a.x - px) + Math.abs(a.y - py)) - (Math.abs(b.x - px) + Math.abs(b.y - py)));
+          const step = Math.random() < 0.75 ? opts[0] : opts[Math.floor(Math.random() * opts.length)];
+          en.x = step.x; en.y = step.y;
+        });
+        if (enemies.some(en => en.x === px && en.y === py)) { loseLife(); return; }
+      }
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) { document.removeEventListener("keydown", keyHandler); obs.disconnect(); }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 60);
+    renderHighscoreList(container, "digger", false, " Pkt");
   }
 
   // ---- Skate-Park: Tricks in der Luft, Kombos zählen ----
@@ -8932,10 +9584,12 @@ body.sortable-active * { cursor: grabbing !important; }
       <div class="modal-header"><h2>${existing ? "Rezept bearbeiten" : "Neues Rezept"}</h2><button class="close-btn" id="closeModal">✕</button></div>
       <div class="field"><label>Name</label><input type="text" id="rcName" value="${escapeHtml(draft.name)}" placeholder="z. B. Spaghetti Bolognese"></div>
       <div class="field"><label>Symbol</label>
-        <div class="emoji-picker" id="rcEmojiPicker">
-          ${["🍽️","🍝","🍕","🍔","🥗","🍲","🥘","🍜","🌮","🥞","🍗","🐟"].map(e =>
-            `<button type="button" class="emoji-opt-btn${e === draft.emoji ? " active" : ""}" data-emoji="${e}">${e}</button>`).join("")}
-        </div>
+        <select id="rcEmoji" class="emoji-select">
+          ${[["🍽️","Allgemein"],["🍝","Nudeln"],["🍕","Pizza"],["🍔","Burger"],["🥗","Salat"],
+             ["🍲","Eintopf"],["🥘","Pfanne"],["🍜","Suppe"],["🌮","Mexikanisch"],
+             ["🥞","Süßes"],["🍗","Fleisch"],["🐟","Fisch"]]
+            .map(([e, n]) => `<option value="${e}" ${e === draft.emoji ? "selected" : ""}>${e}  ${n}</option>`).join("")}
+        </select>
       </div>
       <div class="field"><label>Schlagwort (optional)</label><input type="text" id="rcTags" value="${escapeHtml(draft.tags || "")}" placeholder="z. B. schnell, vegetarisch"></div>
       <div class="field"><label>Zutaten (mit Komma trennen)</label><textarea id="rcIng" rows="3" placeholder="Nudeln, Hackfleisch, Tomaten">${escapeHtml(draft.ingredients || "")}</textarea></div>
@@ -8955,13 +9609,6 @@ body.sortable-active * { cursor: grabbing !important; }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#rcCancel").onclick = close;
     // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
-    overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(btn => {
-      btn.onclick = () => {
-        overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        draft.emoji = btn.dataset.emoji;
-      };
-    });
     const rcInput = overlay.querySelector("#rcPhotoInput");
     const rcBox = overlay.querySelector("#rcPhotoBox");
     function paintRecipePhoto() {
@@ -8998,6 +9645,7 @@ body.sortable-active * { cursor: grabbing !important; }
     overlay.querySelector("#rcSave").onclick = () => {
       draft.name = overlay.querySelector("#rcName").value.trim();
       if (!draft.name) { showToast("Bitte einen Namen eingeben."); return; }
+      draft.emoji = overlay.querySelector("#rcEmoji").value;
       draft.tags = overlay.querySelector("#rcTags").value.trim();
       draft.ingredients = overlay.querySelector("#rcIng").value.trim();
       draft.notes = overlay.querySelector("#rcNotes").value.trim();
@@ -10177,8 +10825,10 @@ body.sortable-active * { cursor: grabbing !important; }
       <div class="modal" style="max-width:440px;">
         <div class="modal-header"><h2>${existing ? "Termin bearbeiten" : "Neuer Termin"}</h2><button class="close-btn" id="closeModal">✕</button></div>
         <div class="field"><label>Titel</label><input type="text" id="e-title" value="${escapeHtml(draft.title)}" placeholder="z. B. Zahnarzt Mia"></div>
-        <div class="field"><label>Datum</label><input type="text" id="e-date" value="${draft.date}" placeholder="JJJJ-MM-TT"></div>
-        <div class="field"><label>Uhrzeit (optional)</label><input type="text" id="e-time" value="${escapeHtml(draft.time || "")}" placeholder="z. B. 15:30"></div>
+        <div class="size-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field"><label>Datum</label><input type="date" id="e-date" value="${draft.date}"></div>
+          <div class="field"><label>Uhrzeit (optional)</label><input type="time" id="e-time" value="${escapeHtml(draft.time || "")}"></div>
+        </div>
         <div class="field"><label>Wer ist dabei?</label>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
             ${state.profiles.map(p => `
@@ -10245,11 +10895,12 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="field"><label>Von</label><input type="date" id="vacStart"></div>
         <div class="field"><label>Bis</label><input type="date" id="vacEnd"></div>
         <div class="field"><label>Symbol</label>
-          <div class="emoji-picker" id="vacEmojiPicker">
-            ${["🏝️","⛰️","🏕️","🎿","🚢","✈️","🏖️","🎡","🏰","🚗","🧳","🌍"].map((e, i) =>
-              `<button type="button" class="emoji-opt-btn${i === 0 ? " active" : ""}" data-emoji="${e}">${e}</button>`).join("")}
-          </div>
-          <input type="hidden" id="vacEmoji" value="🏝️">
+          <select id="vacEmoji" class="emoji-select">
+            ${[["🏝️","Insel"],["🏖️","Strand"],["⛰️","Berge"],["🏕️","Camping"],["🎿","Ski"],
+               ["🚢","Schiff"],["✈️","Flug"],["🎡","Freizeitpark"],["🏰","Städtereise"],
+               ["🚗","Autoreise"],["🧳","Koffer"],["🌍","Fernreise"]]
+              .map(([e, n]) => `<option value="${e}">${e}  ${n}</option>`).join("")}
+          </select>
         </div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:10px;">
@@ -10303,13 +10954,6 @@ body.sortable-active * { cursor: grabbing !important; }
     }
     paintList();
 
-    overlay.querySelectorAll("#vacEmojiPicker .emoji-opt-btn").forEach(btn => {
-      btn.onclick = () => {
-        overlay.querySelectorAll("#vacEmojiPicker .emoji-opt-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        overlay.querySelector("#vacEmoji").value = btn.dataset.emoji;
-      };
-    });
     overlay.querySelector("#vacAddBtn").onclick = () => {
       const name = overlay.querySelector("#vacName").value.trim();
       const start = overlay.querySelector("#vacStart").value;
@@ -13577,7 +14221,13 @@ body.sortable-active * { cursor: grabbing !important; }
       if (!modal || modal.dataset.scrollWrapped) return;
       const header = modal.querySelector(":scope > .modal-header");
       const footer = modal.querySelector(":scope > .modal-footer");
-      if (!header) return;
+      if (!header) {
+        // Ohne Kopfzeile gibt es nichts zu fixieren — dann darf das Fenster
+        // wenigstens ganz normal scrollen, statt den Inhalt abzuschneiden.
+        modal.style.overflowY = "auto";
+        modal.dataset.scrollWrapped = "1";
+        return;
+      }
       const middle = [];
       let node = header.nextSibling;
       while (node && node !== footer) { middle.push(node); node = node.nextSibling; }
