@@ -42,22 +42,133 @@ a { color: var(--accent); }
 /* ============ THEME TOKENS ============ */
 /* 1. Papierblock — warm notebook, typewriter */
 .theme-papier {
-  --bg: #EAE2CE; --surface: #FBF7EC; --surface2: #F1E9D6;
-  --text: #2B2621; --text-muted: #6B6153;
-  --accent: #5F7038; --accent2: #2F4858;
-  --border: #C9BC9C; --shadow: 0 2px 10px rgba(43,38,33,.12);
-  --font-display: 'Special Elite', cursive; --font-body: 'Courier Prime', monospace;
-  --radius: 2px; --pattern: none;
+  --bg: #E7DEC8; --surface: #FDFAF3; --surface2: #F3ECDC;
+  --text: #241F18; --text-muted: #6F6552;
+  --accent: #4E5F2C; --accent2: #8A6A2F;
+  --border: #C4B593; --shadow: 0 1px 2px rgba(60,50,32,.10), 0 10px 26px rgba(60,50,32,.13);
+  --font-display: 'Cormorant Garamond', serif; --font-body: 'Lora', serif;
+  --radius: 3px; --pattern: none;
 }
+/* Feines Büttenpapier mit warmer Faserung und leichter Randabdunklung */
+body.theme-papier {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,252,244,.55), transparent 60%),
+    repeating-linear-gradient(94deg, rgba(120,104,72,.030) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(6deg, rgba(120,104,72,.024) 0 2px, transparent 2px 6px),
+    radial-gradient(140% 110% at 50% 50%, transparent 55%, rgba(90,76,48,.16));
+}
+.theme-papier .sidebar {
+  background: linear-gradient(180deg, #FDFAF3, #F5EFE1);
+  border-right: 1px solid var(--border);
+  box-shadow: inset -10px 0 22px -18px rgba(90,76,48,.6);
+}
+.theme-papier .topbar {
+  background: rgba(253,250,243,.9);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+.theme-papier .brand-text, .theme-papier .view-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 700;
+  letter-spacing: .012em; color: #23200F;
+}
+.theme-papier .view-title { font-size: 1.06em; }
+/* Karten wie aufgelegte Papierbögen: harte Oberkante, weicher Schlagschatten */
+.theme-papier .card, .theme-papier .widget-card, .theme-papier .calendar-card {
+  background: linear-gradient(178deg, #FFFDF7, #FBF6EA);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 1px 2px rgba(60,50,32,.10), 0 12px 26px -12px rgba(60,50,32,.35);
+}
+.theme-papier .card:hover, .theme-papier .widget-card:hover {
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 3px 6px rgba(60,50,32,.12), 0 20px 36px -14px rgba(60,50,32,.42);
+}
+.theme-papier .btn-accent {
+  background: linear-gradient(180deg, #5D7136, #43521F);
+  color: #FBF7EC; border: 1px solid #3A4A1B;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 2px 5px rgba(60,50,32,.28);
+}
+.theme-papier .nav-item.active {
+  background: linear-gradient(90deg, rgba(78,95,44,.14), transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+/* Feiner Goldschnitt an der Kachelkante */
+.theme-papier .widget-card::after {
+  content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(138,106,47,.45), transparent);
+}
+.theme-papier .tag-chip { background: #F0E8D4; border-color: #CDBE9C; color: #5A4E33; }
+.theme-papier ::selection { background: rgba(78,95,44,.22); }
 /* 2. Mitternacht — deep navy, gold */
 .theme-mitternacht {
-  --bg: #10142A; --surface: #1A2043; --surface2: #212A54;
-  --text: #EDEBFA; --text-muted: #9FA3C7;
-  --accent: #C9A24B; --accent2: #3F9C99;
-  --border: #313A66; --shadow: 0 8px 24px rgba(0,0,0,.4);
+  --bg: #060A1A; --surface: #0D1330; --surface2: #141C40;
+  --text: #E8ECFF; --text-muted: #8790BC;
+  --accent: #D4B45E; --accent2: #6FA8FF;
+  --border: #232C57; --shadow: 0 14px 40px rgba(0,0,0,.65);
   --font-display: 'Fraunces', serif; --font-body: 'Inter', sans-serif;
-  --radius: 10px; --pattern: none;
+  --radius: 12px; --pattern: none;
 }
+/* Tiefer Nachthimmel: Mondlicht von oben, Horizontglühen unten, ein paar Sterne */
+body.theme-mitternacht {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(38vw 30vh at 78% 4%, rgba(212,180,94,.16), transparent 66%),
+    radial-gradient(90vw 40vh at 50% 108%, rgba(46,72,140,.30), transparent 70%),
+    radial-gradient(60vw 45vh at 10% 22%, rgba(28,44,102,.34), transparent 68%),
+    radial-gradient(1px 1px at 18% 26%, rgba(255,255,255,.55), transparent),
+    radial-gradient(1px 1px at 63% 14%, rgba(255,255,255,.42), transparent),
+    radial-gradient(1px 1px at 84% 46%, rgba(255,255,255,.38), transparent),
+    radial-gradient(1px 1px at 34% 62%, rgba(212,180,94,.40), transparent),
+    linear-gradient(180deg, #04070F 0%, #060A1A 45%, #0A1230 100%);
+}
+.theme-mitternacht .sidebar {
+  background: linear-gradient(180deg, rgba(13,19,48,.94), rgba(8,12,32,.94));
+  backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(212,180,94,.22);
+  box-shadow: inset -12px 0 30px -22px rgba(212,180,94,.5);
+}
+.theme-mitternacht .topbar {
+  background: rgba(10,15,38,.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, rgba(212,180,94,.45), rgba(111,168,255,.3), transparent) 1;
+}
+/* Mondsilber-Gold-Verlauf in den Überschriften */
+.theme-mitternacht .brand-text, .theme-mitternacht .view-title {
+  background: linear-gradient(100deg, #F2E3B0 0%, #D4B45E 32%, #EAF0FF 58%, #9FB4E8 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.theme-mitternacht .card, .theme-mitternacht .widget-card, .theme-mitternacht .calendar-card {
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.015) 45%, transparent 72%),
+    color-mix(in srgb, var(--surface) 74%, transparent);
+  border: 1px solid rgba(140,160,220,.16);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(200,215,255,.12);
+}
+.theme-mitternacht .card:hover, .theme-mitternacht .widget-card:hover {
+  border-color: rgba(212,180,94,.42);
+  box-shadow: 0 18px 46px rgba(0,0,0,.7), 0 0 26px rgba(212,180,94,.14), inset 0 1px 0 rgba(200,215,255,.18);
+}
+.theme-mitternacht .widget-card::before {
+  background: linear-gradient(180deg, transparent, #D4B45E 24%, #EAF0FF 52%, #6FA8FF 78%, transparent);
+  box-shadow: 0 0 14px rgba(212,180,94,.45), inset -1px 0 0 rgba(255,255,255,.45);
+}
+.theme-mitternacht .btn-accent {
+  background: linear-gradient(135deg, #E3CE84, #C09B3E);
+  color: #14100A; border: none; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(212,180,94,.32), inset 0 1px 0 rgba(255,255,255,.45);
+}
+.theme-mitternacht .nav-item.active {
+  background: linear-gradient(90deg, rgba(212,180,94,.20), rgba(111,168,255,.06));
+  color: #F5F0DC; box-shadow: inset 0 0 0 1px rgba(212,180,94,.38);
+}
+.theme-mitternacht .avatar.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px #D4B45E, 0 0 18px rgba(212,180,94,.5); }
+.theme-mitternacht .card-progress-bar { background: linear-gradient(90deg, #D4B45E, #6FA8FF); }
+.theme-mitternacht .global-ticker { background: rgba(13,19,48,.7); backdrop-filter: blur(10px); }
+.theme-mitternacht .global-ticker-dot { background: #D4B45E; box-shadow: 0 0 10px rgba(212,180,94,.8); }
+.theme-mitternacht input, .theme-mitternacht select, .theme-mitternacht textarea {
+  background: rgba(6,10,26,.75) !important; border-color: rgba(140,160,220,.2) !important;
+}
+.theme-mitternacht ::selection { background: rgba(212,180,94,.35); color: #fff; }
 /* 3. Skizzenblock — graph paper */
 .theme-skizze {
   --bg: #E7ECF2; --surface: #FFFFFF; --surface2: #DCE4EE;
@@ -224,13 +335,49 @@ body.theme-bauhaus {
 }
 /* 11. Neon — cyberpunk glow */
 .theme-neon {
-  --bg: #0A0A0A; --surface: #141414; --surface2: #1E1E1E;
-  --text: #F5F5F5; --text-muted: #999999;
-  --accent: #FF1435; --accent2: #FFFFFF;
-  --border: #331014; --shadow: 0 0 24px rgba(255,20,53,.25);
+  --bg: #0B0304; --surface: #16070A; --surface2: #210A0F;
+  --text: #FFE9EC; --text-muted: #B07680;
+  --accent: #FF0A2E; --accent2: #FF6B4A;
+  --border: #4A0F19; --shadow: 0 0 30px rgba(255,10,46,.42);
   --font-display: 'Orbitron', sans-serif; --font-body: 'Rajdhani', sans-serif;
   --radius: 10px; --pattern: none;
 }
+/* Rote Glut liegt über der ganzen Fläche — als läge Neonlicht im Raum */
+body.theme-neon {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(70vw 50vh at 12% -6%, rgba(255,10,46,.20), transparent 62%),
+    radial-gradient(60vw 45vh at 92% 104%, rgba(255,60,30,.16), transparent 66%),
+    repeating-linear-gradient(0deg, rgba(255,10,46,.045) 0 1px, transparent 1px 3px);
+}
+.theme-neon .sidebar, .theme-neon .topbar {
+  background: rgba(16,6,9,.88);
+  border-color: rgba(255,10,46,.35);
+  box-shadow: inset -1px 0 22px -14px rgba(255,10,46,.9);
+}
+.theme-neon .brand-text, .theme-neon .view-title {
+  color: #FF2B47;
+  text-shadow: 0 0 6px rgba(255,10,46,.9), 0 0 18px rgba(255,10,46,.6), 0 0 40px rgba(255,10,46,.35);
+}
+.theme-neon .card, .theme-neon .widget-card, .theme-neon .calendar-card {
+  border-color: rgba(255,10,46,.28);
+  box-shadow: 0 0 22px rgba(255,10,46,.16), inset 0 0 26px rgba(255,10,46,.07);
+}
+.theme-neon .card:hover, .theme-neon .widget-card:hover {
+  border-color: rgba(255,10,46,.7);
+  box-shadow: 0 0 34px rgba(255,10,46,.4), inset 0 0 30px rgba(255,10,46,.12);
+}
+.theme-neon .btn-accent {
+  background: linear-gradient(135deg, #FF0A2E, #C2001F);
+  color: #fff; border: 1px solid rgba(255,120,130,.5);
+  box-shadow: 0 0 16px rgba(255,10,46,.6), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.theme-neon .nav-item.active {
+  background: linear-gradient(90deg, rgba(255,10,46,.28), transparent);
+  color: #FFD9DE; box-shadow: inset 2px 0 0 #FF0A2E, 0 0 18px rgba(255,10,46,.28);
+}
+.theme-neon .card-progress-bar { background: linear-gradient(90deg, #FF0A2E, #FF6B4A); box-shadow: 0 0 10px rgba(255,10,46,.8); }
+.theme-neon ::selection { background: rgba(255,10,46,.45); color: #fff; }
 /* 12. Sternenstaub — magical starlight */
 .theme-stardust {
   --bg: #04060B; --surface: #0A0E16; --surface2: #121826;
@@ -270,6 +417,61 @@ body.theme-bauhaus {
 .theme-neon .mm-node.root { box-shadow: 0 0 28px rgba(255,20,53,.45), 0 4px 10px rgba(0,0,0,.3); }
 .theme-neon .view-title { text-shadow: 0 0 18px rgba(255,20,53,.35); }
 .theme-neon ::selection { background: var(--accent2); color: #0A0A0A; }
+
+
+/* ---- Seitenstreifen je Theme: jedes Theme bekommt seine eigene Materialsprache ---- */
+/* Tagebuch: zartes Rosé mit Gold-Schimmer, wie ein eingeklebtes Satinband */
+.theme-bauhaus .widget-card::before {
+  width: 4px;
+  background: linear-gradient(180deg, #F3C9D4, #D98A9E 35%, #C9A24B 70%, #E7AEBC);
+  box-shadow: 0 0 12px rgba(217,138,158,.5), inset -1px 0 0 rgba(255,255,255,.6);
+  border-radius: 0 3px 3px 0;
+}
+/* Wald: Moosgrün mit weichem Verlauf */
+.theme-wald .widget-card::before {
+  background: linear-gradient(180deg, transparent, #7EC882 25%, #4E9A5A 60%, #7EC882 85%, transparent);
+  box-shadow: 0 0 12px rgba(126,200,130,.45), inset -1px 0 0 rgba(255,255,255,.25);
+}
+/* Neon: harte Leuchtröhre */
+.theme-neon .widget-card::before {
+  width: 2.5px;
+  background: var(--widget-accent, var(--accent));
+  box-shadow: 0 0 6px var(--widget-accent, var(--accent)),
+              0 0 16px var(--widget-accent, var(--accent)),
+              0 0 28px color-mix(in srgb, var(--widget-accent, var(--accent)) 55%, transparent);
+  border-radius: 0;
+}
+/* Vault-Shelter & Atombunker: gestempelte Warnmarkierung */
+.theme-vaultterm .widget-card::before,
+.theme-atombunker .widget-card::before {
+  width: 5px;
+  background: repeating-linear-gradient(-45deg,
+    var(--widget-accent, var(--accent)) 0 6px,
+    color-mix(in srgb, var(--widget-accent, var(--accent)) 35%, #000) 6px 12px);
+  box-shadow: inset -1px 0 0 rgba(0,0,0,.4);
+  border-radius: 0;
+}
+/* Bausteine: aufgesetzter Noppenstreifen */
+.theme-bausteine .widget-card::before {
+  width: 6px;
+  background: var(--widget-accent, var(--accent));
+  box-shadow: inset -2px 0 0 rgba(0,0,0,.18), inset 2px 0 0 rgba(255,255,255,.5);
+  border-radius: 0 3px 3px 0;
+}
+/* Obsidian: haarfeine, kühle Kante */
+.theme-obsidian .widget-card::before {
+  width: 1.5px;
+  background: linear-gradient(180deg, transparent, var(--accent) 30%, var(--accent) 70%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+/* Papier: dezenter Tuschestrich, oben und unten auslaufend */
+.theme-papier .widget-card::before {
+  width: 3px;
+  background: linear-gradient(180deg, transparent, var(--widget-accent, var(--accent)) 18%,
+              var(--widget-accent, var(--accent)) 82%, transparent);
+  box-shadow: none;
+  opacity: .85;
+}
 
 /* ---- Sternenstaub: tiefes Weltall mit Nebeln, Milchstraßenband und Edelmetall-Kanten ---- */
 .theme-stardust #app { position: relative; z-index: 0; }
@@ -1093,6 +1295,75 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
 .pool-name { font-weight: 700; font-size: 15px; }
 .pool-amount { font-family: var(--font-display); font-size: 24px; margin-top: 2px; }
 .pool-goal { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); }
+/* ---- Tagebuch ---- */
+.diary-section { position: relative; overflow: hidden; }
+.diary-locked { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0 4px; }
+/* Geschlossenes Buch mit Rücken, Prägung und Schloss */
+.diary-book-closed {
+  position: relative; width: 132px; height: 168px; border-radius: 6px 12px 12px 6px;
+  background:
+    linear-gradient(100deg, rgba(255,255,255,.18), transparent 42%),
+    linear-gradient(160deg, #8E4A5C, #5E2A3A 70%);
+  box-shadow: 0 14px 30px rgba(0,0,0,.35), inset -6px 0 14px -8px rgba(0,0,0,.6);
+  transform-origin: left center;
+  transition: transform .18s ease;
+}
+.diary-book-closed::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 13px;
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(90deg, #4A2030, #6E3244);
+  box-shadow: inset -3px 0 6px rgba(0,0,0,.45);
+}
+.diary-book-closed::after {
+  content: ""; position: absolute; inset: 16px 14px 16px 26px;
+  border: 1.5px solid rgba(226,190,120,.45); border-radius: 4px;
+}
+.diary-lock {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+}
+.diary-book-closed:hover { transform: rotateY(-6deg); }
+/* Aufschlagen: Buch klappt auf und blendet in einem warmen Licht aus */
+.diary-book-closed.opening { animation: diaryOpen .78s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes diaryOpen {
+  0%   { transform: rotateY(0) scale(1); opacity: 1; }
+  38%  { transform: rotateY(-58deg) scale(1.04); opacity: 1;
+         box-shadow: 0 14px 30px rgba(0,0,0,.35), 0 0 40px rgba(232,190,120,.5); }
+  70%  { transform: rotateY(-128deg) scale(1.1); opacity: .75;
+         box-shadow: 0 0 70px rgba(232,190,120,.75); }
+  100% { transform: rotateY(-172deg) scale(1.22); opacity: 0; }
+}
+.diary-error { color: #C0453B; font-size: 12px; text-align: center; margin: 6px 0 0; min-height: 15px; }
+.diary-open { animation: diaryFadeIn .5s ease both; }
+@keyframes diaryFadeIn {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+.diary-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.diary-pages { display: flex; flex-direction: column; gap: 12px; }
+/* Einträge wie linierte Tagebuchseiten mit rotem Rand */
+.diary-entry {
+  position: relative; cursor: pointer;
+  padding: 14px 16px 14px 30px; border-radius: 4px 10px 10px 4px;
+  background:
+    linear-gradient(90deg, transparent 0 24px, rgba(200,80,90,.30) 24px 25.5px, transparent 25.5px),
+    repeating-linear-gradient(180deg, transparent 0 25px, rgba(120,110,95,.16) 25px 26px),
+    color-mix(in srgb, var(--surface) 92%, #FFF8EC);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), inset 3px 0 0 rgba(140,74,92,.5);
+  transition: transform .12s ease, box-shadow .2s ease;
+}
+.diary-entry:hover { transform: translateX(2px); box-shadow: 0 6px 18px rgba(0,0,0,.14), inset 3px 0 0 rgba(140,74,92,.75); }
+.diary-entry-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.diary-mood { font-size: 19px; }
+.diary-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+.diary-date { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+.diary-text { font-size: 13.5px; line-height: 26px; white-space: pre-wrap; }
+.diary-photo { max-width: 100%; max-height: 220px; border-radius: var(--radius); margin-top: 10px; display: block; }
+.diary-textarea { line-height: 26px; background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(120,110,95,.16) 25px 26px); }
+.recipe-photo-preview { position: relative; display: inline-block; margin-bottom: 8px; }
+.recipe-photo-preview img { max-width: 100%; max-height: 180px; border-radius: var(--radius); display: block; }
+.recipe-photo-preview .card-pin { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; border-radius: 50%; width: 24px; height: 24px; }
 .pool-feed { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
 .pool-feed-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
 .pool-feed-text { display: inline-flex; align-items: center; gap: 6px; }
@@ -2021,12 +2292,12 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 116;
+  const APP_BUILD_NUMBER = 118;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
-    { id: "papier",     name: "Papierblock",     sub: "Warmes Notizbuch",  dots: ["#5F7038", "#2F4858", "#EAE2CE"] },
-    { id: "mitternacht",name: "Mitternacht",     sub: "Tief & golden",     dots: ["#C9A24B", "#3F9C99", "#10142A"] },
+    { id: "papier",     name: "Papierblock",     sub: "Büttenpapier & Goldschnitt", dots: ["#4E5F2C", "#8A6A2F", "#E7DEC8"] },
+    { id: "mitternacht",name: "Mitternacht",     sub: "Nachthimmel & Mondgold 🌙", dots: ["#D4B45E", "#6FA8FF", "#060A1A"] },
     { id: "skizze",     name: "Skizzenblock",    sub: "Karopapier",        dots: ["#3A5A9B", "#C0453B", "#E7ECF2"] },
     { id: "bauhaus",    name: "Tagebuch",       sub: "Rosé & Handschrift 🌸", dots: ["#D98A9E", "#C9A24B", "#FBF1F0"] },
     { id: "wald",       name: "Wald",            sub: "Tiefgrün & Moos",   dots: ["#86B35A", "#D9A441", "#172A20"] },
@@ -2034,7 +2305,7 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "rose",       name: "Rosé",            sub: "Sanft & editorial", dots: ["#C6577B", "#B8925A", "#F6E9EE"] },
     { id: "industrial", name: "Industrial",      sub: "Beton & Signalorange", dots: ["#E8590C", "#4A6572", "#DEDBD2"] },
     { id: "aurora",     name: "Aurora",          sub: "Verträumtes Farbspiel", dots: ["#B15CDE", "#35D0BA", "#150B26"] },
-    { id: "neon",       name: "Neon",            sub: "Rot-Glow ✨",   dots: ["#FF1435", "#FFFFFF", "#0A0A0A"] },
+    { id: "neon",       name: "Neon",            sub: "Rote Neonglut 🔴", dots: ["#FF0A2E", "#FF6B4A", "#0B0304"] },
     { id: "stardust",   name: "Sternenstaub",    sub: "Galaxie & Edelmetall 🌌", dots: ["#D4AF37", "#C6CDD6", "#04060B"] },
     { id: "blockwelt",  name: "Blockwelt",       sub: "Pixelig & abenteuerlich ⛏️", dots: ["#4CAF32", "#8B5A2B", "#3E8E2E"] },
     { id: "bausteine",  name: "Bausteine",       sub: "Bunt & verspielt 🧱", dots: ["#D6001C", "#0057A6", "#F5F1E6"] },
@@ -2078,6 +2349,7 @@ body.sortable-active * { cursor: grabbing !important; }
       recipes: [],
       health: {}, healthEnabled: false,
       fitness: {},
+      diaries: {}, diaryEntries: [],
       tickerAlwaysMarquee: false,
       allowanceLedger: [], pointsToMoneyRate: 0.10,
       allowanceRequests: [], allowanceRecurring: [],
@@ -2160,14 +2432,41 @@ body.sortable-active * { cursor: grabbing !important; }
   let state = loadState();
   const LAST_VIEW_KEY = "dapp_last_view_v1";
   const VALID_VIEWS = ["home", "notes", "checklists", "images", "mindmap", "tags", "tasks", "calendar", "shopping", "mealplan", "toothbrush", "news", "allowance", "budget", "retrogames", "grades", "homework", "learnai", "recipes", "fitness", "admin", "settings"];
-  let currentView = (() => {
-    try {
-      const saved = localStorage.getItem(LAST_VIEW_KEY);
-      return VALID_VIEWS.includes(saved) ? saved : "home";
-    } catch (e) { return "home"; }
-  })();
+  // Die App startet bewusst immer auf dem Dashboard — der Einstieg soll jedes Mal
+  // gleich sein, statt irgendwo mitten in einer Unteransicht zu landen.
+  let currentView = "home";
   let searchQuery = "";
   let personalAreaUnlockedFor = null;
+  // Mehrere Bereiche können gleichzeitig offen sein: der eigene und der passende
+  // gemeinsame. Deshalb reicht eine einzelne Variable nicht mehr aus.
+  let unlockedAreas = new Set();
+
+  function isAreaUnlocked(id) {
+    return id != null && (personalAreaUnlockedFor === id || unlockedAreas.has(id));
+  }
+  function unlockArea(id) {
+    if (!id) return;
+    personalAreaUnlockedFor = id;
+    unlockedAreas.add(id);
+  }
+  function lockArea(id) {
+    unlockedAreas.delete(id);
+    if (personalAreaUnlockedFor === id) {
+      personalAreaUnlockedFor = unlockedAreas.size ? [...unlockedAreas][0] : null;
+    }
+  }
+  function lockAllAreas() {
+    unlockedAreas.clear();
+    personalAreaUnlockedFor = null;
+  }
+  // Beim Anmelden zusätzlich den passenden gemeinsamen Bereich öffnen, sofern der
+  // keine eigene PIN hat — sonst müsste man sich direkt nochmal anmelden.
+  function unlockMatchingSharedArea(profile) {
+    if (!profile || !profile.role) return;
+    const sharedId = profile.role === "parent" ? "shared-parent" : "shared-child";
+    const shared = getAreaEntity(sharedId);
+    if (shared && !shared.pinHash) unlockedAreas.add(sharedId);
+  }
   let personalAreaViewingProfileId = null;
   let weatherCache = { data: null, fetchedAt: 0 };
   let kpCache = { data: null, fetchedAt: 0 };
@@ -2292,7 +2591,9 @@ body.sortable-active * { cursor: grabbing !important; }
         if (p.pinHash) { openProfileSwitchGate(p); return; }
         // Profil ohne PIN: es gibt hier nichts zu entsperren, also gilt es direkt als
         // angemeldet — sonst passt der Anmeldestatus nicht zum offenen Bereich.
-        personalAreaUnlockedFor = p.id;
+        lockAllAreas();
+        unlockArea(p.id);
+        unlockMatchingSharedArea(p);
         personalAreaViewingProfileId = null;
         state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
       };
@@ -2333,13 +2634,15 @@ body.sortable-active * { cursor: grabbing !important; }
     document.body.appendChild(overlay);
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
 
     function doSwitch() {
       close();
       // Beim Wechsel wurde gerade PIN/Face ID geprüft — der eigene Bereich darf
       // deshalb direkt offen sein, statt dieselbe Abfrage nochmal zu verlangen.
-      personalAreaUnlockedFor = p.id;
+      lockAllAreas();
+      unlockArea(p.id);
+      unlockMatchingSharedArea(p);
       personalAreaViewingProfileId = p.id;
       state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
       showToast(`Angemeldet als ${p.name} — dein Bereich ist offen.`);
@@ -2394,7 +2697,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#hCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelector("#hSave").onclick = () => {
       state.health = state.health || {};
       state.health[profileId] = {
@@ -2492,7 +2795,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
 
     if (existing) {
       const resetBtn = overlay.querySelector("#resetPinBtn");
@@ -2571,7 +2874,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (view !== "retrogames") activeRetroGame = null;
     if (dashClockInterval && view !== "home") { clearInterval(dashClockInterval); dashClockInterval = null; }
     currentView = view;
-    try { localStorage.setItem(LAST_VIEW_KEY, view); } catch (e) { /* Speicher evtl. voll — kein Problem, dann startet die App eben auf Home */ }
+
     document.querySelectorAll(".nav-item[data-view]").forEach(b => {
       b.classList.toggle("active", b.dataset.view === view);
     });
@@ -3211,9 +3514,22 @@ body.sortable-active * { cursor: grabbing !important; }
   }
 
   function renderListView(container, type, title, subtitle, icon) {
+    // Reihenfolge: Favoriten immer zuerst, danach die selbst festgelegte Reihenfolge.
+    // Ohne eigene Reihenfolge greift wie bisher „zuletzt bearbeitet".
+    let manualOrder = [];
+    try { manualOrder = JSON.parse(localStorage.getItem("dapp_item_order_" + type) || "[]"); } catch (e) {}
+    const orderPos = (id) => {
+      const i = manualOrder.indexOf(id);
+      return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+    };
     const items = state.items
       .filter(it => it.type === type && itemMatchesSearch(it) && canSeeItemDetails(it))
-      .sort((a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt));
+      .sort((a, b) => {
+        if (!!b.pinned !== !!a.pinned) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+        const pa = orderPos(a.id), pb = orderPos(b.id);
+        if (pa !== pb) return pa - pb;
+        return (b.updatedAt || 0) - (a.updatedAt || 0);
+      });
 
     const header = document.createElement("div");
     header.className = "view-header";
@@ -3241,8 +3557,16 @@ body.sortable-active * { cursor: grabbing !important; }
     } else {
       const grid = document.createElement("div");
       grid.className = "grid";
-      items.forEach(it => grid.appendChild(renderCard(it)));
+      items.forEach(it => {
+        const card = renderCard(it);
+        card.dataset.sortId = it.id;
+        grid.appendChild(card);
+      });
       container.appendChild(grid);
+      makeListSortable(grid, ".card[data-sort-id]", (order) => {
+        try { localStorage.setItem("dapp_item_order_" + type, JSON.stringify(order)); } catch (e) {}
+        showToast("Reihenfolge gespeichert.");
+      });
     }
 
     document.getElementById("addBtn").onclick = () => openEditor(type);
@@ -4057,7 +4381,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
 
     if (existing) {
       overlay.querySelector("#deleteBtn").onclick = () => {
@@ -5105,7 +5429,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     if (existing) {
       overlay.querySelector("#deleteTaskBtn").onclick = () => {
         if (confirm("Diese Aufgabe wirklich löschen?")) {
@@ -5174,7 +5498,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     if (existing) {
       overlay.querySelector("#deleteRewardBtn").onclick = () => {
         if (confirm("Diese Belohnung wirklich löschen?")) {
@@ -5767,7 +6091,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#dayCloseBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelector("#dayNewEventBtn").onclick = () => { close(); openEventEditor(null, dateStr); };
     overlay.querySelectorAll("[data-event-id]").forEach(row => {
       row.onclick = () => {
@@ -5912,7 +6236,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const close = () => overlay.remove();
       overlay.querySelector("#closeImportModal").onclick = close;
       overlay.querySelector("#cancelImportModal").onclick = close;
-      overlay.onclick = (e) => { if (e.target === overlay) close(); };
+      // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
       overlay.querySelector("#continueImportBtn").onclick = () => {
         calImportForProfileId = overlay.querySelector("#importForProfile").value;
         close();
@@ -6457,6 +6781,10 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "2048", icon: "🔢", name: "2048" },
     { id: "choir", icon: "🎵", name: "Singende Blobs" },
     { id: "runner", icon: "🏃", name: "Hüpfburg-Rennen" },
+    { id: "bike", icon: "🚵", name: "Downhill-Bike" },
+    { id: "race", icon: "🏎️", name: "Rundkurs-Rennen" },
+    { id: "skate", icon: "🛹", name: "Skate-Park" },
+    { id: "lander", icon: "🚀", name: "Mondlandung" },
   ];
 
   /* ---- Bestenliste ---- */
@@ -6504,6 +6832,39 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(header);
 
     if (!activeRetroGame) {
+      // Turniertabelle: pro Spiel gibt es Punkte für die vorderen Plätze
+      const board = {};
+      RETRO_GAMES.forEach(g => {
+        const lower = ["memory", "reaction", "race"].includes(g.id);
+        const best = {};
+        (state.gameScores || []).filter(s => s.gameId === g.id && s.profileId).forEach(s => {
+          const cur = best[s.profileId];
+          if (cur === undefined || (lower ? s.score < cur : s.score > cur)) best[s.profileId] = s.score;
+        });
+        Object.entries(best)
+          .sort((a, b) => lower ? a[1] - b[1] : b[1] - a[1])
+          .slice(0, 3)
+          .forEach(([pid], i) => { board[pid] = (board[pid] || 0) + [5, 3, 1][i]; });
+      });
+      const ranking = Object.entries(board)
+        .map(([pid, p]) => ({ p: getProfile(pid), pts: p }))
+        .filter(r => r.p)
+        .sort((a, b) => b.pts - a.pts);
+      if (ranking.length) {
+        const tour = document.createElement("div");
+        tour.className = "calendar-card";
+        tour.style.marginBottom = "18px";
+        tour.innerHTML = `<h3 style="margin:0 0 4px;font-family:var(--font-display);font-size:17px;">🏆 Familien-Turnier</h3>
+          <p class="hint">Pro Spiel gibt es 5, 3 und 1 Punkt für die ersten drei Plätze.</p>
+          ${ranking.map((r, i) => `
+            <div class="retro-score-row">
+              <span class="retro-score-rank">${["🥇", "🥈", "🥉"][i] || (i + 1) + "."}</span>
+              <span class="mini-avatar" style="background:${r.p.color};">${r.p.emoji || r.p.name.charAt(0)}</span>
+              <span class="retro-score-name">${escapeHtml(r.p.name)}</span>
+              <span class="retro-score-value">${r.pts}</span>
+            </div>`).join("")}`;
+        container.appendChild(tour);
+      }
       const grid = document.createElement("div");
       grid.className = "retro-game-grid";
       grid.innerHTML = RETRO_GAMES.map(g => `<button type="button" class="retro-game-card" data-game="${g.id}"><span class="retro-game-icon">${g.icon}</span><span>${g.name}</span></button>`).join("");
@@ -6530,6 +6891,10 @@ body.sortable-active * { cursor: grabbing !important; }
     else if (activeRetroGame === "2048") render2048Game(container);
     else if (activeRetroGame === "choir") renderChoirToy(container);
     else if (activeRetroGame === "runner") renderRunnerGame(container);
+    else if (activeRetroGame === "bike") renderBikeGame(container);
+    else if (activeRetroGame === "race") renderRaceGame(container);
+    else if (activeRetroGame === "skate") renderSkateGame(container);
+    else if (activeRetroGame === "lander") renderLanderGame(container);
   }
 
   function renderSnakeGame(container) {
@@ -6706,6 +7071,505 @@ body.sortable-active * { cursor: grabbing !important; }
   // Höhe = Tonhöhe, Antippen/Ziehen steuert sie. Eigene Umsetzung, kein fremdes Vorbild.
   // Eigenes Jump-and-Run: springen, Münzen sammeln, Hindernissen ausweichen.
   // Komplett selbst gezeichnet — keine fremden Figuren oder Grafiken.
+  // ---- Downhill-Bike: Hügel hinunter, Sprünge sauber landen ----
+  function renderBikeGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="bkPts">0</strong> · Strecke: <strong id="bkM">0</strong> m</div>
+      <canvas id="bikeCanvas" width="560" height="320" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad"><div class="retro-touch-row">
+        <button data-act="lean-back">◀ Zurücklehnen</button>
+        <button data-act="hop">⬆ Springen</button>
+        <button data-act="lean-fwd">Vorlehnen ▶</button>
+      </div></div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten links/rechts zum Neigen, Leertaste zum Springen.
+      Landest du flach auf dem Hang, gibt es Punkte — landest du schief, bremst es dich aus.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#bikeCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    let dist = 0, pts = 0, speed = 2.6, over = false;
+    let y = 0, vy = 0, angle = 0, vAngle = 0, airborne = false, airTime = 0;
+    let leanBack = false, leanFwd = false;
+
+    // Gelände als Summe zweier Wellen — dadurch nie exakt gleich
+    function ground(x) {
+      return H - 90 + Math.sin(x / 120) * 34 + Math.sin(x / 47 + 1.7) * 13;
+    }
+    function slopeAt(x) { return Math.atan2(ground(x + 6) - ground(x - 6), 12); }
+
+    function keyDown(e) {
+      if (e.key === "ArrowLeft") leanBack = true;
+      if (e.key === "ArrowRight") leanFwd = true;
+      if (e.code === "Space") { e.preventDefault(); hop(); }
+    }
+    function keyUp(e) {
+      if (e.key === "ArrowLeft") leanBack = false;
+      if (e.key === "ArrowRight") leanFwd = false;
+    }
+    function hop() { if (over) { restart(); return; } if (!airborne) { vy = -7.6; airborne = true; } }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-act]").forEach(b => {
+      const a = b.dataset.act;
+      b.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        if (a === "hop") hop(); else if (a === "lean-back") leanBack = true; else leanFwd = true;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        b.addEventListener(ev, () => { leanBack = false; leanFwd = false; }));
+    });
+    canvas.addEventListener("pointerdown", (e) => { e.preventDefault(); hop(); });
+
+    function restart() {
+      dist = 0; pts = 0; speed = 2.6; over = false;
+      y = 0; vy = 0; angle = 0; vAngle = 0; airborne = false; airTime = 0;
+      wrap.querySelector("#bkPts").textContent = "0";
+      wrap.querySelector("#bkM").textContent = "0";
+    }
+    function paint() {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, "#1E2E3E"); sky.addColorStop(1, "#3C5A4A");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      // Hügel im Hintergrund
+      ctx.fillStyle = "rgba(255,255,255,.06)";
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = 0; x <= W; x += 8) ctx.lineTo(x, ground(dist * 0.4 + x) - 46);
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+      // Boden
+      ctx.fillStyle = "#2C4A38"; ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = 0; x <= W; x += 4) ctx.lineTo(x, ground(dist + x));
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#7EC882"; ctx.lineWidth = 3; ctx.beginPath();
+      for (let x = 0; x <= W; x += 4) { const gy = ground(dist + x); x === 0 ? ctx.moveTo(x, gy) : ctx.lineTo(x, gy); }
+      ctx.stroke();
+      // Fahrer
+      const px = 150, py = ground(dist + px) + y;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(angle);
+      ctx.strokeStyle = "#E8A33D"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(-13, -9, 9, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(13, -9, 9, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-13, -9); ctx.lineTo(0, -20); ctx.lineTo(13, -9); ctx.stroke();
+      ctx.fillStyle = "#3FA796";
+      ctx.beginPath(); ctx.ellipse(-2, -32, 8, 11, -.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#C0453B";
+      ctx.beginPath(); ctx.arc(3, -45, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.66)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 23px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("Sturz!", W / 2, H / 2 - 10);
+        ctx.font = "15px sans-serif";
+        ctx.fillText(`${pts} Punkte · ${Math.floor(dist / 10)} m`, W / 2, H / 2 + 16);
+        ctx.font = "13px sans-serif"; ctx.fillText("Tippen für neue Abfahrt", W / 2, H / 2 + 40);
+      }
+    }
+    function tick() {
+      if (over) return;
+      dist += speed;
+      if (speed < 5.4) speed += 0.0022;
+      if (dist % 40 < speed) wrap.querySelector("#bkM").textContent = Math.floor(dist / 10);
+      const slope = slopeAt(dist + 150);
+      if (leanBack) vAngle -= 0.008;
+      if (leanFwd) vAngle += 0.008;
+      if (airborne) {
+        airTime++;
+        vy += 0.42; y += vy;
+        angle += vAngle;
+        if (y >= 0) {
+          // Landung bewerten: je näher an der Hangneigung, desto besser
+          const diff = Math.abs(angle - slope);
+          if (diff > 0.9) { over = true; submitScore("bike", pts + Math.floor(dist / 10)); paint(); render(); return; }
+          const bonus = airTime > 14 ? Math.max(5, Math.round((1 - diff) * 40)) : 0;
+          if (bonus) { pts += bonus; wrap.querySelector("#bkPts").textContent = pts; }
+          y = 0; vy = 0; airborne = false; airTime = 0; vAngle = 0;
+          angle = slope;
+        }
+      } else {
+        angle += (slope - angle) * 0.22 + vAngle;
+        vAngle *= 0.86;
+        // Kante nach unten: der Reifen verliert Bodenkontakt
+        if (slopeAt(dist + 156) - slope < -0.14) { airborne = true; vy = -3.2; }
+      }
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "bike", false, " Pkt");
+  }
+
+  // ---- Rundkurs-Rennen: Bestzeit auf einer Runde ----
+  function renderRaceGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Runde: <strong id="rcLap">–</strong> · Beste: <strong id="rcBest">–</strong> · Tempo: <strong id="rcSpd">0</strong></div>
+      <canvas id="raceCanvas" width="560" height="380" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-act="gas">⬆ Gas</button>
+        <div class="retro-touch-row"><button data-act="left">◀</button><button data-act="brake">⬇ Bremse</button><button data-act="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Pfeiltasten oder Knöpfe. Im Gras wirst du langsamer — saubere Linie zahlt sich aus.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#raceCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const CX = W / 2, CY = H / 2, RX = 200, RY = 130, TRACK = 46;
+    let ang = Math.PI / 2, x = CX, yy = CY + RY, dir = 0, spd = 0;
+    let gas = false, brake = false, left = false, right = false;
+    let lapStart = performance.now(), lastLap = null, best = null, wasPastLine = false;
+
+    function onTrack(px, py) {
+      const dx = (px - CX) / RX, dy = (py - CY) / RY;
+      const r = Math.sqrt(dx * dx + dy * dy);
+      return Math.abs(r - 1) < TRACK / 2 / ((RX + RY) / 2);
+    }
+    function keyDown(e) {
+      if (e.key === "ArrowUp") { e.preventDefault(); gas = true; }
+      if (e.key === "ArrowDown") { e.preventDefault(); brake = true; }
+      if (e.key === "ArrowLeft") left = true;
+      if (e.key === "ArrowRight") right = true;
+    }
+    function keyUp(e) {
+      if (e.key === "ArrowUp") gas = false;
+      if (e.key === "ArrowDown") brake = false;
+      if (e.key === "ArrowLeft") left = false;
+      if (e.key === "ArrowRight") right = false;
+    }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-act]").forEach(b => {
+      const a = b.dataset.act;
+      b.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        if (a === "gas") gas = true; else if (a === "brake") brake = true;
+        else if (a === "left") left = true; else right = true;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        b.addEventListener(ev, () => { gas = brake = left = right = false; }));
+    });
+
+    function fmtLap(ms) { return (ms / 1000).toFixed(2) + " s"; }
+    function paint() {
+      ctx.fillStyle = "#2C4A38"; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "#3A3F44"; ctx.lineWidth = TRACK;
+      ctx.beginPath(); ctx.ellipse(CX, CY, RX, RY, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 2; ctx.setLineDash([12, 14]);
+      ctx.beginPath(); ctx.ellipse(CX, CY, RX, RY, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      // Start-Ziel-Linie
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(CX, CY + RY - TRACK / 2); ctx.lineTo(CX, CY + RY + TRACK / 2); ctx.stroke();
+      // Auto
+      ctx.save(); ctx.translate(x, yy); ctx.rotate(dir);
+      ctx.fillStyle = "#C0453B"; ctx.fillRect(-13, -8, 26, 16);
+      ctx.fillStyle = "#EFE7D8"; ctx.fillRect(0, -6, 8, 12);
+      ctx.fillStyle = "#14181B"; ctx.fillRect(-11, -10, 6, 3); ctx.fillRect(-11, 7, 6, 3);
+      ctx.fillRect(6, -10, 6, 3); ctx.fillRect(6, 7, 6, 3);
+      ctx.restore();
+    }
+    function tick() {
+      const maxSpd = onTrack(x, yy) ? 4.4 : 1.9;
+      if (gas) spd += 0.12; if (brake) spd -= 0.18;
+      spd = Math.max(0, Math.min(maxSpd, spd * 0.985));
+      const steer = 0.045 * Math.min(1, spd / 2.2);
+      if (left) dir -= steer; if (right) dir += steer;
+      x += Math.cos(dir) * spd; yy += Math.sin(dir) * spd;
+      x = Math.max(8, Math.min(W - 8, x)); yy = Math.max(8, Math.min(H - 8, yy));
+      wrap.querySelector("#rcSpd").textContent = Math.round(spd * 42);
+      // Rundenzeit: Ziellinie unten in der Mitte, nur in eine Richtung zählend
+      const pastLine = Math.abs(x - CX) < 16 && yy > CY;
+      if (pastLine && !wasPastLine && Math.cos(dir) < 0) {
+        const t = performance.now() - lapStart;
+        if (t > 4000) {
+          lastLap = t;
+          wrap.querySelector("#rcLap").textContent = fmtLap(t);
+          if (best === null || t < best) {
+            best = t;
+            wrap.querySelector("#rcBest").textContent = fmtLap(t);
+            submitScore("race", Math.round(t / 10), true);
+            render();
+          }
+          lapStart = performance.now();
+        }
+      }
+      wasPastLine = pastLine;
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "race", true, " (Hundertstel)");
+  }
+
+  // ---- Skate-Park: Tricks in der Luft, Kombos zählen ----
+  function renderSkateGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="skPts">0</strong> · Kombo: <strong id="skCombo">0</strong></div>
+      <canvas id="skateCanvas" width="560" height="300" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-trick="jump">⬆ Absprung</button>
+        <div class="retro-touch-row">
+          <button data-trick="spin">🌀 Drehung</button>
+          <button data-trick="flip">↻ Flip</button>
+          <button data-trick="grab">✋ Grab</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Erst abspringen, dann in der Luft Tricks auslösen.
+      Jeder neue Trick erhöht die Kombo — aber landen musst du aufrecht!</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#skateCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const groundY = H - 54;
+    let py = groundY, vy = 0, air = false, rot = 0, flip = 0, grab = false;
+    let pts = 0, combo = 0, trickList = [], msg = "", msgT = 0;
+
+    function doTrick(kind) {
+      if (kind === "jump") {
+        if (!air) { vy = -10.6; air = true; trickList = []; }
+        return;
+      }
+      if (!air) return;
+      if (kind === "spin") { rot += Math.PI; trickList.push("Drehung"); }
+      if (kind === "flip") { flip += Math.PI; trickList.push("Flip"); }
+      if (kind === "grab") { grab = true; trickList.push("Grab"); setTimeout(() => grab = false, 420); }
+    }
+    function keyHandler(e) {
+      const map = { Space: "jump", ArrowUp: "jump", ArrowLeft: "spin", ArrowRight: "flip", ArrowDown: "grab" };
+      const k = map[e.code] || map[e.key];
+      if (k) { e.preventDefault(); doTrick(k); }
+    }
+    document.addEventListener("keydown", keyHandler);
+    wrap.querySelectorAll("[data-trick]").forEach(b =>
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); doTrick(b.dataset.trick); }));
+
+    function paint() {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, "#2A2438"); sky.addColorStop(1, "#4A4256");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      // Rampe
+      ctx.fillStyle = "#3A3446";
+      ctx.beginPath(); ctx.moveTo(0, groundY + 14); ctx.lineTo(120, groundY + 14);
+      ctx.quadraticCurveTo(40, groundY + 14, 26, groundY - 60); ctx.lineTo(0, groundY - 60);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#4A4256"; ctx.fillRect(0, groundY + 14, W, H - groundY);
+      ctx.strokeStyle = "#8F86A6"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, groundY + 14); ctx.lineTo(W, groundY + 14); ctx.stroke();
+      // Skater
+      const px = 190;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(rot); ctx.scale(1, Math.cos(flip) >= 0 ? 1 : -1);
+      ctx.fillStyle = "#E8A33D"; ctx.fillRect(-20, 6, 40, 5);
+      ctx.fillStyle = "#14181B";
+      ctx.beginPath(); ctx.arc(-12, 14, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(12, 14, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3FA796";
+      ctx.beginPath(); ctx.ellipse(0, -12, 10, 17, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#C0453B";
+      ctx.beginPath(); ctx.arc(0, -32, 8, 0, Math.PI * 2); ctx.fill();
+      if (grab) { ctx.strokeStyle = "#3FA796"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(14, 6); ctx.stroke(); }
+      ctx.restore();
+      if (msgT > 0) {
+        ctx.fillStyle = "#E8A33D"; ctx.font = "bold 19px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(msg, W / 2, 52);
+      }
+    }
+    function tick() {
+      if (msgT > 0) msgT--;
+      if (air) {
+        vy += 0.44; py += vy;
+        if (grab) rot += 0.02;
+        if (py >= groundY) {
+          py = groundY; air = false;
+          const upright = Math.abs(Math.sin(rot)) < 0.45 && Math.abs(Math.sin(flip)) < 0.45;
+          if (trickList.length && upright) {
+            combo++;
+            const gain = trickList.length * 10 * combo;
+            pts += gain;
+            msg = `${trickList.join(" + ")}  +${gain}`; msgT = 70;
+            wrap.querySelector("#skPts").textContent = pts;
+            wrap.querySelector("#skCombo").textContent = combo;
+            submitScore("skate", pts);
+          } else if (trickList.length) {
+            combo = 0; msg = "Nicht sauber gelandet"; msgT = 60;
+            wrap.querySelector("#skCombo").textContent = "0";
+          }
+          rot = 0; flip = 0; vy = 0; trickList = [];
+        }
+      }
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) { document.removeEventListener("keydown", keyHandler); obs.disconnect(); }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "skate", false, " Pkt");
+  }
+
+  // ---- Mondlandung: Schub dosieren, sanft aufsetzen ----
+  function renderLanderGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Treibstoff: <strong id="ldFuel">100</strong> · Tempo: <strong id="ldV">0.0</strong> · Landungen: <strong id="ldOk">0</strong></div>
+      <canvas id="landerCanvas" width="560" height="380" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-act="up">🔥 Schub</button>
+        <div class="retro-touch-row"><button data-act="left">◀</button><button data-act="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Setze möglichst langsam und gerade auf der markierten Fläche auf.
+      Je sanfter, desto mehr Punkte.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#landerCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    let x, y, vx, vy, fuel, over, won, pad, terrain, landings = 0, score = 0;
+    let up = false, lf = false, rt = false;
+
+    function makeTerrain() {
+      const pts = [];
+      let h = H - 70;
+      for (let i = 0; i <= W; i += 20) {
+        h += (Math.random() - 0.5) * 26;
+        h = Math.max(H - 150, Math.min(H - 30, h));
+        pts.push({ x: i, y: h });
+      }
+      // ebene Landefläche
+      const padIdx = 4 + Math.floor(Math.random() * (pts.length - 10));
+      const padY = pts[padIdx].y;
+      for (let i = padIdx; i < padIdx + 4 && i < pts.length; i++) pts[i].y = padY;
+      return { pts, pad: { x1: pts[padIdx].x, x2: pts[Math.min(padIdx + 3, pts.length - 1)].x, y: padY } };
+    }
+    function reset(newTerrain) {
+      if (newTerrain || !terrain) { const t = makeTerrain(); terrain = t.pts; pad = t.pad; }
+      x = 60 + Math.random() * (W - 120); y = 40; vx = (Math.random() - 0.5) * 1.4; vy = 0;
+      fuel = 100; over = false; won = false;
+      wrap.querySelector("#ldFuel").textContent = "100";
+    }
+    reset(true);
+    function keyDown(e) {
+      if (e.key === "ArrowUp" || e.code === "Space") { e.preventDefault(); up = true; }
+      if (e.key === "ArrowLeft") lf = true;
+      if (e.key === "ArrowRight") rt = true;
+    }
+    function keyUp(e) {
+      if (e.key === "ArrowUp" || e.code === "Space") up = false;
+      if (e.key === "ArrowLeft") lf = false;
+      if (e.key === "ArrowRight") rt = false;
+    }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-act]").forEach(b => {
+      const a = b.dataset.act;
+      b.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        if (over) { reset(won); return; }
+        if (a === "up") up = true; else if (a === "left") lf = true; else rt = true;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        b.addEventListener(ev, () => { up = lf = rt = false; }));
+    });
+    canvas.addEventListener("pointerdown", () => { if (over) reset(won); });
+
+    function groundYAt(px) {
+      for (let i = 0; i < terrain.length - 1; i++) {
+        if (px >= terrain[i].x && px <= terrain[i + 1].x) {
+          const t = (px - terrain[i].x) / (terrain[i + 1].x - terrain[i].x);
+          return terrain[i].y + (terrain[i + 1].y - terrain[i].y) * t;
+        }
+      }
+      return H - 60;
+    }
+    function paint() {
+      ctx.fillStyle = "#04060F"; ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = "rgba(255,255,255,.5)";
+        ctx.fillRect((i * 79) % W, (i * 137) % (H - 120), 1.4, 1.4);
+      }
+      ctx.fillStyle = "#2A2E3C"; ctx.beginPath(); ctx.moveTo(0, H);
+      terrain.forEach(p => ctx.lineTo(p.x, p.y)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#7A8399"; ctx.lineWidth = 2; ctx.beginPath();
+      terrain.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+      // Landefläche
+      ctx.strokeStyle = "#3FA796"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(pad.x1, pad.y); ctx.lineTo(pad.x2, pad.y); ctx.stroke();
+      // Lander
+      ctx.save(); ctx.translate(x, y);
+      ctx.fillStyle = "#D8DEE6";
+      ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(11, 4); ctx.lineTo(-11, 4); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#8F98A8"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-8, 4); ctx.lineTo(-13, 13); ctx.moveTo(8, 4); ctx.lineTo(13, 13); ctx.stroke();
+      if (up && fuel > 0 && !over) {
+        ctx.fillStyle = "#E8A33D";
+        ctx.beginPath(); ctx.moveTo(-5, 5); ctx.lineTo(0, 15 + Math.random() * 8); ctx.lineTo(5, 5); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.68)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = won ? "#3FA796" : "#C0453B";
+        ctx.font = "bold 23px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(won ? "Sauber gelandet!" : "Zu hart aufgesetzt", W / 2, H / 2 - 10);
+        ctx.fillStyle = "#fff"; ctx.font = "14px sans-serif";
+        ctx.fillText(`${landings} Landung${landings === 1 ? "" : "en"} · ${score} Punkte`, W / 2, H / 2 + 16);
+        ctx.font = "13px sans-serif"; ctx.fillText("Tippen für den nächsten Versuch", W / 2, H / 2 + 40);
+      }
+    }
+    function tick() {
+      if (!over) {
+        if (up && fuel > 0) { vy -= 0.13; fuel -= 0.35; }
+        if (lf && fuel > 0) { vx -= 0.05; fuel -= 0.1; }
+        if (rt && fuel > 0) { vx += 0.05; fuel -= 0.1; }
+        fuel = Math.max(0, fuel);
+        vy += 0.045; x += vx; y += vy;
+        if (x < 8) { x = 8; vx = 0; } if (x > W - 8) { x = W - 8; vx = 0; }
+        wrap.querySelector("#ldFuel").textContent = Math.round(fuel);
+        wrap.querySelector("#ldV").textContent = Math.abs(vy).toFixed(1);
+        const gy = groundYAt(x);
+        if (y + 13 >= gy) {
+          y = gy - 13;
+          const onPad = x > pad.x1 && x < pad.x2;
+          const soft = Math.abs(vy) < 1.5 && Math.abs(vx) < 0.8;
+          over = true; won = onPad && soft;
+          if (won) {
+            landings++;
+            const gain = Math.max(20, Math.round((2 - Math.abs(vy)) * 60 + fuel));
+            score += gain;
+            wrap.querySelector("#ldOk").textContent = landings;
+            submitScore("lander", score);
+          }
+          render();
+        }
+      }
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "lander", false, " Pkt");
+  }
+
   function renderRunnerGame(container) {
     const wrap = document.createElement("div");
     wrap.className = "calendar-card retro-game-wrap";
@@ -7373,12 +8237,14 @@ body.sortable-active * { cursor: grabbing !important; }
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          const maxDim = 1000;
+          const maxDim = 1800;
           const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
           const c = document.createElement("canvas");
-          c.width = img.width * scale; c.height = img.height * scale;
-          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-          pendingPhoto = c.toDataURL("image/jpeg", 0.8);
+          c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+          const cx = c.getContext("2d");
+          cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = "high";
+          cx.drawImage(img, 0, 0, c.width, c.height);
+          pendingPhoto = c.toDataURL("image/jpeg", 0.92);
           composer.querySelector("#newsPhotoPreview").innerHTML = `<div class="news-photo-preview"><img src="${pendingPhoto}"><button type="button" class="card-pin" id="newsPhotoRemove">✕</button></div>`;
           composer.querySelector("#newsPhotoRemove").onclick = () => { pendingPhoto = ""; composer.querySelector("#newsPhotoPreview").innerHTML = ""; };
         };
@@ -7634,7 +8500,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   function renderAllowanceView(container) {
     const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
-    if (!viewingEntity || personalAreaUnlockedFor !== viewingEntity.id) {
+    if (!viewingEntity || !isAreaUnlocked(viewingEntity.id)) {
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">💰</span>Das Taschengeld ist nur im jeweiligen persönlichen Bereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
       container.querySelector("#goToHubBtn").onclick = () => setView("admin");
       return;
@@ -7973,7 +8839,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#fCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelector("#fSave").onclick = () => {
       state.fitness = state.fitness || {};
       state.fitness[profileId] = {
@@ -8011,6 +8877,7 @@ body.sortable-active * { cursor: grabbing !important; }
       card.style.cursor = "default";
       const likers = (r.likes || []).map(pid => getProfile(pid)).filter(Boolean);
       card.innerHTML = `
+        ${r.photo ? `<img class="card-thumb" src="${r.photo}" alt="">` : ""}
         <div class="card-top">
           <h3 class="card-title" style="margin:0;">${r.emoji || "🍽️"} ${escapeHtml(r.name)}</h3>
           <div style="display:flex;gap:4px;">
@@ -8073,6 +8940,11 @@ body.sortable-active * { cursor: grabbing !important; }
       <div class="field"><label>Schlagwort (optional)</label><input type="text" id="rcTags" value="${escapeHtml(draft.tags || "")}" placeholder="z. B. schnell, vegetarisch"></div>
       <div class="field"><label>Zutaten (mit Komma trennen)</label><textarea id="rcIng" rows="3" placeholder="Nudeln, Hackfleisch, Tomaten">${escapeHtml(draft.ingredients || "")}</textarea></div>
       <div class="field"><label>Notizen (optional)</label><textarea id="rcNotes" rows="2">${escapeHtml(draft.notes || "")}</textarea></div>
+      <div class="field"><label>Foto (optional)</label>
+        <div id="rcPhotoBox">${draft.photo ? `<div class="recipe-photo-preview"><img src="${draft.photo}"><button type="button" class="card-pin" id="rcPhotoRemove">✕</button></div>` : ""}</div>
+        <button type="button" class="btn btn-sm" id="rcPhotoBtn">📷 Foto anhängen</button>
+        <input type="file" accept="image/*" id="rcPhotoInput" style="display:none">
+      </div>
       <div class="modal-footer"><div></div><div class="modal-footer-right">
         <button class="btn btn-ghost" id="rcCancel">Abbrechen</button>
         <button class="btn btn-accent" id="rcSave">Speichern</button>
@@ -8082,7 +8954,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#rcCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(btn => {
       btn.onclick = () => {
         overlay.querySelectorAll("#rcEmojiPicker .emoji-opt-btn").forEach(b => b.classList.remove("active"));
@@ -8090,6 +8962,39 @@ body.sortable-active * { cursor: grabbing !important; }
         draft.emoji = btn.dataset.emoji;
       };
     });
+    const rcInput = overlay.querySelector("#rcPhotoInput");
+    const rcBox = overlay.querySelector("#rcPhotoBox");
+    function paintRecipePhoto() {
+      rcBox.innerHTML = draft.photo
+        ? `<div class="recipe-photo-preview"><img src="${draft.photo}"><button type="button" class="card-pin" id="rcPhotoRemove">✕</button></div>`
+        : "";
+      const rm = rcBox.querySelector("#rcPhotoRemove");
+      if (rm) rm.onclick = () => { draft.photo = ""; paintRecipePhoto(); };
+    }
+    paintRecipePhoto();
+    overlay.querySelector("#rcPhotoBtn").onclick = () => rcInput.click();
+    rcInput.onchange = () => {
+      const file = rcInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1400;
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const cv = document.createElement("canvas");
+          cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+          const cx = cv.getContext("2d");
+          cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = "high";
+          cx.drawImage(img, 0, 0, cv.width, cv.height);
+          draft.photo = cv.toDataURL("image/jpeg", 0.9);
+          paintRecipePhoto();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      rcInput.value = "";
+    };
     overlay.querySelector("#rcSave").onclick = () => {
       draft.name = overlay.querySelector("#rcName").value.trim();
       if (!draft.name) { showToast("Bitte einen Namen eingeben."); return; }
@@ -8160,7 +9065,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#gdCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
 
     let chosen = null;
     overlay.querySelectorAll(".grade-pick").forEach(btn => {
@@ -8189,7 +9094,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   function renderGradesView(container) {
     const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
-    if (!viewingEntity || personalAreaUnlockedFor !== viewingEntity.id) {
+    if (!viewingEntity || !isAreaUnlocked(viewingEntity.id)) {
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">📓</span>Der Notenspiegel ist nur im jeweiligen persönlichen Bereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
       container.querySelector("#goToHubBtn").onclick = () => setView("admin");
       return;
@@ -8428,7 +9333,7 @@ body.sortable-active * { cursor: grabbing !important; }
     document.body.appendChild(overlay);
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = () => { close(); onDone && onDone(); };
-    overlay.onclick = (e) => { if (e.target === overlay) { close(); onDone && onDone(); } };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelector("#psSave").onclick = () => {
       const val = overlay.querySelector('input[name="poolScope"]:checked').value;
       if (val === "private") { pool.ownerId = state.activeProfileId || null; pool.scope = "family"; }
@@ -8436,6 +9341,241 @@ body.sortable-active * { cursor: grabbing !important; }
       pool.updatedAt = Date.now();
       saveState(); close(); onDone && onDone();
     };
+  }
+
+  /* ============ TAGEBUCH ============ */
+  // Eigene PIN, unabhängig von der Profil-PIN. Nur die Person selbst kann sie
+  // zurücksetzen — auch Eltern kommen ohne die PIN nicht hinein.
+  let diaryUnlockedFor = null;
+
+  function renderDiarySection(container, profile) {
+    const cfg = (state.diaries || {})[profile.id] || {};
+    const section = document.createElement("div");
+    section.className = "settings-section diary-section";
+
+    if (!cfg.pinHash) {
+      section.innerHTML = `<h3>📔 Mein Tagebuch</h3>
+        <p class="hint">Ein geschützter Ort nur für dich. Es bekommt eine <b>eigene PIN</b> —
+        unabhängig von deiner Profil-PIN. Niemand sonst kann sie zurücksetzen, auch Eltern nicht.</p>
+        <button class="btn btn-accent btn-sm" id="diarySetup">📔 Tagebuch anlegen</button>`;
+      container.appendChild(section);
+      section.querySelector("#diarySetup").onclick = () => openDiarySetup(profile);
+      makeCollapsible(section, "diary-" + profile.id, true);
+      return;
+    }
+
+    if (diaryUnlockedFor !== profile.id) {
+      section.innerHTML = `<h3>📔 Mein Tagebuch</h3>
+        <div class="diary-locked">
+          <div class="diary-book-closed"><span class="diary-lock">🔒</span></div>
+          <p class="hint" style="text-align:center;">Verschlossen. Gib deine Tagebuch-PIN ein.</p>
+          <div class="field" style="max-width:220px;margin:0 auto;">
+            <input type="password" id="diaryPin" placeholder="Tagebuch-PIN" inputmode="numeric">
+          </div>
+          <div style="text-align:center;margin-top:8px;">
+            <button class="btn btn-accent btn-sm" id="diaryOpen">Aufschließen</button>
+          </div>
+          <p class="diary-error" id="diaryErr"></p>
+        </div>`;
+      container.appendChild(section);
+      const tryOpen = async () => {
+        const val = section.querySelector("#diaryPin").value;
+        if (await sha256Hex(val) === cfg.pinHash) {
+          diaryUnlockedFor = profile.id;
+          // Kurze Öffnungs-Animation, danach normal weiterzeichnen
+          const book = section.querySelector(".diary-book-closed");
+          book.classList.add("opening");
+          if (navigator.vibrate) { try { navigator.vibrate([12, 40, 18]); } catch (e) {} }
+          setTimeout(() => render(), 780);
+        } else {
+          section.querySelector("#diaryErr").textContent = "Falsche PIN.";
+          section.querySelector("#diaryPin").value = "";
+        }
+      };
+      section.querySelector("#diaryOpen").onclick = tryOpen;
+      section.querySelector("#diaryPin").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); tryOpen(); }
+      });
+      makeCollapsible(section, "diary-" + profile.id, true);
+      return;
+    }
+
+    // --- Geöffnetes Tagebuch ---
+    const entries = (state.diaryEntries || [])
+      .filter(e => e.profileId === profile.id)
+      .sort((a, b) => (b.at || 0) - (a.at || 0));
+    const MOODS = ["😊", "😐", "😢", "😠", "🥰", "😴", "🤩", "😰"];
+    section.innerHTML = `<h3>📔 Mein Tagebuch</h3>`;
+    const body = document.createElement("div");
+    body.className = "diary-open";
+    body.innerHTML = `
+      <div class="diary-toolbar">
+        <span class="hint" style="margin:0;">${entries.length} Eintrag${entries.length === 1 ? "" : "e"}</span>
+        <div style="display:flex;gap:6px;margin-left:auto;">
+          <button class="btn btn-sm" id="diaryNew">+ Neuer Eintrag</button>
+          <button class="btn btn-sm" id="diaryChangePin">🔑 PIN ändern</button>
+          <button class="btn btn-sm" id="diaryLock">🔒 Schließen</button>
+        </div>
+      </div>
+      <div class="diary-pages" id="diaryPages">
+        ${entries.length ? entries.map(e => `
+          <article class="diary-entry" data-entry="${e.id}">
+            <div class="diary-entry-head">
+              <span class="diary-mood">${e.mood || "📝"}</span>
+              <span class="diary-title">${escapeHtml(e.title || "Ohne Titel")}</span>
+              <span class="diary-date">${fmtDate(e.at)}</span>
+              <button class="card-pin diary-del" title="Löschen">✕</button>
+            </div>
+            <div class="diary-text">${escapeHtml(e.text || "").replace(/\n/g, "<br>")}</div>
+            ${e.photo ? `<img class="diary-photo" src="${e.photo}" alt="">` : ""}
+          </article>`).join("") : `<div class="widget-empty">Noch nichts geschrieben. Fang an!</div>`}
+      </div>`;
+    section.appendChild(body);
+    container.appendChild(section);
+
+    body.querySelector("#diaryLock").onclick = () => {
+      diaryUnlockedFor = null; render();
+      showToast("Tagebuch verschlossen.");
+    };
+    body.querySelector("#diaryNew").onclick = () => openDiaryEntryEditor(profile, null, MOODS);
+    body.querySelector("#diaryChangePin").onclick = () => openDiarySetup(profile, true);
+    body.querySelectorAll(".diary-entry").forEach(el => {
+      el.querySelector(".diary-del").onclick = (ev) => {
+        ev.stopPropagation();
+        if (!confirm("Diesen Eintrag löschen?")) return;
+        markDeleted(el.dataset.entry);
+        state.diaryEntries = state.diaryEntries.filter(x => x.id !== el.dataset.entry);
+        saveState(); render();
+      };
+      el.onclick = (ev) => {
+        if (ev.target.closest(".diary-del")) return;
+        const entry = state.diaryEntries.find(x => x.id === el.dataset.entry);
+        if (entry) openDiaryEntryEditor(profile, entry, MOODS);
+      };
+    });
+    makeCollapsible(section, "diary-" + profile.id, true);
+  }
+
+  function openDiarySetup(profile, isChange) {
+    const cfg = (state.diaries || {})[profile.id] || {};
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal" style="max-width:400px;">
+      <div class="modal-header"><h2>📔 ${isChange ? "Tagebuch-PIN ändern" : "Tagebuch anlegen"}</h2>
+        <button class="close-btn" id="closeModal">✕</button></div>
+      <p class="hint">Diese PIN gilt nur fürs Tagebuch. <b>Merk sie dir gut</b> — es gibt keinen
+      Weg, sie von außen zurückzusetzen, auch nicht durch die Eltern.</p>
+      ${isChange ? `<div class="field"><label>Bisherige PIN</label><input type="password" id="dOld" inputmode="numeric"></div>` : ""}
+      <div class="field"><label>Neue PIN</label><input type="password" id="dNew" inputmode="numeric"></div>
+      <div class="field"><label>Nochmal eingeben</label><input type="password" id="dNew2" inputmode="numeric"></div>
+      <p class="diary-error" id="dErr"></p>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="dCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="dSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#dCancel").onclick = close;
+    overlay.querySelector("#dSave").onclick = async () => {
+      const err = overlay.querySelector("#dErr");
+      if (isChange) {
+        const old = overlay.querySelector("#dOld").value;
+        if (await sha256Hex(old) !== cfg.pinHash) { err.textContent = "Bisherige PIN stimmt nicht."; return; }
+      }
+      const p1 = overlay.querySelector("#dNew").value;
+      const p2 = overlay.querySelector("#dNew2").value;
+      if (!p1 || p1.length < 4) { err.textContent = "Bitte mindestens 4 Zeichen."; return; }
+      if (p1 !== p2) { err.textContent = "Die Eingaben stimmen nicht überein."; return; }
+      state.diaries = state.diaries || {};
+      state.diaries[profile.id] = { pinHash: await sha256Hex(p1), updatedAt: Date.now() };
+      diaryUnlockedFor = profile.id;
+      saveState(); close(); render();
+      showToast(isChange ? "PIN geändert." : "Tagebuch angelegt 📔");
+    };
+    setTimeout(() => overlay.querySelector(isChange ? "#dOld" : "#dNew").focus(), 30);
+  }
+
+  function openDiaryEntryEditor(profile, existing, MOODS) {
+    const draft = existing ? { ...existing }
+      : { id: uid(), profileId: profile.id, title: "", text: "", mood: "😊", photo: "", at: Date.now() };
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `<div class="modal diary-modal" style="max-width:540px;">
+      <div class="modal-header"><h2>${existing ? "Eintrag bearbeiten" : "Neuer Eintrag"}</h2>
+        <button class="close-btn" id="closeModal">✕</button></div>
+      <div class="field"><label>Wie geht es dir?</label>
+        <div class="emoji-picker" id="dMoodPick">
+          ${MOODS.map(m => `<button type="button" class="emoji-opt-btn${m === draft.mood ? " active" : ""}" data-mood="${m}">${m}</button>`).join("")}
+        </div>
+      </div>
+      <div class="field"><label>Überschrift</label><input type="text" id="dTitle" value="${escapeHtml(draft.title)}" placeholder="Was war heute los?"></div>
+      <div class="field"><label>Dein Text</label><textarea id="dText" rows="9" class="diary-textarea" placeholder="Schreib einfach drauflos …">${escapeHtml(draft.text)}</textarea></div>
+      <div class="field"><label>Foto (optional)</label>
+        <div id="dPhotoBox"></div>
+        <button type="button" class="btn btn-sm" id="dPhotoBtn">📷 Foto anhängen</button>
+        <input type="file" accept="image/*" id="dPhotoInput" style="display:none">
+      </div>
+      <div class="modal-footer"><div></div><div class="modal-footer-right">
+        <button class="btn btn-ghost" id="dCancel">Abbrechen</button>
+        <button class="btn btn-accent" id="dSave">Speichern</button>
+      </div></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector("#closeModal").onclick = close;
+    overlay.querySelector("#dCancel").onclick = close;
+    overlay.querySelectorAll("[data-mood]").forEach(b => {
+      b.onclick = () => {
+        overlay.querySelectorAll("[data-mood]").forEach(x => x.classList.remove("active"));
+        b.classList.add("active"); draft.mood = b.dataset.mood;
+      };
+    });
+    const pBox = overlay.querySelector("#dPhotoBox");
+    function paintPhoto() {
+      pBox.innerHTML = draft.photo
+        ? `<div class="recipe-photo-preview"><img src="${draft.photo}"><button type="button" class="card-pin" id="dPhotoRm">✕</button></div>` : "";
+      const rm = pBox.querySelector("#dPhotoRm");
+      if (rm) rm.onclick = () => { draft.photo = ""; paintPhoto(); };
+    }
+    paintPhoto();
+    const inp = overlay.querySelector("#dPhotoInput");
+    overlay.querySelector("#dPhotoBtn").onclick = () => inp.click();
+    inp.onchange = () => {
+      const file = inp.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const im = new Image();
+        im.onload = () => {
+          const maxDim = 1400;
+          const sc = Math.min(1, maxDim / Math.max(im.width, im.height));
+          const cv = document.createElement("canvas");
+          cv.width = Math.round(im.width * sc); cv.height = Math.round(im.height * sc);
+          const cx = cv.getContext("2d");
+          cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = "high";
+          cx.drawImage(im, 0, 0, cv.width, cv.height);
+          draft.photo = cv.toDataURL("image/jpeg", 0.9);
+          paintPhoto();
+        };
+        im.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      inp.value = "";
+    };
+    overlay.querySelector("#dSave").onclick = () => {
+      draft.title = overlay.querySelector("#dTitle").value.trim();
+      draft.text = overlay.querySelector("#dText").value;
+      if (!draft.title && !draft.text.trim() && !draft.photo) { showToast("Da steht ja noch nichts drin."); return; }
+      draft.updatedAt = Date.now();
+      state.diaryEntries = state.diaryEntries || [];
+      const i = state.diaryEntries.findIndex(x => x.id === draft.id);
+      if (i >= 0) state.diaryEntries[i] = draft; else state.diaryEntries.push(draft);
+      saveState(); close(); render();
+      showToast("Gespeichert 📔");
+    };
+    setTimeout(() => overlay.querySelector("#dTitle").focus(), 30);
   }
 
   function renderSavingsPools(container, isParentView, viewingEntity) {
@@ -8670,7 +9810,7 @@ body.sortable-active * { cursor: grabbing !important; }
   let budgetSubTab = "uebersicht";
   function renderHouseholdBudgetView(container) {
     const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
-    if (!viewingEntity || viewingEntity.id !== "shared-parent" || personalAreaUnlockedFor !== "shared-parent") {
+    if (!viewingEntity || viewingEntity.id !== "shared-parent" || !isAreaUnlocked("shared-parent")) {
       container.innerHTML = `<div class="empty-state"><span class="empty-icon">📒</span>Das Haushaltsbuch ist nur im gemeinsamen Elternbereich einsehbar.<br><button class="btn btn-accent" style="margin-top:12px;" id="goToHubBtn">Zu Mein Bereich</button></div>`;
       container.querySelector("#goToHubBtn").onclick = () => setView("admin");
       return;
@@ -9068,7 +10208,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     if (existing) {
       overlay.querySelector("#deleteEventBtn").onclick = () => {
         if (confirm("Termin wirklich löschen?")) { markDeleted(existing.id); state.events = state.events.filter(ev => ev.id !== existing.id); saveState(); close(); render(); }
@@ -9123,7 +10263,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); render(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#vacClose").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
 
     function paintList() {
       const listEl = overlay.querySelector("#vacList");
@@ -9253,7 +10393,7 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     }
     renderList();
-    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     document.body.appendChild(overlay);
   }
 
@@ -9339,7 +10479,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     if (existing) {
       overlay.querySelector("#deleteBtn").onclick = () => {
         if (confirm("Diese Betreuung wirklich löschen?")) {
@@ -9389,7 +10529,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#mcCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelector("#mcCopy").onclick = () => { const t = overlay.querySelector("#mcTarget").value; close(); onConfirm(t, "copy"); };
     overlay.querySelector("#mcMove").onclick = () => { const t = overlay.querySelector("#mcTarget").value; close(); onConfirm(t, "move"); };
   }
@@ -9423,7 +10563,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const close = () => overlay.remove();
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#slCancel").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     overlay.querySelectorAll(".profile-pick").forEach(btn => {
       btn.onclick = () => {
         const pid = btn.dataset.pid;
@@ -9605,12 +10745,14 @@ body.sortable-active * { cursor: grabbing !important; }
           reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-              const maxDim = 600;
+              const maxDim = 1400;
               const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
               const c = document.createElement("canvas");
-              c.width = img.width * scale; c.height = img.height * scale;
-              c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-              item.photo = c.toDataURL("image/jpeg", 0.75);
+              c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+              const cx = c.getContext("2d");
+              cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = "high";
+              cx.drawImage(img, 0, 0, c.width, c.height);
+              item.photo = c.toDataURL("image/jpeg", 0.9);
               item.updatedAt = Date.now();
               saveState(); render();
             };
@@ -9815,6 +10957,7 @@ body.sortable-active * { cursor: grabbing !important; }
     state.areaChat = (state.areaChat || []).filter(isLive);
     state.gameScores = (state.gameScores || []).filter(isLive);
     state.recipes = (state.recipes || []).filter(isLive);
+    state.diaryEntries = (state.diaryEntries || []).filter(isLive);
     state.mindmaps = state.mindmaps.filter(isLive).map(m => ({ ...m, nodes: (m.nodes || []).filter(isLive) }));
 
     state.items = unionById(state.items, remote.items).map(it => {
@@ -9889,6 +11032,17 @@ body.sortable-active * { cursor: grabbing !important; }
     state.areaChat = mergeByIdNewest(state.areaChat || [], remote.areaChat);
     state.gameScores = unionById(state.gameScores || [], remote.gameScores);
     state.recipes = mergeByIdNewest(state.recipes || [], remote.recipes);
+    state.diaryEntries = mergeByIdNewest(state.diaryEntries || [], remote.diaryEntries);
+    if (remote.diaries) {
+      state.diaries = state.diaries || {};
+      Object.entries(remote.diaries).forEach(([pid, rd]) => {
+        const local = state.diaries[pid];
+        // Eine lokal gesetzte Tagebuch-PIN wird nie vom Server überschrieben
+        if (!local || !local.pinHash || (rd.updatedAt || 0) > (local.updatedAt || 0)) {
+          state.diaries[pid] = rd;
+        }
+      });
+    }
     if (remote.fitness) {
       state.fitness = state.fitness || {};
       Object.entries(remote.fitness).forEach(([pid, rf]) => {
@@ -11041,7 +12195,7 @@ body.sortable-active * { cursor: grabbing !important; }
             if (keepActiveProfileId && state.profiles.some(p => p.id === keepActiveProfileId)) {
               state.activeProfileId = keepActiveProfileId;
             }
-            personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
+            lockAllAreas(); personalAreaViewingProfileId = null;
             saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
             startAutoSync();
             showToast("Backup importiert.");
@@ -11062,7 +12216,7 @@ body.sortable-active * { cursor: grabbing !important; }
           connectors: state.connectors
         };
         stopAutoSync();
-        personalAreaViewingProfileId = null; personalAreaUnlockedFor = null;
+        personalAreaViewingProfileId = null; lockAllAreas();
         saveState(); renderProfileBar(); render(); showToast("Alle Daten wurden gelöscht.");
       }
     };
@@ -11111,7 +12265,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const viewingEntity = personalAreaViewingProfileId ? getAreaEntity(personalAreaViewingProfileId) : null;
     if (!viewingEntity) return renderPersonalHub(container);
     if (!viewingEntity.pinHash) return renderPersonalSetup(container, viewingEntity);
-    if (personalAreaUnlockedFor !== viewingEntity.id) return renderPersonalGate(container, viewingEntity);
+    if (!isAreaUnlocked(viewingEntity.id)) return renderPersonalGate(container, viewingEntity);
     return renderPersonalPanel(container, viewingEntity);
   }
 
@@ -11159,11 +12313,11 @@ body.sortable-active * { cursor: grabbing !important; }
           card.innerHTML = `
             <span class="avatar" style="background:${p.color};cursor:pointer;">${p.emoji || p.name.charAt(0)}</span>
             <span class="hub-profile-name">${escapeHtml(p.name)}</span>
-            <span class="hub-profile-status">${personalAreaUnlockedFor === p.id ? "🔓 angemeldet" : (p.pinHash ? "🔒 gesperrt" : "einrichten")}</span>
+            <span class="hub-profile-status">${isAreaUnlocked(p.id) ? "🔓 angemeldet" : (p.pinHash ? "🔒 gesperrt" : "einrichten")}</span>
           `;
           card.onclick = () => { personalAreaViewingProfileId = p.id; render(); };
           // Sichtbar machen, welcher Bereich durch die Anmeldung bereits offen ist
-          if (personalAreaUnlockedFor === p.id) card.classList.add("hub-unlocked");
+          if (isAreaUnlocked(p.id)) card.classList.add("hub-unlocked");
           row.appendChild(card);
         });
         box.appendChild(row);
@@ -11205,7 +12359,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (pw.length < 4) { err.textContent = "Mindestens 4 Zeichen."; return; }
       if (pw !== pw2) { err.textContent = "PINs stimmen nicht überein."; return; }
       setAreaPinHash(profile, await sha256Hex(pw));
-      personalAreaUnlockedFor = profile.id;
+      unlockArea(profile.id);
       saveState();
       render();
       showToast(`${areaLabel(profile)} eingerichtet.`);
@@ -11310,7 +12464,7 @@ body.sortable-active * { cursor: grabbing !important; }
       box.querySelector("#ap-bio-row").innerHTML = `<button type="button" class="btn" id="ap-bio-btn" style="width:100%;margin-bottom:10px;">👆 Mit Face ID / Fingerabdruck entsperren</button>`;
       box.querySelector("#ap-bio-btn").onclick = async () => {
         const ok = await verifyBiometric("profile-" + profile.id);
-        if (ok) { personalAreaUnlockedFor = profile.id; render(); }
+        if (ok) { unlockArea(profile.id); render(); }
         else box.querySelector("#ap-error").textContent = "Nicht erkannt — bitte PIN verwenden.";
       };
     }
@@ -11319,7 +12473,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const pw = box.querySelector("#ap-pw").value;
       const hash = await sha256Hex(pw);
       if (hash === profile.pinHash) {
-        personalAreaUnlockedFor = profile.id; render();
+        unlockArea(profile.id); render();
       } else {
         box.querySelector("#ap-error").textContent = "Falsche PIN.";
         box.querySelector("#ap-pw").value = "";
@@ -11358,6 +12512,10 @@ body.sortable-active * { cursor: grabbing !important; }
     // da es dort bewusst keinen Umweg über das persönliche Taschengeld gibt.
     if (isSharedChild) {
       renderSavingsPools(container, false, profile);
+    }
+    // Tagebuch nur im eigenen persönlichen Bereich, nicht in gemeinsamen
+    if (!profile.shared) {
+      renderDiarySection(container, profile);
     }
     if (profile.shared) {
       renderAreaChat(container, profile);
@@ -11561,7 +12719,7 @@ body.sortable-active * { cursor: grabbing !important; }
       })();
     }
 
-    header.querySelector("#ap-lock").onclick = () => { personalAreaUnlockedFor = null; render(); showToast(`${areaLabel(profile)} gesperrt.`); };
+    header.querySelector("#ap-lock").onclick = () => { lockArea(profile.id); render(); showToast(`${areaLabel(profile)} gesperrt.`); };
 
     pwSection.querySelector("#ap-change-btn").onclick = async () => {
       const cur = pwSection.querySelector("#ap-cur").value;
@@ -11672,7 +12830,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function close() { overlay.remove(); }
     overlay.querySelector("#closeModal").onclick = close;
     overlay.querySelector("#cancelBtn").onclick = close;
-    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    // Klick daneben schließt bewusst nicht — sonst gehen Eingaben verloren.
     if (existing) {
       overlay.querySelector("#deleteWishBtn").onclick = () => {
         if (confirm("Diesen Wunsch wirklich löschen?")) { markDeleted(existing.id); state.wishlist = state.wishlist.filter(x => x.id !== existing.id); saveState(); close(); render(); }
@@ -12447,6 +13605,15 @@ body.sortable-active * { cursor: grabbing !important; }
 
   function init() {
     setupModalScrollAreas();
+    // Beim Start: Bereiche des angemeldeten Profils öffnen, sofern sie keine PIN haben.
+    // Geschützte Bereiche bleiben natürlich zu und fragen wie gewohnt nach.
+    {
+      const active = getActiveProfile();
+      if (active) {
+        if (!active.pinHash) unlockArea(active.id);
+        unlockMatchingSharedArea(active);
+      }
+    }
     // Browser soll die Scrollposition nicht selbst wiederherstellen
     if ("scrollRestoration" in history) { try { history.scrollRestoration = "manual"; } catch (e) {} }
     applyTheme(state.theme || "papier");
