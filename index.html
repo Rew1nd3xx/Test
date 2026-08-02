@@ -1501,7 +1501,7 @@ body.menu-open { overflow: hidden; }
      Dadurch sind Titel und die Speichern-Knöpfe auch bei langen Listen immer erreichbar. */
   display: flex; flex-direction: column; overflow: hidden;
 }
-.modal > *:not(.modal-header):not(.modal-footer) { flex-shrink: 0; }
+.modal > *:not(.modal-header):not(.modal-footer):not(.modal-scroll) { flex-shrink: 0; }
 .modal-header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
   flex-shrink: 0; padding-bottom: 12px; border-bottom: 1px solid var(--border);
@@ -1511,7 +1511,13 @@ body.menu-open { overflow: hidden; }
   background: var(--surface);
 }
 /* Alles zwischen Kopf und Fuß in einen scrollbaren Bereich packen */
-.modal-scroll { overflow-y: auto; flex: 1; min-height: 0; margin: 0 -4px; padding: 0 4px; }
+.modal-scroll {
+  overflow-y: auto; overflow-x: hidden;
+  flex: 1 1 auto; min-height: 0; margin: 0 -4px; padding: 0 4px;
+  -webkit-overflow-scrolling: touch;
+}
+/* Inhalte im Scrollbereich dürfen nicht selbst zusammengestaucht werden */
+.modal-scroll > * { flex-shrink: 0; }
 .modal-header h2 { font-family: var(--font-display); margin: 0; font-size: 22px; }
 .close-btn { background: none; border: none; font-size: 20px; color: var(--text-muted); }
 .field { margin-bottom: 14px; }
@@ -1589,6 +1595,9 @@ body.menu-open { overflow: hidden; }
 }
 .add-row-btn { align-self: flex-start; margin-top: 4px; }
 
+.shopping-card { cursor: pointer; }
+.shopping-card.active { border-color: var(--accent); box-shadow: var(--shadow), 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.shopping-open-head { font-family: var(--font-display); font-size: 20px; margin: 0 0 12px; }
 .shopping-list-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .shopping-list-tab {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1969,7 +1978,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 111;
+  const APP_BUILD_NUMBER = 112;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -9384,11 +9393,11 @@ body.sortable-active * { cursor: grabbing !important; }
 
     const header = document.createElement("div");
     header.className = "view-header";
-    header.innerHTML = `<div><h1 class="view-title">Einkaufsliste</h1><p class="view-sub">Mehrere Listen möglich — z. B. Wocheneinkauf, Drogerie, Baumarkt.</p></div>`;
+    header.innerHTML = `<div><h1 class="view-title">Einkaufslisten</h1><p class="view-sub">Mehrere Listen möglich — z. B. Wocheneinkauf, Drogerie, Baumarkt.</p></div>
+      <button class="btn btn-accent" id="newShoppingListBtn">+ Neue Liste</button>`;
     container.appendChild(header);
+    header.querySelector("#newShoppingListBtn").onclick = () => openShoppingListDialog(null);
 
-    const tabRow = document.createElement("div");
-    tabRow.className = "shopping-list-tabs";
     // Persönliche Listen nur für ihren Besitzer anzeigen — wie bei privaten Checklisten.
     const visibleLists = state.shoppingLists.filter(name => {
       const owner = (state.shoppingListOwners || {})[name];
@@ -9397,40 +9406,64 @@ body.sortable-active * { cursor: grabbing !important; }
       return owner === state.activeProfileId;                   // alte Einzel-Freigabe
     });
     if (!visibleLists.includes(activeShoppingList)) activeShoppingList = visibleLists[0] || state.shoppingLists[0];
-    tabRow.innerHTML = visibleLists.map(name => {
+
+    // Übersicht als Kacheln — wie bei den Checklisten. Antippen öffnet die Liste,
+    // erneutes Antippen klappt sie wieder zu.
+    const overview = document.createElement("div");
+    overview.className = "grid";
+    overview.style.marginBottom = "20px";
+    visibleLists.forEach(name => {
+      const items = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) === name);
+      const open = items.filter(i => !i.done).length;
+      const done = items.length - open;
+      const pct = items.length ? Math.round((done / items.length) * 100) : 0;
       const owner = (state.shoppingListOwners || {})[name];
       const ids = Array.isArray(owner) ? owner : (owner ? [owner] : []);
-      const avatars = ids.map(id => getProfile(id)).filter(Boolean)
-        .map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("");
-      return `<button class="shopping-list-tab ${name === activeShoppingList ? "active" : ""}" data-list="${escapeHtml(name)}">${avatars}${escapeHtml(name)}</button>`;
-    }).join("") + `<button class="shopping-list-tab shopping-list-add" id="addListBtn">+ Neue Liste</button>`;
-    container.appendChild(tabRow);
-    tabRow.querySelectorAll(".shopping-list-tab[data-list]").forEach(btn => {
-      btn.onclick = () => { activeShoppingList = btn.dataset.list; render(); };
-    });
-    tabRow.querySelector("#addListBtn").onclick = () => openShoppingListDialog(null);
-
-    if (state.shoppingLists.length > 1) {
-      const listActions = document.createElement("div");
-      listActions.style.cssText = "display:flex;gap:8px;margin-bottom:14px;";
-      listActions.innerHTML = `
-        <button class="btn btn-sm" id="renameListBtn">✎ Bearbeiten</button>
-        <button class="btn btn-sm btn-danger" id="deleteListBtn">🗑️ Liste löschen</button>
-      `;
-      container.appendChild(listActions);
-      listActions.querySelector("#renameListBtn").onclick = () => openShoppingListDialog(activeShoppingList);
-      listActions.querySelector("#deleteListBtn").onclick = () => {
-        if (!confirm(`Liste „${activeShoppingList}" wirklich komplett löschen (inkl. aller Einträge)?`)) return;
-        const toRemove = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) === activeShoppingList);
+      const people = ids.map(id => getProfile(id)).filter(Boolean);
+      const isOpenList = name === activeShoppingList;
+      const card = document.createElement("div");
+      card.className = "card shopping-card" + (isOpenList ? " active" : "");
+      card.innerHTML = `
+        <div class="card-top">
+          <h3 class="card-title" style="margin:0;">🛒 ${escapeHtml(name)}</h3>
+          <div style="display:flex;gap:4px;align-items:center;">
+            ${people.map(p => `<span class="mini-avatar" style="background:${p.color};" title="${escapeHtml(p.name)}">${p.emoji || p.name.charAt(0)}</span>`).join("")}
+            <button class="card-pin sl-edit" title="Liste bearbeiten">✏️</button>
+            ${visibleLists.length > 1 ? `<button class="card-pin sl-del" title="Liste löschen">✕</button>` : ""}
+          </div>
+        </div>
+        <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>${open ? `${open} offen` : "Alles erledigt 🎉"}${done ? ` · ${done} erledigt` : ""}</span>
+          <span class="card-pin">${isOpenList ? "▾" : "▸"}</span>
+        </div>
+        <div class="card-progress"><div class="card-progress-bar" style="width:${pct}%"></div></div>`;
+      card.onclick = (e) => {
+        if (e.target.closest(".sl-edit, .sl-del")) return;
+        activeShoppingList = isOpenList ? null : name;
+        render();
+      };
+      card.querySelector(".sl-edit").onclick = () => openShoppingListDialog(name);
+      const delBtn = card.querySelector(".sl-del");
+      if (delBtn) delBtn.onclick = () => {
+        if (!confirm(`Liste „${name}" wirklich löschen (inkl. aller Einträge)?`)) return;
+        const toRemove = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) === name);
         markDeletedMany(toRemove.map(i => i.id));
-        state.shoppingList = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) !== activeShoppingList);
-        state.shoppingLists = state.shoppingLists.filter(n => n !== activeShoppingList);
-        if (state.shoppingListOwners) delete state.shoppingListOwners[activeShoppingList];
+        state.shoppingList = state.shoppingList.filter(i => (i.list || state.shoppingLists[0]) !== name);
+        state.shoppingLists = state.shoppingLists.filter(n => n !== name);
+        if (state.shoppingListOwners) delete state.shoppingListOwners[name];
         if (!state.shoppingLists.length) state.shoppingLists = ["Einkaufen"];
-        activeShoppingList = state.shoppingLists[0];
+        if (activeShoppingList === name) activeShoppingList = state.shoppingLists[0];
         saveState(); render();
       };
-    }
+      overview.appendChild(card);
+    });
+    container.appendChild(overview);
+    if (!activeShoppingList) return;
+
+    const openHead = document.createElement("h2");
+    openHead.className = "shopping-open-head";
+    openHead.textContent = `🛒 ${activeShoppingList}`;
+    container.appendChild(openHead);
 
     const addRow = document.createElement("div");
     addRow.style.cssText = "display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;";
