@@ -372,7 +372,10 @@ body:not(.theme-stardust) .galaxy-stars { display: none; }
   border-color: rgba(212, 175, 55, .45);
   box-shadow: 0 14px 40px rgba(0,0,0,.75), 0 0 26px rgba(212,175,55,.16), inset 0 1px 0 rgba(255,255,255,.1);
 }
-.theme-stardust .widget-card::before { background: linear-gradient(180deg, #EFD98A, #D4AF37 40%, #C6CDD6); }
+.theme-stardust .widget-card::before {
+  background: linear-gradient(180deg, transparent, #EFD98A 18%, #D4AF37 42%, #F5F2E8 55%, #C6CDD6 78%, transparent);
+  box-shadow: 0 0 14px rgba(212,175,55,.5), inset -1px 0 0 rgba(255,255,255,.5);
+}
 .theme-stardust .btn { border-color: rgba(198,205,214,.22); }
 .theme-stardust .btn-accent {
   background: linear-gradient(135deg, #EFD98A, #D4AF37 55%, #A8862A);
@@ -824,7 +827,26 @@ body.theme-skizze { background-image: linear-gradient(var(--border) 1px, transpa
   content: ""; position: absolute; left: 14%; right: 14%; top: 0; height: 1px; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
 }
-.widget-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--widget-accent, var(--accent)); }
+/* Seitenstreifen: schmaler, mit Verlauf und feinem Lichtsaum — wirkt wie eine
+   eingelegte Kante statt wie ein aufgemalter Balken. Nimmt die Themefarben mit auf. */
+.widget-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--widget-accent, var(--accent)) 35%, transparent) 0%,
+    var(--widget-accent, var(--accent)) 22%,
+    var(--widget-accent, var(--accent)) 78%,
+    color-mix(in srgb, var(--widget-accent, var(--accent)) 35%, transparent) 100%);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--widget-accent, var(--accent)) 45%, transparent),
+    inset -1px 0 0 rgba(255,255,255,.28);
+  border-radius: 0 2px 2px 0;
+}
+/* Beim Überfahren zieht der Streifen kurz an — dezenter Hinweis auf Interaktion */
+.widget-card:hover::before {
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--widget-accent, var(--accent)) 65%, transparent),
+    inset -1px 0 0 rgba(255,255,255,.4);
+}
 .widget-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .widget-head h3 { font-family: var(--font-display); font-size: 15.5px; margin: 0; display: flex; align-items: center; gap: 8px; }
 .widget-head .widget-link { font-size: 11.5px; color: var(--text-muted); }
@@ -1355,10 +1377,7 @@ body.echo-show-mode .dashboard-card.clock-right .widget-body { order: 3; }
 .hub-back-link:hover { color: var(--accent); }
 .hub-profile-row { display: flex; flex-wrap: wrap; gap: 14px; }
 .hub-unlocked { border-color: var(--accent) !important; }
-.hub-unlocked::after {
-  content: "🔓 offen"; position: absolute; top: 6px; right: 8px;
-  font-size: 10px; color: var(--accent); font-weight: 600;
-}
+
 .hub-profile-card {
   position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--surface);
@@ -1537,7 +1556,18 @@ body.menu-open { overflow: hidden; }
 .modal-footer-right { display: flex; gap: 8px; }
 
 /* checklist items in editor */
-.checklist-items { display: flex; flex-direction: column; gap: 6px; }
+/* Nur die Punkte-Liste scrollt — Titel oben und Tags/Für-wen unten bleiben
+   dadurch im Bearbeiten-Modus immer sichtbar. */
+.checklist-items {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 34vh; overflow-y: auto; overflow-x: hidden;
+  padding: 6px 6px 6px 2px; margin-bottom: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface2) 45%, transparent);
+  -webkit-overflow-scrolling: touch;
+}
+.checklist-items:empty { display: none; }
+.checklist-items > * { flex-shrink: 0; }
 .checklist-row { display: flex; align-items: center; gap: 8px; }
 .checklist-row-hw { flex-wrap: wrap; background: var(--surface2); padding: 8px; border-radius: var(--radius); }
 .checklist-row-hw input[type=text], .checklist-row-hw input[type=date] { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
@@ -1991,7 +2021,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 115;
+  const APP_BUILD_NUMBER = 116;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2260,7 +2290,10 @@ body.sortable-active * { cursor: grabbing !important; }
       av.onclick = () => {
         if (state.activeProfileId === p.id) return;
         if (p.pinHash) { openProfileSwitchGate(p); return; }
-        personalAreaUnlockedFor = null; personalAreaViewingProfileId = null;
+        // Profil ohne PIN: es gibt hier nichts zu entsperren, also gilt es direkt als
+        // angemeldet — sonst passt der Anmeldestatus nicht zum offenen Bereich.
+        personalAreaUnlockedFor = p.id;
+        personalAreaViewingProfileId = null;
         state.activeProfileId = p.id; saveState(); renderProfileBar(); render();
       };
       av.ondblclick = () => openProfileEditor(p.id);
@@ -2582,6 +2615,13 @@ body.sortable-active * { cursor: grabbing !important; }
     setTimeout(reset, 60);
   }
 
+  // Läuft gerade ein Spiel, darf ein Hintergrund-Sync die Ansicht nicht neu zeichnen —
+  // sonst startet das Spiel mitten in der Runde neu.
+  function renderUnlessBusy() {
+    if (currentView === "retrogames" && activeRetroGame) return;
+    render();
+  }
+
   function render() {
     const c = document.getElementById("viewContainer");
     c.innerHTML = "";
@@ -2882,7 +2922,7 @@ body.sortable-active * { cursor: grabbing !important; }
             ? `<div class="today-sub-stat dash-clickable" data-goto="calendar">${ferienStatus.type === "current"
                 ? (ferienStatus.days <= 1
                     ? `🏖️ ${ferienStatus.days === 0 ? "Heute ist der letzte Ferientag" : "Morgen geht die Schule wieder los"}`
-                    : `🏖️ Ferien! Noch ${ferienStatus.days} Tage bis Schulbeginn (${escapeHtml(ferienStatus.name)})`)
+                    : `🏖️ Ferien! Noch ${ferienStatus.days} freie Tage${ferienStatus.schoolStart ? ` — erster Schultag ${formatDateWithWeekday(ferienStatus.schoolStart)}` : ""} (${escapeHtml(ferienStatus.name)})`)
                 : (() => {
                     // Liegt heute schon im Brücken-Wochenende, sind faktisch Ferien
                     if (isEffectiveHoliday(todayStr)) return `🏖️ Heute keine Schule 🙌 🎉 🥳`;
@@ -11119,7 +11159,7 @@ body.sortable-active * { cursor: grabbing !important; }
           card.innerHTML = `
             <span class="avatar" style="background:${p.color};cursor:pointer;">${p.emoji || p.name.charAt(0)}</span>
             <span class="hub-profile-name">${escapeHtml(p.name)}</span>
-            <span class="hub-profile-status">${p.pinHash ? "🔒 gesperrt" : "einrichten"}</span>
+            <span class="hub-profile-status">${personalAreaUnlockedFor === p.id ? "🔓 angemeldet" : (p.pinHash ? "🔒 gesperrt" : "einrichten")}</span>
           `;
           card.onclick = () => { personalAreaViewingProfileId = p.id; render(); };
           // Sichtbar machen, welcher Bereich durch die Anmeldung bereits offen ist
@@ -11908,7 +11948,7 @@ body.sortable-active * { cursor: grabbing !important; }
       net.lastSyncAt = Date.now();
       saveState({ skipTouch: true });
       renderProfileBar();
-      render();
+      renderUnlessBusy();
       setLastSyncNote("Zuletzt hochgeladen: " + fmtDate(net.lastSyncAt));
       if (!silent) showToast("D'App wurde hochgeladen.");
       return true;
@@ -11943,7 +11983,7 @@ body.sortable-active * { cursor: grabbing !important; }
       state.connectors.network.lastSyncAt = Date.now();
       saveState();
       renderProfileBar();
-      render();
+      renderUnlessBusy();
       setLastSyncNote("Zuletzt heruntergeladen: " + fmtDate(state.connectors.network.lastSyncAt));
       if (!silent) showToast("Neue Daten vom Server übernommen (zusammengeführt).");
       return true;
@@ -12232,7 +12272,7 @@ body.sortable-active * { cursor: grabbing !important; }
       messages.push({ view: "calendar", text: ferienForTicker.type === "current"
         ? (ferienForTicker.days <= 1
             ? `🏖️ ${ferienForTicker.days === 0 ? "Heute ist der letzte Ferientag" : "Morgen geht die Schule wieder los"}`
-            : `🏖️ Ferien! Noch ${ferienForTicker.days} Tage bis Schulbeginn (${ferienForTicker.name})`)
+            : `🏖️ Ferien! Noch ${ferienForTicker.days} freie Tage${ferienForTicker.schoolStart ? ` — erster Schultag ${formatDateWithWeekday(ferienForTicker.schoolStart)}` : ""} (${ferienForTicker.name})`)
         : (() => {
             if (isEffectiveHoliday(todayStr)) return `🏖️ Heute keine Schule 🙌 🎉 🥳`;
             const sd = countSchoolDays(todayStr, ferienForTicker.lastSchoolDay);
@@ -12544,15 +12584,15 @@ body.sortable-active * { cursor: grabbing !important; }
       pullFromNetwork(true, { onlyIfNewer: true, skipConfirm: true }).then(() => startAutoSync());
     }
     if (state.kinship.enabled && state.kinship.circleId && state.kinship.serverUrl) {
-      pullKinshipData(true).then(() => render());
-      setInterval(() => { pushKinshipData(true).then(() => pullKinshipData(true)).then(() => render()); }, 10 * 60 * 1000);
+      pullKinshipData(true).then(() => renderUnlessBusy());
+      setInterval(() => { pushKinshipData(true).then(() => pullKinshipData(true)).then(() => renderUnlessBusy()); }, 10 * 60 * 1000);
     }
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
       resetRecurringTasksIfNeeded();
       applyHolidayMood();
-      render();
-      if (state.kinship.enabled && state.kinship.circleId) { pullKinshipData(true).then(() => render()); }
+      renderUnlessBusy();
+      if (state.kinship.enabled && state.kinship.circleId) { pullKinshipData(true).then(() => renderUnlessBusy()); }
       const net = state.connectors.network;
       if (!net.autoSync || !net.url) return;
       const dueMs = Math.max(1, net.intervalMinutes || 5) * 60 * 1000;
