@@ -4,7 +4,7 @@
    für externe Ressourcen (Google Fonts, jsPDF).
 */
 
-const CACHE_VERSION = "dapp-v5";
+const CACHE_VERSION = "dapp-v6";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

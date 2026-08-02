@@ -1,7 +1,7 @@
 {
-  "name": "DApp V1",
-  "short_name": "DApp",
-  "description": "DApp — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.",
+  "name": "D'App V1",
+  "short_name": "D'App",
+  "description": "D'App — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -11,8 +11,23 @@
   "lang": "de",
   "dir": "ltr",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>DApp V1</title>
-<meta name="description" content="DApp — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.">
+<title>D'App V1</title>
+<meta name="description" content="D'App — die Familien-App: Notizen, Mind-Maps, Checklisten, Aufgaben, Kalender und mehr an einem Ort.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#5F7038">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="DApp">
+<meta name="apple-mobile-web-app-title" content="D'App">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1781,6 +1781,13 @@ body.sortable-active * { cursor: grabbing !important; }
 /* ============ SETTINGS / THEME PICKER ============ */
 .settings-section { margin-bottom: 32px; }
 .settings-section h3 { font-family: var(--font-display); font-size: 19px; margin-bottom: 4px; }
+.settings-group-head {
+  font-family: var(--font-display); font-size: 15px; margin: 28px 0 10px;
+  padding-bottom: 6px; border-bottom: 2px solid var(--border);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.settings-group-head:first-of-type { margin-top: 4px; }
+.settings-group-head span { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--text-muted); }
 .settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
 .settings-accordion-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; margin-bottom: 4px; }
 .settings-accordion-arrow { font-size: 13px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px; }
@@ -1852,7 +1859,7 @@ body.sortable-active * { cursor: grabbing !important; }
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <span class="brand-mark">✎</span>
-      <span class="brand-text">DApp</span>
+      <span class="brand-text">D'App</span>
       <span class="brand-version">V1</span>
     </div>
 
@@ -1984,7 +1991,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 113;
+  const APP_BUILD_NUMBER = 115;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2951,7 +2958,17 @@ body.sortable-active * { cursor: grabbing !important; }
       try { clockSide = localStorage.getItem("dapp_clock_side") || "left"; } catch (e) {}
       dashCard.className = "widget-card dashboard-card" + (clockSide === "right" ? " clock-right" : "");
       dashCard.style.setProperty("--widget-accent", "#0057A6");
-      const dashBody = weatherPart + ferienPart + vacationPart + custodyPart + mealPart + tasksPart + hwPart + medsPart + auroraPart + warnPart + pollenPart;
+      let hiddenRows = [];
+      try { hiddenRows = JSON.parse(localStorage.getItem("dapp_hidden_dashrows") || "[]"); } catch (e) {}
+      const rowMap = {
+        "Wetter": weatherPart, "Ferien": ferienPart, "Urlaub": vacationPart,
+        "Betreuung": custodyPart, "Essen": mealPart, "Aufgaben & Punkte": tasksPart,
+        "Hausi": hwPart, "Medikamente": medsPart, "Nordlicht": auroraPart,
+        "Wetterwarnungen": warnPart, "Pollen": pollenPart
+      };
+      const dashBody = Object.entries(rowMap)
+        .filter(([name]) => !hiddenRows.includes(name))
+        .map(([, html]) => html).join("");
       dashCard.innerHTML = `
         <button type="button" class="clock-side-toggle" id="clockSideToggle" title="Uhr links/rechts">⇄ Uhr ${clockSide === "left" ? "rechts" : "links"}</button>
         <div class="dash-clock" id="dashClock"></div>
@@ -6923,7 +6940,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (!("mediaSession" in navigator)) return;
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: "Singende Blobs", artist: "DApp", album: "Familien-Spielzeug"
+          title: "Singende Blobs", artist: "D'App", album: "Familien-Spielzeug"
         });
         navigator.mediaSession.playbackState = "playing";
         navigator.mediaSession.setActionHandler("pause", () => { stopAll(); allSinging = false; allBtn.textContent = "🎶 Alle singen"; navigator.mediaSession.playbackState = "paused"; });
@@ -9882,7 +9899,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   function exportMarkdown() {
     const items = scopedItems(exportScope).sort((a, b) => b.updatedAt - a.updatedAt);
-    let md = `# DApp — Export\n\n_Erstellt am ${fmtDate(Date.now())}_\n\n`;
+    let md = `# D'App — Export\n\n_Erstellt am ${fmtDate(Date.now())}_\n\n`;
     const groups = { note: "## 📝 Notizen\n", checklist: "## ☑️ Checklisten\n", image: "## 🖼️ Bilder\n" };
     ["note", "checklist", "image"].forEach(type => {
       const group = items.filter(i => i.type === type);
@@ -9936,7 +9953,7 @@ body.sortable-active * { cursor: grabbing !important; }
       y += 6;
     }
 
-    heading("DApp — Export", 20);
+    heading("D'App — Export", 20);
     doc.setFontSize(10); doc.setTextColor(120);
     doc.text(`Erstellt am ${fmtDate(Date.now())}`, margin, y); y += 22;
     doc.setTextColor(20); doc.setFontSize(11);
@@ -10214,6 +10231,12 @@ body.sortable-active * { cursor: grabbing !important; }
     header.innerHTML = `<div><h1 class="view-title">Einstellungen</h1><p class="view-sub">Design, Datenquellen &amp; Sicherung.</p></div>`;
     container.appendChild(header);
 
+    {
+      const gh = document.createElement("h2");
+      gh.className = "settings-group-head";
+      gh.innerHTML = `🎨 Darstellung<span>Gilt nur für dieses Gerät — jede Person kann es frei einstellen.</span>`;
+      container.appendChild(gh);
+    }
     // --- Theme dropdown + live preview ---
     const themeSection = document.createElement("div");
     themeSection.className = "settings-section";
@@ -10260,6 +10283,36 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     });
 
+    // --- Einträge in der Dashboard-Kachel ---
+    const rowNames = ["Wetter", "Ferien", "Urlaub", "Betreuung", "Essen", "Aufgaben & Punkte", "Hausi", "Medikamente", "Nordlicht", "Wetterwarnungen", "Pollen"];
+    let hiddenRowsNow = [];
+    try { hiddenRowsNow = JSON.parse(localStorage.getItem("dapp_hidden_dashrows") || "[]"); } catch (e) {}
+    const rowsSection = document.createElement("div");
+    rowsSection.className = "settings-section";
+    rowsSection.innerHTML = `<h3>📋 Einträge in der Dashboard-Kachel</h3>
+      <p class="hint">Welche Zeilen sollen in der großen Kachel oben erscheinen? Gilt nur für dieses Gerät.</p>
+      <div class="push-cat-row">
+        ${rowNames.map(n => `<label><input type="checkbox" class="dashrow-toggle" data-row="${escapeHtml(n)}" ${hiddenRowsNow.includes(n) ? "" : "checked"}> ${escapeHtml(n)}</label>`).join("")}
+      </div>`;
+    container.appendChild(rowsSection);
+    rowsSection.querySelectorAll(".dashrow-toggle").forEach(cb => {
+      cb.addEventListener("change", () => {
+        let hidden = [];
+        try { hidden = JSON.parse(localStorage.getItem("dapp_hidden_dashrows") || "[]"); } catch (e) {}
+        const name = cb.dataset.row;
+        if (cb.checked) hidden = hidden.filter(n => n !== name);
+        else if (!hidden.includes(name)) hidden.push(name);
+        try { localStorage.setItem("dapp_hidden_dashrows", JSON.stringify(hidden)); } catch (e) {}
+        showToast("Gespeichert.");
+      });
+    });
+
+    {
+      const gh = document.createElement("h2");
+      gh.className = "settings-group-head";
+      gh.innerHTML = `👨‍👩‍👧‍👦 Familie &amp; Zuhause<span>Wirkt für alle — Änderungen hier sind meist Sache der Eltern.</span>`;
+      container.appendChild(gh);
+    }
     // --- Philips Hue ---
     const isParentForHue = !getActiveProfile() || getActiveProfile().role === "parent";
     if (isParentForHue) {
@@ -10353,7 +10406,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const box = themeSection.querySelector("#themePreview");
       box.className = `theme-preview theme-${themeId}`;
       box.innerHTML = `
-        <div class="tp-sidebar"><span class="brand-mark" style="font-size:16px;">✎</span><span class="brand-text" style="font-size:15px;">DApp</span></div>
+        <div class="tp-sidebar"><span class="brand-mark" style="font-size:16px;">✎</span><span class="brand-text" style="font-size:15px;">D'App</span></div>
         <div class="tp-main">
           <div class="view-title" style="font-size:19px;margin-bottom:8px;">Willkommen zurück</div>
           <div class="card" style="cursor:default;padding:12px 14px;margin-bottom:10px;">
@@ -10580,6 +10633,50 @@ body.sortable-active * { cursor: grabbing !important; }
       }, { timeout: 10000 });
     };
 
+    {
+      const gh = document.createElement("h2");
+      gh.className = "settings-group-head";
+      gh.innerHTML = `🔐 Daten &amp; Sicherung<span>Sync-Zugangsdaten sind durch das Admin-Passwort geschützt.</span>`;
+      container.appendChild(gh);
+    }
+    // --- Eigene Sicherung (ohne Admin-Passwort, enthält keine Zugangsdaten) ---
+    {
+      const backupOpen = document.createElement("div");
+      backupOpen.className = "settings-section";
+      backupOpen.innerHTML = `<h3>💾 Meine Daten sichern</h3>
+        <p class="hint">Speichert alle Familiendaten als Datei — ohne Sync-Zugangsdaten und ohne PINs. Damit lässt sich die App jederzeit wiederherstellen, auch ohne Sync-Abo.</p>
+        <div class="backup-row">
+          <button class="btn btn-sm" id="openBackupBtn">⇩ Sicherung erstellen</button>
+          <button class="btn btn-sm" id="openRestoreBtn">⇧ Sicherung einspielen</button>
+          <input type="file" id="openRestoreInput" accept="application/json,.json" style="display:none">
+        </div>`;
+      container.appendChild(backupOpen);
+      backupOpen.querySelector("#openBackupBtn").onclick = () => {
+        shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-sicherung-${Date.now()}.json`, "D'App Sicherung");
+      };
+      const restoreInput = backupOpen.querySelector("#openRestoreInput");
+      backupOpen.querySelector("#openRestoreBtn").onclick = () => restoreInput.click();
+      restoreInput.onchange = () => {
+        const file = restoreInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(String(e.target.result));
+            if (!confirm("Sicherung einspielen? Die Daten werden mit dem aktuellen Stand zusammengeführt.")) return;
+            mergeStateFrom(data);
+            saveState(); render();
+            showToast("Sicherung eingespielt.");
+          } catch (err) {
+            showToast("Das scheint keine gültige D'App-Sicherung zu sein.");
+          }
+        };
+        reader.readAsText(file, "utf-8");
+        restoreInput.value = "";
+      };
+      makeCollapsible(backupOpen, "own-backup", false);
+    }
+
     // --- Export, Import & Synchronisierung (admingeschützt) ---
     const syncAdminHeader = document.createElement("div");
     syncAdminHeader.className = "settings-section";
@@ -10614,8 +10711,9 @@ body.sortable-active * { cursor: grabbing !important; }
       const gateBox = document.createElement("div");
       gateBox.className = "settings-section";
       gateBox.innerHTML = `
+        <p class="hint">Hier liegen die Zugangsdaten zum Sync-Server — deshalb nur mit dem Admin-Passwort. Zum reinen Sichern der eigenen Daten gibt es weiter unten „Meine Daten sichern".</p>
         <div id="syncBioRow"></div>
-        <div class="field" style="max-width:320px;"><input type="password" id="syncPwGate" placeholder="Passwort eingeben" autofocus></div>
+        <div class="field" style="max-width:320px;"><input type="password" id="syncPwGate" placeholder="Admin-Passwort" autofocus></div>
         <div class="admin-error" id="syncPwGateError"></div>
         <button class="btn btn-accent" id="syncPwGateBtn">Entsperren</button>
       `;
@@ -10631,6 +10729,8 @@ body.sortable-active * { cursor: grabbing !important; }
       const tryUnlock = async () => {
         const val = gateBox.querySelector("#syncPwGate").value;
         const hash = await sha256Hex(val);
+        // Bewusst NUR das Admin-Passwort: hier stehen die Server-Zugangsdaten.
+        // Eine Profil-PIN würde sonst reichen, um sie einzusehen und weiterzugeben.
         if (hash === state.adminPasswordHash) {
           unlockSyncAdminUI();
         } else {
@@ -10655,7 +10755,7 @@ body.sortable-active * { cursor: grabbing !important; }
         } else {
           bioRow.innerHTML = `<button class="btn btn-sm" id="syncBioSetupBtn">👆 Face ID / Fingerabdruck einrichten</button>`;
           bioRow.querySelector("#syncBioSetupBtn").onclick = async () => {
-            const ok = await registerBiometric("sync-admin", "DApp-Einstellungen");
+            const ok = await registerBiometric("sync-admin", "D'App-Einstellungen");
             showToast(ok ? "Eingerichtet! 👆" : "Einrichtung abgebrochen oder fehlgeschlagen.");
             render();
           };
@@ -10857,7 +10957,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
 
   backupSection.querySelector("#backupShareBtn").onclick = () => {
-    shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-alle-${Date.now()}.json`, "DApp Backup");
+    shareOrDownloadJson(sanitizedStateSnapshot(), `dapp-alle-${Date.now()}.json`, "D'App Backup");
   };
 
   const mergeFileInput = backupSection.querySelector("#backupMergeFileInput");
@@ -10873,7 +10973,7 @@ body.sortable-active * { cursor: grabbing !important; }
         mergeStateFrom(incoming);
         saveState(); applyTheme(state.theme || "papier"); renderProfileBar(); render();
         showToast("Daten zusammengeführt.");
-      } catch (err) { showToast("Zusammenführen fehlgeschlagen — ist das eine gültige DApp-JSON-Datei?"); }
+      } catch (err) { showToast("Zusammenführen fehlgeschlagen — ist das eine gültige D'App-JSON-Datei?"); }
     };
     reader.readAsText(file);
     mergeFileInput.value = "";
@@ -10906,7 +11006,7 @@ body.sortable-active * { cursor: grabbing !important; }
             startAutoSync();
             showToast("Backup importiert.");
           }
-        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige DApp-JSON-Datei?"); }
+        } catch (err) { showToast("Import fehlgeschlagen — ist das eine gültige D'App-JSON-Datei?"); }
       };
       reader.readAsText(file);
       fileInput.value = "";
@@ -11229,7 +11329,7 @@ body.sortable-active * { cursor: grabbing !important; }
       info.innerHTML = `
         <div><div class="build-num">Build ${APP_BUILD_NUMBER}</div><div style="font-size:12px;color:var(--text-muted);">Stand ${APP_BUILD_DATE.split("-").reverse().join(".")}</div></div>
         <div style="font-size:12px;color:var(--text-muted);text-align:right;">
-          ${state.profiles.length} Profile · ${state.items.length} Einträge in DApp<br>
+          ${state.profiles.length} Profile · ${state.items.length} Einträge in D'App<br>
           ${state.custodySchedules.length} Betreuung(en) · ${state.tasks.length} Aufgaben
         </div>
       `;
@@ -11810,7 +11910,7 @@ body.sortable-active * { cursor: grabbing !important; }
       renderProfileBar();
       render();
       setLastSyncNote("Zuletzt hochgeladen: " + fmtDate(net.lastSyncAt));
-      if (!silent) showToast("DApp wurde hochgeladen.");
+      if (!silent) showToast("D'App wurde hochgeladen.");
       return true;
     } catch (err) {
       if (!silent) showToast("Hochladen fehlgeschlagen — Adresse, CORS oder Netzwerk prüfen.");
@@ -12051,11 +12151,11 @@ body.sortable-active * { cursor: grabbing !important; }
 
     if (cats.tasks) {
       state.tasks.filter(t => t.approved !== false && !seen.tasks.includes(t.id)).forEach(t => {
-        showLocalNotification("DApp", (t.category === "homework" ? "📚 Neue Hausaufgabe: " : "📋 Neue Aufgabe: ") + t.title);
+        showLocalNotification("D'App", (t.category === "homework" ? "📚 Neue Hausaufgabe: " : "📋 Neue Aufgabe: ") + t.title);
         seen.tasks.push(t.id);
       });
       state.events.filter(ev => !ev.private && !seen.tasks.includes(ev.id)).forEach(ev => {
-        showLocalNotification("DApp", `📅 Neuer Termin: ${ev.title} (${formatDateStrShort(ev.date)})`);
+        showLocalNotification("D'App", `📅 Neuer Termin: ${ev.title} (${formatDateStrShort(ev.date)})`);
         seen.tasks.push(ev.id);
       });
     }
@@ -12063,18 +12163,18 @@ body.sortable-active * { cursor: grabbing !important; }
       Array.from({ length: 7 }, (_, i) => addDays(todayStrLocal, i)).forEach(d => {
         const entry = getMealEntry(d);
         if (entry.options.length && !entry.confirmed && !seen.meals.includes(d)) {
-          showLocalNotification("DApp", `🍽️ Essensplan wartet auf Abstimmung für ${formatDateStrShort(d)}`);
+          showLocalNotification("D'App", `🍽️ Essensplan wartet auf Abstimmung für ${formatDateStrShort(d)}`);
           seen.meals.push(d);
         }
       });
     }
     if (cats.approvals) {
       state.tasks.filter(t => t.approved === false && !seen.approvals.includes(t.id)).forEach(t => {
-        showLocalNotification("DApp", `✅ Freigabe nötig: Aufgabe „${t.title}"`);
+        showLocalNotification("D'App", `✅ Freigabe nötig: Aufgabe „${t.title}"`);
         seen.approvals.push(t.id);
       });
       state.rewards.filter(r => r.approved === false && !seen.approvals.includes(r.id)).forEach(r => {
-        showLocalNotification("DApp", `✅ Freigabe nötig: Belohnung „${r.title}"`);
+        showLocalNotification("D'App", `✅ Freigabe nötig: Belohnung „${r.title}"`);
         seen.approvals.push(r.id);
       });
     }
@@ -12083,7 +12183,7 @@ body.sortable-active * { cursor: grabbing !important; }
       warnCache.data.filter(w => w.state === stateNameLocal && w.level >= 3).forEach(w => {
         const wid = (w.headline || "") + (w.regionName || "") + (w.start || "");
         if (!seen.warnings.includes(wid)) {
-          showLocalNotification("DApp", `⚠️ ${(w.headline || "Unwetterwarnung").replace(/^Amtliche /, "")} — ${w.regionName || ""}`);
+          showLocalNotification("D'App", `⚠️ ${(w.headline || "Unwetterwarnung").replace(/^Amtliche /, "")} — ${w.regionName || ""}`);
           seen.warnings.push(wid);
         }
       });
@@ -12221,7 +12321,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const preview = latestNews.text || (latestNews.photo ? "📷 Foto" : latestNews.audio ? "🎤 Sprachnachricht" : "");
       messages.push({ view: "news", text: `📰 ${author ? author.name + ": " : ""}${preview}` });
     }
-    if (!messages.length) messages.push({ view: "home", text: "👋 Willkommen bei DApp — leg direkt los!" });
+    if (!messages.length) messages.push({ view: "home", text: "👋 Willkommen bei D'App — leg direkt los!" });
     return messages;
   }
 
@@ -12509,13 +12609,13 @@ body.sortable-active * { cursor: grabbing !important; }
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === "accepted") showToast("DApp wird installiert…");
+      if (choice.outcome === "accepted") showToast("D'App wird installiert…");
       deferredPrompt = null;
       btn.style.display = "none";
     });
     window.addEventListener("appinstalled", () => {
       btn.style.display = "none";
-      showToast("DApp wurde installiert.");
+      showToast("D'App wurde installiert.");
     });
   }
 
