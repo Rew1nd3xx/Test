@@ -2304,7 +2304,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 121;
+  const APP_BUILD_NUMBER = 122;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -12275,7 +12275,7 @@ body.sortable-active * { cursor: grabbing !important; }
     // Alte Gruppenköpfe und Abschnitte herausnehmen
     Array.from(container.querySelectorAll(":scope > .settings-group-head")).forEach(el => el.remove());
     sections.forEach(s => s.remove());
-    const adminHolder = container.querySelector(":scope > div:empty");
+    const adminHolder = container.querySelector(":scope > .settings-admin-group");
 
     const addHead = (title, sub) => {
       const gh = document.createElement("h2");
@@ -12292,14 +12292,15 @@ body.sortable-active * { cursor: grabbing !important; }
       addHead("👨‍👩‍👧‍👦 Familie &amp; Zuhause", "Wirkt für alle in der Familie.");
       family.forEach(s => container.appendChild(s));
     }
-    if (advanced.length) {
+    if (advanced.length || adminHolder) {
       addHead("🔧 Erweitert", syncSettingsUnlocked
         ? "Technik, Geräte und Datensicherung."
         : "Technik, Geräte und Datensicherung — mit dem Admin-Passwort entsperren.");
       advanced.forEach(s => container.appendChild(s));
+      // Datenquellen, Sync und Export gehören mit unter „Erweitert" —
+      // sonst hängen sie ohne Überschrift unter der Gliederung.
+      if (adminHolder) container.appendChild(adminHolder);
     }
-    // Der Admin-Bereich (Export/Sync/Connectors) bleibt am Ende
-    if (adminHolder) container.appendChild(adminHolder);
   }
 
   function applySettingsAccordion(container) {
@@ -12533,36 +12534,48 @@ body.sortable-active * { cursor: grabbing !important; }
     const pushSection = document.createElement("div");
     pushSection.className = "settings-section";
     const pushSupported = "serviceWorker" in navigator && "PushManager" in window;
+    // Was gemeldet wird, darf jede Person selbst wählen — deshalb steht die Auswahl
+    // oben bei „Familie & Zuhause". Die technische Einrichtung liegt unter „Erweitert".
     pushSection.innerHTML = `
-      <h3>🔔 Push-Benachrichtigungen</h3>
+      <h3>🔔 Benachrichtigungen</h3>
       <p class="hint">${pushSupported
-        ? "Braucht einen eigenen kleinen Server-Baustein (zwei PHP-Dateien für euren Sync-Server) — Anleitung unten. Auf dem iPhone nur, wenn die App zum Homescreen hinzugefügt wurde."
-        : "Dieser Browser unterstützt leider keine Push-Benachrichtigungen."}</p>
+        ? "Worüber möchtest du benachrichtigt werden? Gilt für dieses Gerät."
+        : "Dieser Browser unterstützt leider keine Benachrichtigungen."}</p>
       ${pushSupported ? `
-        <div class="field"><label>Server-Adresse für Benachrichtigungen (z. B. https://family-dapp.de/push-subscribe.php)</label>
-          <input type="text" id="pushServerUrl" value="${escapeHtml(state.connectors.network.url ? state.connectors.network.url.replace(/sync\.php.*$/, "push-subscribe.php") : "")}" placeholder="https://deine-domain.de/push-subscribe.php">
-        </div>
         <div class="push-cat-row">
           <label><input type="checkbox" id="pushCatTasks" ${state.push.categories.tasks ? "checked" : ""}> 📋 Neue/zugewiesene Aufgaben &amp; Termine</label>
           <label><input type="checkbox" id="pushCatMeals" ${state.push.categories.meals ? "checked" : ""}> 🍽️ Essensplan wartet auf Abstimmung/Freigabe</label>
           <label><input type="checkbox" id="pushCatWeather" ${state.push.categories.weather ? "checked" : ""}> ⚠️ Wetterwarnungen</label>
           <label><input type="checkbox" id="pushCatApprovals" ${state.push.categories.approvals ? "checked" : ""}> ✅ Freigabe-Anfragen von Kindern</label>
         </div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin:10px 0 14px;">
           <input type="checkbox" id="pushLocalCheck" ${state.push.localCheckEnabled ? "checked" : ""} style="width:16px;height:16px;accent-color:var(--accent);">
-          🔔 Ohne Server: lokal auf Neuigkeiten prüfen (nur solange die App/der Tab geöffnet ist, kein Server nötig)
+          🔔 Ohne Server prüfen (nur solange die App geöffnet ist)
         </label>
         <div class="backup-row">
-          <button class="btn btn-accent" id="pushSubscribeBtn">${state.push.subscribed ? "🔔 Aktualisieren" : "🔔 Benachrichtigungen aktivieren"}</button>
+          <button class="btn btn-accent btn-sm" id="pushSubscribeBtn">${state.push.subscribed ? "🔔 Aktualisieren" : "🔔 Benachrichtigungen aktivieren"}</button>
           ${state.push.subscribed ? `<button class="btn btn-sm" id="pushUnsubscribeBtn">Deaktivieren</button>` : ""}
         </div>
-        <details style="margin-top:14px;">
-          <summary style="cursor:pointer;font-size:12.5px;color:var(--text-muted);">Server-Einrichtung (einmalig, für Eltern/Technik)</summary>
-          <p class="hint" style="margin-top:8px;">Zwei PHP-Dateien auf euren Sync-Server hochladen (gleicher Ordner wie sync.php): <code>push-subscribe.php</code> speichert, wer benachrichtigt werden möchte. <code>push-check.php</code> per Cronjob alle paar Minuten aufrufen lassen — es vergleicht den aktuellen Stand mit dem letzten und schickt bei Neuem eine Benachrichtigung raus. Beide Dateien liegen bei den heruntergeladenen App-Dateien bei (push-subscribe.php, push-check.php).</p>
-        </details>
       ` : ""}
     `;
     container.appendChild(pushSection);
+
+    // Technische Push-Einrichtung — landet über die Gruppierung unter „Erweitert"
+    if (pushSupported) {
+      const pushAdmin = document.createElement("div");
+      pushAdmin.className = "settings-section";
+      pushAdmin.innerHTML = `
+        <h3>📡 Push-Server</h3>
+        <p class="hint">Adresse des Benachrichtigungs-Dienstes auf eurem Server. Auf dem iPhone funktionieren Benachrichtigungen nur, wenn die App zum Homescreen hinzugefügt wurde.</p>
+        <div class="field"><label>Server-Adresse</label>
+          <input type="text" id="pushServerUrl" value="${escapeHtml(state.connectors.network.url ? state.connectors.network.url.replace(/sync\.php.*$/, "push-subscribe.php") : "")}" placeholder="https://deine-domain.de/push-subscribe.php">
+        </div>
+        <details>
+          <summary style="cursor:pointer;font-size:12.5px;color:var(--text-muted);">Einmalige Server-Einrichtung</summary>
+          <p class="hint" style="margin-top:8px;">Zwei PHP-Dateien in denselben Ordner wie <code>sync.php</code> hochladen: <code>push-subscribe.php</code> merkt sich, wer benachrichtigt werden möchte. <code>push-check.php</code> per Cronjob alle paar Minuten aufrufen — es vergleicht den Stand und meldet Neues. Beide Dateien liegen den App-Dateien bei.</p>
+        </details>`;
+      container.appendChild(pushAdmin);
+    }
     if (pushSupported) {
       pushSection.querySelector("#pushServerUrl").addEventListener("change", (e) => {
         state.push.serverUrl = e.target.value.trim();
@@ -12593,7 +12606,11 @@ body.sortable-active * { cursor: grabbing !important; }
           setupLocalNotificationCheck();
         }
       });
-      pushSection.querySelector("#pushSubscribeBtn").onclick = () => subscribeToPush(pushSection.querySelector("#pushServerUrl").value.trim());
+      pushSection.querySelector("#pushSubscribeBtn").onclick = () => {
+        // Das Adressfeld sitzt jetzt im Bereich „Erweitert" — von dort holen wir es uns.
+        const urlField = container.querySelector("#pushServerUrl");
+        subscribeToPush(urlField ? urlField.value.trim() : "");
+      };
       const unsubBtn = pushSection.querySelector("#pushUnsubscribeBtn");
       if (unsubBtn) unsubBtn.onclick = () => unsubscribeFromPush();
     }
@@ -12757,6 +12774,7 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(syncAdminHeader);
 
     const syncAdminGroup = document.createElement("div");
+    syncAdminGroup.className = "settings-admin-group";
     container.appendChild(syncAdminGroup);
 
     if (!state.adminPasswordHash) {
