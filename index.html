@@ -2318,7 +2318,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 124;
+  const APP_BUILD_NUMBER = 125;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -12328,28 +12328,22 @@ body.sortable-active * { cursor: grabbing !important; }
   // ganz normal erzeugt und hier nur noch in die richtige Reihenfolge gebracht —
   // so bleibt der Aufbaucode einfach und die Gliederung an einer Stelle pflegbar.
   function regroupSettings(container) {
-    const DESIGN = ["Design", "🧩 Homescreen-Kacheln", "📋 Einträge in der Dashboard-Kachel"];
-    const FAMILY = ["🔔 Benachrichtigungen", "Kalender & Wetter"];
-
     const sections = Array.from(container.querySelectorAll(":scope > .settings-section"));
     if (!sections.length) return;
-    const titleOf = (s) => {
-      const h = s.querySelector(":scope > h3");
-      return h ? h.textContent.trim() : "";
-    };
-    const pick = (names) => names
-      .map(n => sections.find(s => titleOf(s).startsWith(n)))
-      .filter(Boolean);
 
-    const design = pick(DESIGN);
-    const family = pick(FAMILY);
-    const used = new Set([...design, ...family]);
-    const advanced = sections.filter(s => !used.has(s));
+    // Jeder Abschnitt trägt beim Erstellen seine Gruppe als Kennzeichen — dadurch
+    // hängt die Einteilung nicht an Überschriften, die sich ändern können.
+    const design = sections.filter(s => s.dataset.group === "design");
+    const family = sections.filter(s => s.dataset.group === "family");
+    // Alles ohne Kennzeichen landet sicherheitshalber unter „Erweitert",
+    // damit nie ein Abschnitt unsichtbar wird.
+    const advanced = sections.filter(s => s.dataset.group !== "design" && s.dataset.group !== "family");
 
+    const adminHolder = container.querySelector(":scope > .settings-admin-group");
     // Alte Gruppenköpfe und Abschnitte herausnehmen
     Array.from(container.querySelectorAll(":scope > .settings-group-head")).forEach(el => el.remove());
     sections.forEach(s => s.remove());
-    const adminHolder = container.querySelector(":scope > .settings-admin-group");
+    if (adminHolder) adminHolder.remove();
 
     const addHead = (title, sub) => {
       const gh = document.createElement("h2");
@@ -12378,7 +12372,13 @@ body.sortable-active * { cursor: grabbing !important; }
   }
 
   function applySettingsAccordion(container) {
-    Array.from(container.querySelectorAll(":scope > .settings-section")).forEach(section => {
+    // Auch die Abschnitte im Admin-Bereich (Sync, Export, Verwandtschaftskreis)
+    // sollen klappbar sein — die liegen eine Ebene tiefer.
+    const all = [
+      ...Array.from(container.querySelectorAll(":scope > .settings-section")),
+      ...Array.from(container.querySelectorAll(":scope > .settings-admin-group > .settings-section")),
+    ];
+    all.forEach(section => {
       const h3 = section.querySelector(":scope > h3");
       if (!h3) return;
       const title = h3.textContent.trim();
@@ -12421,6 +12421,7 @@ body.sortable-active * { cursor: grabbing !important; }
     // --- Theme dropdown + live preview ---
     const themeSection = document.createElement("div");
     themeSection.className = "settings-section";
+    themeSection.dataset.group = "design";
     themeSection.innerHTML = `<h3>Design</h3><p class="hint">${THEMES.length} Themes, jederzeit wechselbar — darunter ein paar mit besonderem Glow-Effekt ✨. Deine Daten bleiben unverändert.</p>
       <div class="theme-picker-row">
         <select id="themeSelect">
@@ -12446,6 +12447,7 @@ body.sortable-active * { cursor: grabbing !important; }
     try { hiddenNow = JSON.parse(localStorage.getItem("dapp_hidden_widgets") || "[]"); } catch (e) {}
     const tilesSection = document.createElement("div");
     tilesSection.className = "settings-section";
+    tilesSection.dataset.group = "design";
     tilesSection.innerHTML = `<h3>🧩 Homescreen-Kacheln</h3>
       <p class="hint">Bestimme, welche Kacheln auf dem Homescreen erscheinen. Die Dashboard-Kachel bleibt immer sichtbar. Gilt nur für dieses Gerät.</p>
       <div class="push-cat-row">
@@ -12470,6 +12472,7 @@ body.sortable-active * { cursor: grabbing !important; }
     try { hiddenRowsNow = JSON.parse(localStorage.getItem("dapp_hidden_dashrows") || "[]"); } catch (e) {}
     const rowsSection = document.createElement("div");
     rowsSection.className = "settings-section";
+    rowsSection.dataset.group = "design";
     rowsSection.innerHTML = `<h3>📋 Einträge in der Dashboard-Kachel</h3>
       <p class="hint">Welche Zeilen sollen in der großen Kachel oben erscheinen? Gilt nur für dieses Gerät.</p>
       <div class="push-cat-row">
@@ -12493,6 +12496,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (isParentForHue) {
       const hueSection = document.createElement("div");
       hueSection.className = "settings-section";
+      hueSection.dataset.group = "advanced";
       const h = state.hue;
       const assignedLights = (h.lights || []).filter(l => l.assignedTo);
       const unassignedLights = (h.lights || []).filter(l => !l.assignedTo);
@@ -12607,6 +12611,7 @@ body.sortable-active * { cursor: grabbing !important; }
     // --- Push-Benachrichtigungen ---
     const pushSection = document.createElement("div");
     pushSection.className = "settings-section";
+    pushSection.dataset.group = "family";
     const pushSupported = "serviceWorker" in navigator && "PushManager" in window;
     // Was gemeldet wird, darf jede Person selbst wählen — deshalb steht die Auswahl
     // oben bei „Familie & Zuhause". Die technische Einrichtung liegt unter „Erweitert".
@@ -12638,6 +12643,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (pushSupported) {
       const pushAdmin = document.createElement("div");
       pushAdmin.className = "settings-section";
+      pushAdmin.dataset.group = "advanced";
       pushAdmin.innerHTML = `
         <h3>📡 Push-Server</h3>
         <p class="hint">Adresse des Benachrichtigungs-Dienstes auf eurem Server. Auf dem iPhone funktionieren Benachrichtigungen nur, wenn die App zum Homescreen hinzugefügt wurde.</p>
@@ -12691,6 +12697,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
     const calWeatherSection = document.createElement("div");
     calWeatherSection.className = "settings-section";
+    calWeatherSection.dataset.group = "family";
     calWeatherSection.innerHTML = `
       <h3>Kalender &amp; Wetter</h3>
       <p class="hint">Bundesland für automatische Schulferien, Ort für das Wetter-Widget auf dem Homescreen.</p>
@@ -12807,6 +12814,7 @@ body.sortable-active * { cursor: grabbing !important; }
     {
       const backupOpen = document.createElement("div");
       backupOpen.className = "settings-section";
+      backupOpen.dataset.group = "advanced";
       backupOpen.innerHTML = `<h3>💾 Meine Daten sichern</h3>
         <p class="hint">Speichert alle Familiendaten als Datei — ohne Sync-Zugangsdaten und ohne PINs. Damit lässt sich die App jederzeit wiederherstellen, auch ohne Sync-Abo.</p>
         <div class="backup-row">
@@ -12844,6 +12852,7 @@ body.sortable-active * { cursor: grabbing !important; }
     // --- Export, Import & Synchronisierung (admingeschützt) ---
     const syncAdminHeader = document.createElement("div");
     syncAdminHeader.className = "settings-section";
+    syncAdminHeader.dataset.group = "advanced";
     syncAdminHeader.innerHTML = `<h3>🔒 Export, Import &amp; Synchronisierung</h3><p class="hint">Geschützt, damit Kinder hier nichts versehentlich ändern können.</p>`;
     container.appendChild(syncAdminHeader);
 
@@ -12854,6 +12863,7 @@ body.sortable-active * { cursor: grabbing !important; }
     if (!state.adminPasswordHash) {
       const setupBox = document.createElement("div");
       setupBox.className = "settings-section";
+      setupBox.dataset.group = "advanced";
       setupBox.innerHTML = `
         <p class="hint">Noch kein Passwort für diesen Bereich vergeben.</p>
         <div class="field" style="max-width:320px;"><input type="password" id="syncPwSetup1" placeholder="Neues Passwort"></div>
@@ -12875,6 +12885,7 @@ body.sortable-active * { cursor: grabbing !important; }
     } else if (!syncSettingsUnlocked) {
       const gateBox = document.createElement("div");
       gateBox.className = "settings-section";
+      gateBox.dataset.group = "advanced";
       gateBox.innerHTML = `
         <p class="hint">Hier liegen die Zugangsdaten zum Sync-Server — deshalb nur mit dem Admin-Passwort. Zum reinen Sichern der eigenen Daten gibt es weiter unten „Meine Daten sichern".</p>
         <div id="syncBioRow"></div>
