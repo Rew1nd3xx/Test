@@ -1483,6 +1483,20 @@ body:not(.holiday-mood) .holiday-sparkles { display: none; }
 .retro-game-score { font-family: var(--font-display); font-size: 17px; margin-bottom: 10px; }
 .retro-canvas { background: #14181B; border-radius: var(--radius); border: 1px solid var(--border); width: 100%; max-width: 560px; height: auto; touch-action: none; }
 .retro-touch-pad { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; width: 100%; max-width: 360px; }
+/* Zweihand-Layout: Lenken links, Gas/Aktion rechts — beide Daumen erreichen ihre Seite */
+.retro-pad-split {
+  display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between;
+  gap: 16px; max-width: 560px;
+}
+.retro-pad-side { display: flex; gap: 8px; flex-wrap: wrap; }
+.retro-pad-side.pad-left { justify-content: flex-start; }
+.retro-pad-side.pad-right { justify-content: flex-end; }
+/* Auf schmalen Geräten die Seiten an den Rand ziehen und größer machen */
+@media (max-width: 620px) {
+  .retro-pad-split { max-width: 100%; gap: 10px; }
+  .retro-pad-side button { min-width: 66px; height: 64px; font-size: 19px; }
+  .retro-pad-side.pad-right { flex-direction: row-reverse; }
+}
 .retro-touch-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
 .retro-touch-pad button {
   min-width: 74px; height: 60px; border-radius: var(--radius); border: 1px solid var(--border);
@@ -2304,7 +2318,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 122;
+  const APP_BUILD_NUMBER = 124;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -6826,7 +6840,34 @@ body.sortable-active * { cursor: grabbing !important; }
     state.gameScores = state.gameScores.filter(s => s.gameId !== gameId || keep.has(s.id));
     saveState();
   }
+  // Merkt sich, welche Bestenliste gerade angezeigt wird — damit sie einzeln
+  // aktualisiert werden kann, ohne die ganze Ansicht (und das Spiel) neu zu bauen.
+  let activeHighscore = null;
+
+  function refreshHighscores() {
+    if (!activeHighscore) return;
+    const box = document.querySelector(".retro-highscores");
+    if (!box || !document.body.contains(box)) return;
+    const { gameId, lowerIsBetter, unit } = activeHighscore;
+    box.innerHTML = highscoreInner(gameId, lowerIsBetter, unit);
+  }
+
+  function highscoreInner(gameId, lowerIsBetter, unit) {
+    const list = (state.gameScores || []).filter(s => s.gameId === gameId)
+      .sort((a, b) => lowerIsBetter ? (a.score - b.score) : (b.score - a.score)).slice(0, 5);
+    return `<h4>🏆 Bestenliste</h4>` + (list.length ? list.map((s, i) => {
+      const p = s.profileId ? getProfile(s.profileId) : null;
+      return `<div class="retro-score-row">
+        <span class="retro-score-rank">${["🥇", "🥈", "🥉"][i] || (i + 1) + "."}</span>
+        ${p ? `<span class="mini-avatar" style="background:${p.color};">${p.emoji || p.name.charAt(0)}</span>` : ""}
+        <span class="retro-score-name">${p ? escapeHtml(p.name) : "Gast"}</span>
+        <span class="retro-score-value">${s.score}${unit || ""}</span>
+      </div>`;
+    }).join("") : `<div class="widget-empty">Noch kein Ergebnis — sei die/der Erste!</div>`);
+  }
+
   function renderHighscoreList(container, gameId, lowerIsBetter, unit) {
+    activeHighscore = { gameId, lowerIsBetter, unit };
     const list = (state.gameScores || []).filter(s => s.gameId === gameId)
       .sort((a, b) => lowerIsBetter ? (a.score - b.score) : (b.score - a.score)).slice(0, 5);
     const box = document.createElement("div");
@@ -6843,6 +6884,36 @@ body.sortable-active * { cursor: grabbing !important; }
     container.appendChild(box);
   }
   let activeRetroGame = null;
+
+  // Steuerung auf zwei Hände aufteilen: links lenken, rechts Gas/Aktion.
+  // Wird nach dem Aufbau eines Spiels aufgerufen und sortiert die vorhandenen
+  // Knöpfe um — dadurch muss kein Spiel sein eigenes Layout mitbringen.
+  function splitTouchPad(wrap) {
+    const pad = wrap.querySelector(".retro-touch-pad");
+    if (!pad || pad.dataset.split) return;
+    const buttons = Array.from(pad.querySelectorAll("button"));
+    if (!buttons.length) return;
+
+    const isSteer = (b) => ["left", "right"].includes(b.dataset.dir)
+      || ["left", "right"].includes(b.dataset.act)
+      || ["left", "right"].includes(b.dataset.sig);
+    const leftBtns = buttons.filter(isSteer);
+    const rightBtns = buttons.filter(b => !isSteer(b));
+    // Nur aufteilen, wenn es für beide Seiten etwas gibt
+    if (!leftBtns.length || !rightBtns.length) { pad.dataset.split = "1"; return; }
+
+    pad.innerHTML = "";
+    pad.classList.add("retro-pad-split");
+    const mk = (cls, list) => {
+      const side = document.createElement("div");
+      side.className = "retro-pad-side " + cls;
+      list.forEach(b => side.appendChild(b));
+      return side;
+    };
+    pad.appendChild(mk("pad-left", leftBtns));
+    pad.appendChild(mk("pad-right", rightBtns));
+    pad.dataset.split = "1";
+  }
 
   function renderRetroGamesView(container) {
     if (retroGameHandle) { clearInterval(retroGameHandle); retroGameHandle = null; }
@@ -6902,6 +6973,7 @@ body.sortable-active * { cursor: grabbing !important; }
     backBtn.onclick = () => { activeRetroGame = null; if (retroGameHandle) { clearInterval(retroGameHandle); retroGameHandle = null; } render(); };
     container.appendChild(backBtn);
 
+    const beforeGame = container.children.length;
     if (activeRetroGame === "snake") renderSnakeGame(container);
     else if (activeRetroGame === "pong") renderPongGame(container);
     else if (activeRetroGame === "memory") renderMemoryGame(container);
@@ -6919,6 +6991,8 @@ body.sortable-active * { cursor: grabbing !important; }
     else if (activeRetroGame === "flyer") renderFlyerGame(container);
     else if (activeRetroGame === "skate") renderSkateGame(container);
     else if (activeRetroGame === "lander") renderLanderGame(container);
+    // Steuerung des gerade gebauten Spiels auf beide Hände verteilen
+    Array.from(container.children).slice(beforeGame).forEach(el => splitTouchPad(el));
   }
 
   function renderSnakeGame(container) {
@@ -6977,7 +7051,7 @@ body.sortable-active * { cursor: grabbing !important; }
       if (head.x >= cols) head.x = 0;
       if (head.y >= rows) head.y = 0;
       if (snake.some(s => s.x === head.x && s.y === head.y)) {
-        gameOver = true; submitScore("snake", score); paint(); render(); return;
+        gameOver = true; submitScore("snake", score); paint(); refreshHighscores(); return;
       }
       snake.unshift(head);
       if (head.x === food.x && head.y === food.y) {
@@ -7203,7 +7277,7 @@ body.sortable-active * { cursor: grabbing !important; }
         if (y >= 0) {
           // Landung bewerten: je näher an der Hangneigung, desto besser
           const diff = Math.abs(angle - slope);
-          if (diff > 0.9) { over = true; submitScore("bike", pts + Math.floor(dist / 10)); paint(); render(); return; }
+          if (diff > 0.9) { over = true; submitScore("bike", pts + Math.floor(dist / 10)); paint(); refreshHighscores(); return; }
           const bonus = airTime > 14 ? Math.max(5, Math.round((1 - diff) * 40)) : 0;
           if (bonus) { pts += bonus; wrap.querySelector("#bkPts").textContent = pts; }
           y = 0; vy = 0; airborne = false; airTime = 0; vAngle = 0;
@@ -7318,7 +7392,7 @@ body.sortable-active * { cursor: grabbing !important; }
             best = t;
             wrap.querySelector("#rcBest").textContent = fmtLap(t);
             submitScore("race", Math.round(t / 10), true);
-            render();
+            refreshHighscores();
           }
           lapStart = performance.now();
         }
@@ -7469,7 +7543,7 @@ body.sortable-active * { cursor: grabbing !important; }
       life--; invuln = 90;
       wrap.querySelector("#flLife").textContent = Math.max(0, life);
       if (navigator.vibrate) { try { navigator.vibrate(50); } catch (e) {} }
-      if (life <= 0) { over = true; submitScore("flyer", pts); render(); }
+      if (life <= 0) { over = true; submitScore("flyer", pts); refreshHighscores(); }
     }
     function tick() {
       if (over) { paint(); return; }
@@ -7596,7 +7670,7 @@ body.sortable-active * { cursor: grabbing !important; }
       wrap.querySelector("#tfPts").textContent = pts;
       say("⚠️ " + text, false);
       if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
-      if (warns >= 3) { over = true; submitScore("traffic", pts); render(); }
+      if (warns >= 3) { over = true; submitScore("traffic", pts); refreshHighscores(); }
     }
 
     function tryMove(dx, dy) {
@@ -7652,7 +7726,7 @@ body.sortable-active * { cursor: grabbing !important; }
         wrap.querySelector("#tfGoals").textContent = goals;
         wrap.querySelector("#tfPts").textContent = pts;
         say("🎯 Ziel erreicht!", true);
-        if (goals >= 5) { over = true; submitScore("traffic", pts); render(); return; }
+        if (goals >= 5) { over = true; submitScore("traffic", pts); refreshHighscores(); return; }
         target = pickTarget();
       }
     }
@@ -7981,14 +8055,14 @@ body.sortable-active * { cursor: grabbing !important; }
     function finish() {
       over = true; finished = false;
       submitScore("cockpit", Math.max(0, Math.round(999999 - dist)), true);
-      paint(); render();
+      paint(); refreshHighscores();
     }
     function finishRace(ahead) {
       over = true; finished = true;
       // Gewertet wird die beste Rundenzeit in Hundertsteln — kleiner ist besser
       if (bestLap !== null) submitScore("cockpit", Math.round(bestLap / 10), true);
       wrap.querySelector("#cpPos").textContent = (ahead + 1) + ".";
-      paint(); render();
+      paint(); refreshHighscores();
     }
     const obs = new MutationObserver(() => {
       if (!document.body.contains(canvas)) {
@@ -8134,7 +8208,7 @@ body.sortable-active * { cursor: grabbing !important; }
     function loseLife() {
       life--;
       wrap.querySelector("#dgLife").textContent = Math.max(0, life);
-      if (life <= 0) { over = true; submitScore("digger", pts); render(); }
+      if (life <= 0) { over = true; submitScore("digger", pts); refreshHighscores(); }
       else buildLevel();
     }
     function tick() {
@@ -8427,7 +8501,7 @@ body.sortable-active * { cursor: grabbing !important; }
             wrap.querySelector("#ldOk").textContent = landings;
             submitScore("lander", score);
           }
-          render();
+          refreshHighscores();
         }
       }
       paint();
@@ -8588,7 +8662,7 @@ body.sortable-active * { cursor: grabbing !important; }
         if (px + 12 > ob.x && px - 12 < ob.x + ob.w && heroBottom > groundY + 10 - ob.h && heroTop < groundY + 10) {
           over = true;
           submitScore("runner", score + Math.floor(dist));
-          paint(); render();
+          paint(); refreshHighscores();
           return;
         }
       }
@@ -8802,10 +8876,10 @@ body.sortable-active * { cursor: grabbing !important; }
           wrap.querySelector("#bkScore").textContent = score;
         }
       });
-      if (bricks.every(b => !b.alive)) { over = true; submitScore("breakout", score); render(); return; }
+      if (bricks.every(b => !b.alive)) { over = true; submitScore("breakout", score); refreshHighscores(); return; }
       if (ballY > H) {
         lives--; wrap.querySelector("#bkLives").textContent = Math.max(0, lives);
-        if (lives <= 0) { over = true; submitScore("breakout", score); render(); return; }
+        if (lives <= 0) { over = true; submitScore("breakout", score); refreshHighscores(); return; }
         ballX = W / 2; ballY = H - 60; vx = 2.6; vy = -3.4;
       }
       paint();
@@ -8892,7 +8966,7 @@ body.sortable-active * { cursor: grabbing !important; }
         }
         return true;
       });
-      if (missed >= 5) { over = true; submitScore("catcher", score); render(); return; }
+      if (missed >= 5) { over = true; submitScore("catcher", score); refreshHighscores(); return; }
       paint();
     }
     canvas.addEventListener("pointerdown", () => {
@@ -8942,7 +9016,7 @@ body.sortable-active * { cursor: grabbing !important; }
         pad.className = "reaction-pad"; pad.textContent = `${ms} ms — nochmal?`;
         info.innerHTML = `Letzte Zeit: <strong>${ms} ms</strong>`;
         submitScore("reaction", ms, true);
-        render();
+        refreshHighscores();
       }
     });
     const observer = new MutationObserver(() => {
@@ -9009,7 +9083,7 @@ body.sortable-active * { cursor: grabbing !important; }
           if (col < 3 && board[r][col] === board[r][col + 1]) canMove = true;
           if (r < 3 && board[r][col] === board[r + 1][col]) canMove = true;
         }
-        if (!canMove) { done = true; submitScore("2048", score); showToast(`Vorbei — ${score} Punkte!`); render(); }
+        if (!canMove) { done = true; submitScore("2048", score); showToast(`Vorbei — ${score} Punkte!`); refreshHighscores(); }
       }
     }
     function keyHandler(e) {
@@ -9058,7 +9132,7 @@ body.sortable-active * { cursor: grabbing !important; }
             if (cards[flipped[0]] === cards[flipped[1]]) {
               matched.add(flipped[0]); matched.add(flipped[1]);
               flipped = []; paint();
-              if (matched.size === cards.length) { submitScore("memory", moves, true); setTimeout(() => { showToast(`🎉 Geschafft in ${moves} Zügen!`); render(); }, 200); }
+              if (matched.size === cards.length) { submitScore("memory", moves, true); setTimeout(() => { showToast(`🎉 Geschafft in ${moves} Zügen!`); refreshHighscores(); }, 200); }
             } else {
               paint();
               setTimeout(() => { flipped = []; paint(); }, 700);
