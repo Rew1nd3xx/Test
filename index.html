@@ -2304,7 +2304,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 120;
+  const APP_BUILD_NUMBER = 121;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -6802,6 +6802,7 @@ body.sortable-active * { cursor: grabbing !important; }
     { id: "cockpit", icon: "🏁", name: "Cockpit-Racer" },
     { id: "digger", icon: "⛏️", name: "Tunnelgräber" },
     { id: "traffic", icon: "🚦", name: "Verkehrsschule" },
+    { id: "flyer", icon: "✈️", name: "Wolkenflieger" },
     { id: "skate", icon: "🛹", name: "Skate-Park" },
     { id: "lander", icon: "🚀", name: "Mondlandung" },
   ];
@@ -6915,6 +6916,7 @@ body.sortable-active * { cursor: grabbing !important; }
     else if (activeRetroGame === "cockpit") renderCockpitGame(container);
     else if (activeRetroGame === "digger") renderDiggerGame(container);
     else if (activeRetroGame === "traffic") renderTrafficGame(container);
+    else if (activeRetroGame === "flyer") renderFlyerGame(container);
     else if (activeRetroGame === "skate") renderSkateGame(container);
     else if (activeRetroGame === "lander") renderLanderGame(container);
   }
@@ -7336,6 +7338,190 @@ body.sortable-active * { cursor: grabbing !important; }
     renderHighscoreList(container, "race", true, " (Hundertstel)");
   }
 
+  // ---- Wolkenflieger: Draufsicht, scrollende Landschaft, Ballons einsammeln ----
+  // Eigene Umsetzung im Stil klassischer Vertikal-Scroller — friedlich gehalten:
+  // gesammelt wird, ausgewichen wird, geschossen wird nicht.
+  function renderFlyerGame(container) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-card retro-game-wrap";
+    wrap.innerHTML = `
+      <div class="retro-game-score">Punkte: <strong id="flPts">0</strong> · Höhe: <strong id="flM">0</strong> m · Leben: <strong id="flLife">3</strong></div>
+      <canvas id="flCanvas" width="420" height="440" class="retro-canvas"></canvas>
+      <div class="retro-touch-pad">
+        <button data-dir="up">▲</button>
+        <div class="retro-touch-row"><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Sammle die Ballons ein und weiche den Wolkentürmen und Vögeln aus.
+      Je höher du kommst, desto schneller geht es.</p>`;
+    container.appendChild(wrap);
+    const canvas = wrap.querySelector("#flCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    let px = W / 2, py = H - 80, pts = 0, life = 3, scroll = 0, speed = 1.6, over = false, tickN = 0;
+    let up = false, dn = false, lf = false, rt = false, invuln = 0;
+    let balloons = [], hazards = [], puffs = [];
+    for (let i = 0; i < 16; i++) puffs.push({ x: Math.random() * W, y: Math.random() * H, r: 12 + Math.random() * 26, s: 0.3 + Math.random() * 0.6 });
+
+    function keyDown(e) {
+      if (e.key === "ArrowUp") { e.preventDefault(); up = true; }
+      if (e.key === "ArrowDown") { e.preventDefault(); dn = true; }
+      if (e.key === "ArrowLeft") lf = true;
+      if (e.key === "ArrowRight") rt = true;
+    }
+    function keyUp(e) {
+      if (e.key === "ArrowUp") up = false;
+      if (e.key === "ArrowDown") dn = false;
+      if (e.key === "ArrowLeft") lf = false;
+      if (e.key === "ArrowRight") rt = false;
+    }
+    document.addEventListener("keydown", keyDown); document.addEventListener("keyup", keyUp);
+    wrap.querySelectorAll("[data-dir]").forEach(b => {
+      const d = b.dataset.dir;
+      b.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        if (over) { restart(); return; }
+        if (d === "up") up = true; else if (d === "down") dn = true;
+        else if (d === "left") lf = true; else rt = true;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+        b.addEventListener(ev, () => { up = dn = lf = rt = false; }));
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      const r = canvas.getBoundingClientRect();
+      px = Math.max(20, Math.min(W - 20, (e.clientX - r.left) * (W / r.width)));
+      py = Math.max(30, Math.min(H - 24, (e.clientY - r.top) * (H / r.height)));
+    });
+    canvas.addEventListener("pointerdown", () => { if (over) restart(); });
+
+    function restart() {
+      px = W / 2; py = H - 80; pts = 0; life = 3; scroll = 0; speed = 1.6; over = false;
+      balloons = []; hazards = []; invuln = 0;
+      wrap.querySelector("#flPts").textContent = "0";
+      wrap.querySelector("#flM").textContent = "0";
+      wrap.querySelector("#flLife").textContent = "3";
+    }
+    function paint() {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, "#7FB6DE"); sky.addColorStop(1, "#CFE6F5");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      // Landschaft weit unten, langsam vorbeiziehend
+      ctx.fillStyle = "rgba(90,140,90,.25)";
+      for (let i = 0; i < 6; i++) {
+        const yy = ((scroll * 0.25 + i * 90) % (H + 90)) - 45;
+        ctx.beginPath(); ctx.ellipse((i * 137) % W, yy, 54, 22, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      // Wolkenschleier
+      puffs.forEach(p => {
+        ctx.fillStyle = "rgba(255,255,255,.42)";
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r * 0.62, 0, 0, Math.PI * 2); ctx.fill();
+      });
+      // Ballons
+      balloons.forEach(b => {
+        ctx.fillStyle = b.color;
+        ctx.beginPath(); ctx.ellipse(b.x, b.y, 10, 12, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(60,50,40,.6)"; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(b.x, b.y + 12); ctx.lineTo(b.x, b.y + 21); ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,.55)";
+        ctx.beginPath(); ctx.ellipse(b.x - 3.5, b.y - 4, 3, 2, -.5, 0, Math.PI * 2); ctx.fill();
+      });
+      // Hindernisse
+      hazards.forEach(h => {
+        if (h.kind === "bird") {
+          ctx.strokeStyle = "#3A3F44"; ctx.lineWidth = 2.6;
+          const flap = Math.sin(tickN * 0.25 + h.x) * 5;
+          ctx.beginPath();
+          ctx.moveTo(h.x - 13, h.y + flap); ctx.quadraticCurveTo(h.x - 6, h.y - 6, h.x, h.y);
+          ctx.quadraticCurveTo(h.x + 6, h.y - 6, h.x + 13, h.y + flap);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = "rgba(120,130,145,.9)";
+          ctx.beginPath();
+          ctx.ellipse(h.x, h.y, 30, 19, 0, 0, Math.PI * 2);
+          ctx.ellipse(h.x - 20, h.y + 6, 18, 13, 0, 0, Math.PI * 2);
+          ctx.ellipse(h.x + 20, h.y + 6, 18, 13, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      // Flugzeug von oben
+      if (!(invuln > 0 && Math.floor(tickN / 4) % 2)) {
+        ctx.save(); ctx.translate(px, py);
+        ctx.fillStyle = "#D8DEE6";
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(7, 10); ctx.lineTo(-7, 10); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#C0453B";
+        ctx.beginPath(); ctx.moveTo(-24, 4); ctx.lineTo(24, 4); ctx.lineTo(16, 12); ctx.lineTo(-16, 12); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#3A5A9B";
+        ctx.beginPath(); ctx.moveTo(-9, 14); ctx.lineTo(9, 14); ctx.lineTo(5, 20); ctx.lineTo(-5, 20); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#7FB6DE";
+        ctx.beginPath(); ctx.ellipse(0, -6, 3.6, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      if (over) {
+        ctx.fillStyle = "rgba(0,0,0,.66)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 23px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("Notlandung!", W / 2, H / 2 - 10);
+        ctx.font = "15px sans-serif";
+        ctx.fillText(`${pts} Punkte · ${Math.floor(scroll / 10)} m`, W / 2, H / 2 + 16);
+        ctx.font = "13px sans-serif"; ctx.fillText("Tippen für einen neuen Flug", W / 2, H / 2 + 40);
+      }
+    }
+    function hit() {
+      if (invuln > 0) return;
+      life--; invuln = 90;
+      wrap.querySelector("#flLife").textContent = Math.max(0, life);
+      if (navigator.vibrate) { try { navigator.vibrate(50); } catch (e) {} }
+      if (life <= 0) { over = true; submitScore("flyer", pts); render(); }
+    }
+    function tick() {
+      if (over) { paint(); return; }
+      tickN++;
+      if (invuln > 0) invuln--;
+      if (speed < 4.2) speed += 0.0015;
+      scroll += speed;
+      wrap.querySelector("#flM").textContent = Math.floor(scroll / 10);
+
+      const step = 4.2;
+      if (up) py -= step; if (dn) py += step;
+      if (lf) px -= step; if (rt) px += step;
+      px = Math.max(20, Math.min(W - 20, px));
+      py = Math.max(30, Math.min(H - 24, py));
+
+      puffs.forEach(p => { p.y += speed * p.s; if (p.y - p.r > H) { p.y = -p.r; p.x = Math.random() * W; } });
+
+      if (Math.random() < 0.035) {
+        balloons.push({ x: 22 + Math.random() * (W - 44), y: -20,
+          color: ["#E8A33D", "#C0453B", "#86B35A", "#B15CDE", "#3FA796"][Math.floor(Math.random() * 5)] });
+      }
+      if (Math.random() < 0.016 + scroll / 400000) {
+        hazards.push({ x: 34 + Math.random() * (W - 68), y: -26, kind: Math.random() < 0.5 ? "bird" : "cloud" });
+      }
+      balloons.forEach(b => b.y += speed);
+      hazards.forEach(h => h.y += speed * (h.kind === "bird" ? 1.35 : 0.85));
+
+      balloons = balloons.filter(b => {
+        if (Math.hypot(b.x - px, b.y - py) < 22) {
+          pts += 10; wrap.querySelector("#flPts").textContent = pts; return false;
+        }
+        return b.y < H + 30;
+      });
+      for (const h of hazards) {
+        const r = h.kind === "bird" ? 15 : 30;
+        if (Math.hypot(h.x - px, h.y - py) < r + 8) { hit(); h.y = H + 100; break; }
+      }
+      hazards = hazards.filter(h => h.y < H + 40);
+      paint();
+    }
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(canvas)) {
+        document.removeEventListener("keydown", keyDown); document.removeEventListener("keyup", keyUp);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
+    paint();
+    retroGameHandle = setInterval(tick, 16);
+    renderHighscoreList(container, "flyer", false, " Pkt");
+  }
+
   // ---- Verkehrsschule: mit dem Fahrrad regelkonform durch die Stadt ----
   // Eigene Umsetzung im Geist klassischer Verkehrserziehungsspiele: deutsche
   // Regeln (Ampel, rechts vor links, Zebrastreifen, Handzeichen) zum Üben.
@@ -7619,7 +7805,7 @@ body.sortable-active * { cursor: grabbing !important; }
     const wrap = document.createElement("div");
     wrap.className = "calendar-card retro-game-wrap";
     wrap.innerHTML = `
-      <div class="retro-game-score">Tempo: <strong id="cpSpd">0</strong> km/h · Strecke: <strong id="cpM">0</strong> m · Beste: <strong id="cpBest">–</strong> m</div>
+      <div class="retro-game-score">Tempo: <strong id="cpSpd">0</strong> km/h · Runde <strong id="cpLap">1</strong>/3 · Platz <strong id="cpPos">–</strong> · Beste Runde: <strong id="cpBest">–</strong></div>
       <canvas id="cpCanvas" width="560" height="360" class="retro-canvas"></canvas>
       <div class="retro-touch-pad">
         <button data-act="gas">⬆ Gas</button>
@@ -7632,9 +7818,18 @@ body.sortable-active * { cursor: grabbing !important; }
     const ctx = canvas.getContext("2d");
     const W = canvas.width, H = canvas.height;
     const HORIZON = 132;
-    let spd = 0, posX = 0, dist = 0, curve = 0, curveTarget = 0, over = false, best = 0;
+    let spd = 0, posX = 0, dist = 0, curve = 0, curveTarget = 0, over = false;
     let gas = false, brake = false, left = false, right = false;
     let rivals = [];
+    // Rennmodus: drei Runden, Rundenzeit und Platzierung
+    const LAP_LEN = 4200;
+    let lap = 1, lapStart = performance.now(), bestLap = null, finished = false;
+    // Gegner fahren die Strecke mit eigenem Tempo ab
+    let field = [
+      { name: "Rot", dist: 0, pace: 3.9 + Math.random() * 0.5 },
+      { name: "Blau", dist: 0, pace: 3.7 + Math.random() * 0.5 },
+      { name: "Grün", dist: 0, pace: 3.5 + Math.random() * 0.5 },
+    ];
 
     function keyDown(e) {
       if (e.key === "ArrowUp" || e.code === "Space") { e.preventDefault(); gas = true; }
@@ -7664,8 +7859,12 @@ body.sortable-active * { cursor: grabbing !important; }
 
     function restart() {
       spd = 0; posX = 0; dist = 0; curve = 0; curveTarget = 0; over = false; rivals = [];
-      wrap.querySelector("#cpM").textContent = "0";
+      lap = 1; lapStart = performance.now(); bestLap = null; finished = false;
+      field.forEach(f => f.dist = 0);
+      wrap.querySelector("#cpLap").textContent = "1";
+      wrap.querySelector("#cpPos").textContent = "–";
     }
+    function fmtLapTime(ms) { return (ms / 1000).toFixed(2) + " s"; }
     // Perspektive: Zeile y auf der Straße -> Breite und Mitte
     function roadAt(y) {
       const p = (y - HORIZON) / (H - HORIZON);           // 0 = Horizont, 1 = ganz vorn
@@ -7726,8 +7925,11 @@ body.sortable-active * { cursor: grabbing !important; }
       if (over) {
         ctx.fillStyle = "rgba(0,0,0,.68)"; ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("Crash!", W / 2, H / 2 - 10);
-        ctx.font = "15px sans-serif"; ctx.fillText(`${Math.floor(dist / 8)} m`, W / 2, H / 2 + 16);
+        ctx.fillText(finished ? "Zielflagge! 🏁" : "Crash!", W / 2, H / 2 - 10);
+        ctx.font = "15px sans-serif";
+        ctx.fillText(finished
+          ? `Beste Runde: ${bestLap !== null ? fmtLapTime(bestLap) : "–"}`
+          : `Runde ${Math.min(3, lap)} von 3`, W / 2, H / 2 + 16);
         ctx.font = "13px sans-serif"; ctx.fillText("Tippen für einen neuen Start", W / 2, H / 2 + 40);
       }
     }
@@ -7744,7 +7946,22 @@ body.sortable-active * { cursor: grabbing !important; }
       posX += curve * spd * 0.0055;
       dist += spd;
       wrap.querySelector("#cpSpd").textContent = Math.round(spd * 46);
-      if (Math.floor(dist) % 8 === 0) wrap.querySelector("#cpM").textContent = Math.floor(dist / 8);
+      // Gegner bewegen sich mit eigenem Tempo über die Strecke
+      field.forEach(f => f.dist += f.pace);
+      const ahead = field.filter(f => f.dist > dist).length;
+      wrap.querySelector("#cpPos").textContent = (ahead + 1) + ".";
+      // Rundenwechsel
+      if (dist >= lap * LAP_LEN) {
+        const t = performance.now() - lapStart;
+        if (bestLap === null || t < bestLap) {
+          bestLap = t;
+          wrap.querySelector("#cpBest").textContent = fmtLapTime(t);
+        }
+        lapStart = performance.now();
+        lap++;
+        if (lap > 3) { finishRace(ahead); return; }
+        wrap.querySelector("#cpLap").textContent = Math.min(3, lap);
+      }
 
       if (Math.abs(posX) > 1.15) { // von der Bahn abgekommen
         spd *= 0.93;
@@ -7762,10 +7979,15 @@ body.sortable-active * { cursor: grabbing !important; }
       paint();
     }
     function finish() {
-      over = true;
-      const m = Math.floor(dist / 8);
-      if (m > best) { best = m; wrap.querySelector("#cpBest").textContent = m; }
-      submitScore("cockpit", m);
+      over = true; finished = false;
+      submitScore("cockpit", Math.max(0, Math.round(999999 - dist)), true);
+      paint(); render();
+    }
+    function finishRace(ahead) {
+      over = true; finished = true;
+      // Gewertet wird die beste Rundenzeit in Hundertsteln — kleiner ist besser
+      if (bestLap !== null) submitScore("cockpit", Math.round(bestLap / 10), true);
+      wrap.querySelector("#cpPos").textContent = (ahead + 1) + ".";
       paint(); render();
     }
     const obs = new MutationObserver(() => {
@@ -7777,7 +7999,7 @@ body.sortable-active * { cursor: grabbing !important; }
     obs.observe(document.getElementById("viewContainer"), { childList: true, subtree: true });
     paint();
     retroGameHandle = setInterval(tick, 16);
-    renderHighscoreList(container, "cockpit", false, " m");
+    renderHighscoreList(container, "cockpit", true, " (Hundertstel)");
   }
 
   // ---- Tunnelgräber: Gänge graben, Gegner ausweichen, Steine fallen lassen ----
@@ -12028,6 +12250,58 @@ body.sortable-active * { cursor: grabbing !important; }
     };
   }
 
+  // Einstellungen in drei schlanke Gruppen sortieren. Die Abschnitte werden oben
+  // ganz normal erzeugt und hier nur noch in die richtige Reihenfolge gebracht —
+  // so bleibt der Aufbaucode einfach und die Gliederung an einer Stelle pflegbar.
+  function regroupSettings(container) {
+    const DESIGN = ["Design", "🧩 Homescreen-Kacheln", "📋 Einträge in der Dashboard-Kachel"];
+    const FAMILY = ["🔔 Benachrichtigungen", "Kalender & Wetter"];
+
+    const sections = Array.from(container.querySelectorAll(":scope > .settings-section"));
+    if (!sections.length) return;
+    const titleOf = (s) => {
+      const h = s.querySelector(":scope > h3");
+      return h ? h.textContent.trim() : "";
+    };
+    const pick = (names) => names
+      .map(n => sections.find(s => titleOf(s).startsWith(n)))
+      .filter(Boolean);
+
+    const design = pick(DESIGN);
+    const family = pick(FAMILY);
+    const used = new Set([...design, ...family]);
+    const advanced = sections.filter(s => !used.has(s));
+
+    // Alte Gruppenköpfe und Abschnitte herausnehmen
+    Array.from(container.querySelectorAll(":scope > .settings-group-head")).forEach(el => el.remove());
+    sections.forEach(s => s.remove());
+    const adminHolder = container.querySelector(":scope > div:empty");
+
+    const addHead = (title, sub) => {
+      const gh = document.createElement("h2");
+      gh.className = "settings-group-head";
+      gh.innerHTML = `${title}<span>${sub}</span>`;
+      container.appendChild(gh);
+    };
+
+    if (design.length) {
+      addHead("🎨 Design", "Gilt nur für dieses Gerät — jede Person kann es frei einstellen.");
+      design.forEach(s => container.appendChild(s));
+    }
+    if (family.length) {
+      addHead("👨‍👩‍👧‍👦 Familie &amp; Zuhause", "Wirkt für alle in der Familie.");
+      family.forEach(s => container.appendChild(s));
+    }
+    if (advanced.length) {
+      addHead("🔧 Erweitert", syncSettingsUnlocked
+        ? "Technik, Geräte und Datensicherung."
+        : "Technik, Geräte und Datensicherung — mit dem Admin-Passwort entsperren.");
+      advanced.forEach(s => container.appendChild(s));
+    }
+    // Der Admin-Bereich (Export/Sync/Connectors) bleibt am Ende
+    if (adminHolder) container.appendChild(adminHolder);
+  }
+
   function applySettingsAccordion(container) {
     Array.from(container.querySelectorAll(":scope > .settings-section")).forEach(section => {
       const h3 = section.querySelector(":scope > h3");
@@ -12069,12 +12343,6 @@ body.sortable-active * { cursor: grabbing !important; }
     header.innerHTML = `<div><h1 class="view-title">Einstellungen</h1><p class="view-sub">Design, Datenquellen &amp; Sicherung.</p></div>`;
     container.appendChild(header);
 
-    {
-      const gh = document.createElement("h2");
-      gh.className = "settings-group-head";
-      gh.innerHTML = `🎨 Darstellung<span>Gilt nur für dieses Gerät — jede Person kann es frei einstellen.</span>`;
-      container.appendChild(gh);
-    }
     // --- Theme dropdown + live preview ---
     const themeSection = document.createElement("div");
     themeSection.className = "settings-section";
@@ -12145,12 +12413,6 @@ body.sortable-active * { cursor: grabbing !important; }
       });
     });
 
-    {
-      const gh = document.createElement("h2");
-      gh.className = "settings-group-head";
-      gh.innerHTML = `👨‍👩‍👧‍👦 Familie &amp; Zuhause<span>Wirkt für alle — Änderungen hier sind meist Sache der Eltern.</span>`;
-      container.appendChild(gh);
-    }
     // --- Philips Hue ---
     const isParentForHue = !getActiveProfile() || getActiveProfile().role === "parent";
     if (isParentForHue) {
@@ -12336,27 +12598,6 @@ body.sortable-active * { cursor: grabbing !important; }
       if (unsubBtn) unsubBtn.onclick = () => unsubscribeFromPush();
     }
 
-    const coloringSection = document.createElement("div");
-    coloringSection.className = "settings-section";
-    const activeForColoring = getActiveProfile();
-    const isParentActiveForColoring = !activeForColoring || activeForColoring.role === "parent";
-    coloringSection.innerHTML = `
-      <h3>🎨 Malvorlagen</h3>
-      <p class="hint">Fahrzeug-Vorlagen für Militärfahrzeuge (Panzer, Jet, Hubschrauber) sind eine eigene Gruppe, die erst nach Freigabe erscheint${isParentActiveForColoring ? "" : " — nur ein Elternprofil kann das hier umschalten"}.</p>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;${isParentActiveForColoring ? "cursor:pointer;" : "opacity:.5;"}">
-        <input type="checkbox" id="militaryTemplatesToggle" ${state.militaryTemplatesEnabled ? "checked" : ""} ${isParentActiveForColoring ? "" : "disabled"} style="width:16px;height:16px;accent-color:var(--accent);">
-        🪖 Militärfahrzeug-Vorlagen freigeben
-      </label>
-    `;
-    container.appendChild(coloringSection);
-    if (isParentActiveForColoring) {
-      coloringSection.querySelector("#militaryTemplatesToggle").addEventListener("change", (e) => {
-        state.militaryTemplatesEnabled = e.target.checked;
-        saveState();
-        showToast(state.militaryTemplatesEnabled ? "Militärfahrzeug-Vorlagen freigegeben." : "Militärfahrzeug-Vorlagen gesperrt.");
-      });
-    }
-
     const calWeatherSection = document.createElement("div");
     calWeatherSection.className = "settings-section";
     calWeatherSection.innerHTML = `
@@ -12471,12 +12712,6 @@ body.sortable-active * { cursor: grabbing !important; }
       }, { timeout: 10000 });
     };
 
-    {
-      const gh = document.createElement("h2");
-      gh.className = "settings-group-head";
-      gh.innerHTML = `🔐 Daten &amp; Sicherung<span>Sync-Zugangsdaten sind durch das Admin-Passwort geschützt.</span>`;
-      container.appendChild(gh);
-    }
     // --- Eigene Sicherung (ohne Admin-Passwort, enthält keine Zugangsdaten) ---
     {
       const backupOpen = document.createElement("div");
@@ -12641,33 +12876,15 @@ body.sortable-active * { cursor: grabbing !important; }
           <button class="btn btn-sm" id="netPullBtn">⇩ Jetzt herunterladen</button>
         </div>
         <p style="font-size:11.5px;color:var(--text-muted);margin:10px 0 0;" id="netLastSync"></p>
-        <p class="hint" style="margin-top:12px;margin-bottom:6px;">Sync-Einrichtung (Adresse, Zugangsdaten, Einstellungen) als Datei weitergeben — praktisch, um sie z. B. auf einem Kinder-Gerät nicht von Hand eintippen zu müssen. Enthält die Zugangsdaten im Klartext — nur innerhalb der Familie weitergeben.</p>
+        <p class="hint" style="margin-top:12px;margin-bottom:6px;">Einrichtung als Datei übertragen — spart das Abtippen auf weiteren Geräten. <b>Enthält die Zugangsdaten im Klartext</b>, also nur innerhalb der Familie weitergeben.</p>
         <div class="backup-row">
           <button class="btn btn-sm" id="netExportConfigBtn">⇩ Sync-Einstellungen exportieren</button>
           <button class="btn btn-sm" id="netImportConfigBtn">⇧ Sync-Einstellungen importieren</button>
           <input type="file" id="netConfigFileInput" accept=".json" style="display:none">
         </div>
       </div>
-      <div class="connector-card">
-        <div class="connector-head"><h4>📁 SharePoint</h4><span class="badge-soon">geplant</span></div>
-        <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 10px;">Braucht eine Microsoft-Anmeldung (OAuth) — kommt als eigener Baustein.</p>
-        <div class="connector-fields">
-          <input type="text" placeholder="Site-URL (z. B. https://firma.sharepoint.com/sites/team)" value="${escapeHtml(state.connectors.sharepoint.siteUrl)}" id="spSite" disabled>
-          <input type="text" placeholder="Dokumentbibliothek" value="${escapeHtml(state.connectors.sharepoint.library)}" id="spLib" disabled>
-        </div>
-        <button class="btn btn-sm" disabled>Verbinden (geplant)</button>
-      </div>
-      <div class="connector-card">
-        <div class="connector-head"><h4>🗂️ FTP / SFTP</h4><span class="badge-soon">geplant</span></div>
-        <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 10px;">Braucht einen kleinen Server-Proxy, da Browser kein FTP sprechen — kommt als eigener Baustein.</p>
-        <div class="connector-fields">
-          <input type="text" placeholder="Host" value="${escapeHtml(state.connectors.ftp.host)}" id="ftpHost" disabled>
-          <input type="text" placeholder="Port" value="${escapeHtml(state.connectors.ftp.port)}" id="ftpPort" disabled>
-          <input type="text" placeholder="Benutzer" value="${escapeHtml(state.connectors.ftp.user)}" id="ftpUser" disabled>
-          <input type="text" placeholder="Zielpfad" value="${escapeHtml(state.connectors.ftp.path)}" id="ftpPath" disabled>
-        </div>
-        <button class="btn btn-sm" disabled>Verbinden (geplant)</button>
-      </div>`;
+      <p class="hint" style="margin-top:14px;">Geplant, aber noch nicht nutzbar: SharePoint (braucht eine Microsoft-Anmeldung)
+      und FTP/SFTP (braucht einen kleinen Server-Baustein, da Browser kein FTP sprechen).</p>`;
 
     wireNetworkSyncControls(connSection);
 
@@ -12684,23 +12901,12 @@ body.sortable-active * { cursor: grabbing !important; }
     <h3>Export</h3>
     <p class="hint">Als PDF, Markdown oder JSON — zum Ausdrucken, Weiterverarbeiten oder als vollständiges Backup.</p>
     <div class="scope-row">${scopeOptions.map(o => `<button class="scope-chip ${exportScope === o.id ? "active" : ""}" data-scope="${o.id}">${o.label}</button>`).join("")}</div>
-    <div class="export-grid">
-      <div class="export-card">
-        <h3>📄 PDF</h3>
-        <p>Sauber formatiertes Dokument zum Ausdrucken oder Teilen.</p>
-        <button class="btn btn-accent" id="exportPdfBtn">Als PDF exportieren</button>
-      </div>
-      <div class="export-card">
-        <h3>✎ Markdown</h3>
-        <p>Reiner Text mit Formatierung — für Notion, Obsidian &amp; Co.</p>
-        <button class="btn btn-accent" id="exportMdBtn">Als Markdown exportieren</button>
-      </div>
-      <div class="export-card">
-        <h3>{ } JSON</h3>
-        <p>Vollständiges Backup inkl. Mind-Maps — zum Re-Import.</p>
-        <button class="btn btn-accent" id="exportJsonBtn">Als JSON exportieren</button>
-      </div>
+    <div class="backup-row" style="margin-top:10px;">
+      <button class="btn btn-sm" id="exportPdfBtn">📄 PDF</button>
+      <button class="btn btn-sm" id="exportMdBtn">✎ Markdown</button>
+      <button class="btn btn-sm" id="exportJsonBtn">{ } JSON</button>
     </div>
+    <p class="hint" style="margin-top:8px;">PDF zum Ausdrucken · Markdown für andere Notiz-Apps · JSON als vollständiges Backup.</p>
   `;
   if (syncSettingsUnlocked) syncAdminGroup.appendChild(exportSection);
   exportSection.querySelectorAll(".scope-chip").forEach(chip => {
@@ -12790,6 +12996,7 @@ body.sortable-active * { cursor: grabbing !important; }
       pullKinshipData(true).then(() => { showToast("Dem Kreis beigetreten!"); render(); });
     };
 
+    regroupSettings(container);
     applySettingsAccordion(container);
   }
 
