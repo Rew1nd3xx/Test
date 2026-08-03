@@ -2328,7 +2328,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 127;
+  const APP_BUILD_NUMBER = 128;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -13121,10 +13121,12 @@ body.sortable-active * { cursor: grabbing !important; }
       saveState();
       pullKinshipData(true).then(() => { showToast("Dem Kreis beigetreten!"); render(); });
     };
-
-    regroupSettings(container);
-    applySettingsAccordion(container);
   }
+
+  // Gliederung und Klappfunktion laufen immer — sie hingen versehentlich in der
+  // Bedingung für den Verwandtschaftskreis und liefen deshalb fast nie.
+  regroupSettings(container);
+  applySettingsAccordion(container);
 
 
   backupSection.querySelector("#backupShareBtn").onclick = () => {
