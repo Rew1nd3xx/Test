@@ -2116,8 +2116,18 @@ body.sortable-active * { cursor: grabbing !important; }
 .settings-group-head:first-of-type { margin-top: 4px; }
 .settings-group-head span { font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--text-muted); }
 .settings-section .hint { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
-.settings-accordion-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; margin-bottom: 4px; }
-.settings-accordion-arrow { font-size: 13px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px; }
+/* Klappbare Überschrift: als Fläche erkennbar, damit klar ist, dass man tippen kann */
+.settings-accordion-head {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: -4px -8px 4px; padding: 8px;
+  border-radius: var(--radius); transition: background .12s ease;
+}
+.settings-accordion-head:hover { background: var(--surface2); }
+.settings-accordion-head:active { background: color-mix(in srgb, var(--accent) 14%, var(--surface2)); }
+.settings-accordion-arrow {
+  font-size: 14px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px;
+  transition: transform .15s ease;
+}
 .settings-section-body { margin-top: 10px; }
 .push-cat-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; font-size: 13px; }
 .push-cat-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
@@ -2318,7 +2328,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 125;
+  const APP_BUILD_NUMBER = 126;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -2499,7 +2509,11 @@ body.sortable-active * { cursor: grabbing !important; }
   let tickerInterval = null;
   let autoPushDebounce = null;
   let activeTagFilter = null;
+  // Beim Start sind die alltäglichen Abschnitte offen — nur der technische
+  // Bereich startet zugeklappt. Vorher war alles zu und die Einstellungen
+  // wirkten leer.
   let settingsSectionsOpen = new Set();
+  let settingsDefaultsApplied = false;
   let hueUnassignedOpen = false;
   let taskSortMode = "status";
   let gradeSortMode = "subject";
@@ -12378,6 +12392,17 @@ body.sortable-active * { cursor: grabbing !important; }
       ...Array.from(container.querySelectorAll(":scope > .settings-section")),
       ...Array.from(container.querySelectorAll(":scope > .settings-admin-group > .settings-section")),
     ];
+    // Einmalig sinnvolle Startwerte setzen: alles außer dem technischen Teil offen
+    if (!settingsDefaultsApplied) {
+      all.forEach(section => {
+        const h = section.querySelector(":scope > h3");
+        if (!h) return;
+        if (section.dataset.group === "design" || section.dataset.group === "family") {
+          settingsSectionsOpen.add(h.textContent.trim());
+        }
+      });
+      settingsDefaultsApplied = true;
+    }
     all.forEach(section => {
       const h3 = section.querySelector(":scope > h3");
       if (!h3) return;
