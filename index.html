@@ -2328,7 +2328,7 @@ body.sortable-active * { cursor: grabbing !important; }
 
   const STORAGE_KEY = "ideabook_state_v1";
   const VAPID_PUBLIC_KEY = "BH6D9LngspVX16UQvJBMJuUKWka154Ykiu1gcrMOXUfeioMAG1Z5t2WPcv3DxknMjrUCjRxlXnMNl1PpkZaJ_NQ";
-  const APP_BUILD_NUMBER = 126;
+  const APP_BUILD_NUMBER = 127;
   const APP_BUILD_DATE = "2026-07-30";
 
   const THEMES = [
@@ -12397,8 +12397,10 @@ body.sortable-active * { cursor: grabbing !important; }
       all.forEach(section => {
         const h = section.querySelector(":scope > h3");
         if (!h) return;
-        if (section.dataset.group === "design" || section.dataset.group === "family") {
-          settingsSectionsOpen.add(h.textContent.trim());
+        const t = h.textContent.trim();
+        if (section.dataset.group === "design" || section.dataset.group === "family"
+            || t.startsWith("🔒 Export")) {
+          settingsSectionsOpen.add(t);
         }
       });
       settingsDefaultsApplied = true;
@@ -12887,8 +12889,6 @@ body.sortable-active * { cursor: grabbing !important; }
 
     if (!state.adminPasswordHash) {
       const setupBox = document.createElement("div");
-      setupBox.className = "settings-section";
-      setupBox.dataset.group = "advanced";
       setupBox.innerHTML = `
         <p class="hint">Noch kein Passwort für diesen Bereich vergeben.</p>
         <div class="field" style="max-width:320px;"><input type="password" id="syncPwSetup1" placeholder="Neues Passwort"></div>
@@ -12896,7 +12896,7 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="admin-error" id="syncPwSetupError"></div>
         <button class="btn btn-accent" id="syncPwSetupBtn">Passwort festlegen &amp; freischalten</button>
       `;
-      container.appendChild(setupBox);
+      syncAdminHeader.appendChild(setupBox);
       setupBox.querySelector("#syncPwSetupBtn").onclick = async () => {
         const p1 = setupBox.querySelector("#syncPwSetup1").value;
         const p2 = setupBox.querySelector("#syncPwSetup2").value;
@@ -12909,8 +12909,6 @@ body.sortable-active * { cursor: grabbing !important; }
       };
     } else if (!syncSettingsUnlocked) {
       const gateBox = document.createElement("div");
-      gateBox.className = "settings-section";
-      gateBox.dataset.group = "advanced";
       gateBox.innerHTML = `
         <p class="hint">Hier liegen die Zugangsdaten zum Sync-Server — deshalb nur mit dem Admin-Passwort. Zum reinen Sichern der eigenen Daten gibt es weiter unten „Meine Daten sichern".</p>
         <div id="syncBioRow"></div>
@@ -12918,7 +12916,7 @@ body.sortable-active * { cursor: grabbing !important; }
         <div class="admin-error" id="syncPwGateError"></div>
         <button class="btn btn-accent" id="syncPwGateBtn">Entsperren</button>
       `;
-      container.appendChild(gateBox);
+      syncAdminHeader.appendChild(gateBox);
       if (hasBiometricSetup("sync-admin")) {
         gateBox.querySelector("#syncBioRow").innerHTML = `<button type="button" class="btn" id="syncBioBtn" style="width:100%;max-width:320px;margin-bottom:10px;">👆 Mit Face ID / Fingerabdruck entsperren</button>`;
         gateBox.querySelector("#syncBioBtn").onclick = async () => {
@@ -12944,7 +12942,7 @@ body.sortable-active * { cursor: grabbing !important; }
       const lockBar = document.createElement("div");
       lockBar.style.cssText = "margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;";
       lockBar.innerHTML = `<button class="btn btn-sm" id="syncLockBtn">🔒 Wieder sperren</button><span id="syncBioSetupRow"></span>`;
-      container.appendChild(lockBar);
+      syncAdminHeader.appendChild(lockBar);
       lockBar.querySelector("#syncLockBtn").onclick = () => { syncSettingsUnlocked = false; render(); };
       (async () => {
         const available = await isBiometricAvailable();
